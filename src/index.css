@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Inter", sans-serif;
+  --background: 42 47% 96%;
+  --foreground: 220 34% 17%;
+  --card: 45 75% 99%;
+  --card-foreground: 220 34% 17%;
+  --primary: 220 52% 23%;
+  --primary-foreground: 45 75% 99%;
+  --secondary: 42 38% 91%;
+  --secondary-foreground: 220 34% 17%;
+  --muted: 39 30% 92%;
+  --muted-foreground: 219 12% 43%;
+  --accent: 157 38% 89%;
+  --accent-foreground: 164 40% 25%;
+  --input: 38 23% 82%;
+  --border: 39 26% 84%;
+  --ring: 198 69% 52%;
+  --radius: 1rem;
+  --navy: 220 56% 21%;
+  --navy-light: 218 37% 31%;
+  --gold: 43 68% 53%;
+  --coral: 13 78% 65%;
+  --mint: 158 43% 70%;
+  --sky: 198 70% 74%;
+  --lilac: 257 55% 79%;
+  --super-dream: 263 62% 69%;
+  --dream: 203 72% 56%;
+  --standard: 157 45% 38%;
+  --regular: 36 75% 48%;
+  --expert: 9 65% 54%;
+  --advanced: 22 75% 52%;
+  --pro: 203 72% 56%;
+  --beginner: 157 45% 38%;
+  --sidebar-background: 40 45% 94%;
+  --sidebar-foreground: 220 25% 25%;
+  --sidebar-accent: 157 38% 89%;
+}
+
+.dark {
+  --background: 220 35% 10%;
+  --foreground: 42 35% 94%;
+  --card: 220 30% 14%;
+  --card-foreground: 42 35% 94%;
+  --primary: 42 35% 94%;
+  --primary-foreground: 220 35% 12%;
+  --secondary: 220 25% 20%;
+  --secondary-foreground: 42 35% 94%;
+  --muted: 220 25% 20%;
+  --muted-foreground: 215 15% 66%;
+  --accent: 164 35% 24%;
+  --accent-foreground: 157 42% 83%;
+  --input: 220 20% 25%;
+  --border: 220 20% 25%;
+  --ring: 198 69% 52%;
+  --sidebar-background: 220 30% 14%;
+  --sidebar-foreground: 42 35% 90%;
+  --sidebar-accent: 220 25% 20%;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-width: 320px;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Inter", sans-serif;
+}
+h1, h2, h3, h4, h5, h6 { font-family: "Outfit", sans-serif; }
+button, input, select { font: inherit; }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+.ambient-drift { animation: ambient-drift 18s ease-in-out infinite; }
+.ambient-drift-delayed { animation: ambient-drift 22s ease-in-out -8s infinite; }
+@keyframes ambient-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(10px, -14px, 0) rotate(4deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

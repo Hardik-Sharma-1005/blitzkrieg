@@ -1,0 +1,39 @@
+{
+  "name": "jss-placement-intelligence-portal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-accordion": "*",
+    "@radix-ui/react-slot": "*",
+    "@radix-ui/react-tooltip": "*",
+    "@supabase/supabase-js": "^2.118.0",
+    "@tanstack/react-query": "*",
+    "class-variance-authority": "*",
+    "clsx": "*",
+    "framer-motion": "*",
+    "lucide-react": "*",
+    "react": "*",
+    "react-dom": "*",
+    "react-router-dom": "^6",
+    "recharts": "*",
+    "sonner": "*",
+    "tailwind-merge": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "@vitejs/plugin-react": "*",
+    "autoprefixer": "*",
+    "postcss": "*",
+    "tailwindcss": "^3",
+    "typescript": "*",
+    "vite": "*"
+  }
+}
