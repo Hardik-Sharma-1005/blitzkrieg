@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { DataProvenance } from "@/components/company/DataProvenance";
 import { IntelligenceSectionCard } from "@/components/company/IntelligenceSectionCard";
 import { buildIntelligenceSections } from "@/data/intelligenceData";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
@@ -19,9 +20,10 @@ export function CompanyIntelligence() {
     queryFn: () => fetchCompanyRecord(selectedCompany!.companyId),
     enabled: Boolean(selectedCompany?.companyId),
   });
+  const companyRecord = companyQuery.data;
   const profile = useMemo(
-    () => companyQuery.data ? normalizeCompanyProfile(companyQuery.data.full_json, companyQuery.data.short_json) : null,
-    [companyQuery.data],
+    () => companyRecord ? normalizeCompanyProfile(companyRecord.full_json, companyRecord.short_json) : null,
+    [companyRecord],
   );
   const sections = useMemo(() => buildIntelligenceSections(profile?.raw), [profile]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -57,7 +59,7 @@ export function CompanyIntelligence() {
   }, []);
 
   if (companyQuery.isPending) return <div className="mx-auto max-w-xl p-10 text-center text-sm text-slate-500">Loading company profile…</div>;
-  if (companyQuery.isError || !profile) return (
+  if (companyQuery.isError || !companyRecord || !profile) return (
     <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
       <h2 className="font-heading text-xl font-semibold text-slate-900">Couldn’t load this company</h2>
       <p className="mt-2 text-sm text-slate-500">Please try again in a moment.</p>
@@ -108,6 +110,12 @@ export function CompanyIntelligence() {
               <dd className="mt-1 break-words text-sm font-semibold text-[#31445a]">{value || <span className="font-normal italic text-slate-400">Not publicly available</span>}</dd>
             </div>)}
           </dl>
+          <div className="relative mt-3">
+            <DataProvenance raw={profile.raw} origin={companyRecord.dataOrigin} />
+          </div>
+          {companyRecord.skillDataWarnings.length > 0 && <div role="status" className="relative mt-3 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-3 py-2 text-xs leading-5 text-[#76591d]">
+            {companyRecord.skillDataWarnings.join(" ")}
+          </div>}
         </section>
         {sections.map((section, index) => <IntelligenceSectionCard key={section.id} section={section} sectionRef={(element) => { sectionElements.current[index] = element; }} />)}
       </main>

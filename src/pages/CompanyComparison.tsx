@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { DataProvenance } from "@/components/company/DataProvenance";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
 import { asString, normalizeCompanyProfile, normalizeCompanySummary, normalizeDashboardSkills, splitItems, type CompanyProfile, type CompanySummary, type DashboardSkill, type JsonRecord } from "@/lib/companyData";
 import { useCompany } from "@/lib/companyContext";
@@ -16,6 +17,8 @@ interface ComparisonCompany {
   profile: CompanyProfile;
   skills: DashboardSkill[];
   raw: JsonRecord;
+  dataOrigin: "demo" | "supabase";
+  skillDataWarnings: string[];
 }
 
 const comparisonGroups = [
@@ -66,6 +69,20 @@ function isMissing(value: string) {
 
 function profileValue(raw: JsonRecord, key: string) {
   return asString(raw[key]);
+}
+
+function getComparisonLoadHelp(error: unknown) {
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  if (message.includes("row-level security") || message.includes("permission denied") || message.includes("42501")) {
+    return "Supabase denied access to company_json. Check its SELECT grant and row-level security policy for the public company records you intend to show.";
+  }
+  if (message.includes("schema cache") || message.includes("does not exist") || message.includes("column")) {
+    return "The connected database schema does not match the company_json fields this app reads. Confirm the table and JSON column names in the project configuration.";
+  }
+  if (message.includes("fetch failed") || message.includes("network") || message.includes("failed to fetch")) {
+    return "The configured Supabase URL could not be reached. Check the URL and network connection, then retry.";
+  }
+  return "Check that company_json is readable with the public client and that company_id, short_json, and full_json match the app data contract.";
 }
 
 function StudentTakeaway({ company }: { company: ComparisonCompany }) {
@@ -129,6 +146,8 @@ function CompanyOverview({ company, index }: { company: ComparisonCompany; index
             <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.08em] text-[#354b54]"><Sparkles className="h-3.5 w-3.5" /> What this means for students</p>
             <StudentTakeaway company={company} />
           </div>
+          <div className="mt-4"><DataProvenance raw={raw} origin={company.dataOrigin} compact /></div>
+          {company.skillDataWarnings.length > 0 && <p role="status" className="mt-3 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-3 py-2 text-xs leading-5 text-[#76591d]">{company.skillDataWarnings.join(" ")}</p>}
         </div>
       </Card>
     </motion.div>
@@ -147,11 +166,13 @@ export function CompanyComparison() {
     if (!record) return [];
     const summary = normalizeCompanySummary(record.short_json);
     const profile = normalizeCompanyProfile(record.full_json, record.short_json);
-    return [{ summary, profile, skills: normalizeDashboardSkills(record.skill_levels), raw: profile.raw }];
+    return [{ summary, profile, skills: normalizeDashboardSkills(record.skill_levels), raw: profile.raw, dataOrigin: record.dataOrigin, skillDataWarnings: record.skillDataWarnings }];
   }), [compareCompanyIds, records]);
-  const loading = records.some((record) => record.isPending || record.isFetching);
-  const failed = records.some((record) => record.isError);
+  const loading = records.some((record) => record.isPending);
+  const failedRecords = records.filter((record) => record.isError);
+  const failed = failedRecords.length > 0;
   const unavailable = !loading && !failed && companies.length !== compareCompanyIds.length;
+  const retryFailedRecords = () => void Promise.all(failedRecords.map((record) => record.refetch()));
 
   if (compareCompanyIds.length < 2) {
     return <main className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
@@ -164,18 +185,21 @@ export function CompanyComparison() {
     </main>;
   }
 
-  if (loading) return <main className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12"><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{compareCompanyIds.map((id) => <div key={id} className="h-72 animate-pulse rounded-2xl bg-[#eee8dc]" />)}</div></main>;
+  if (loading) return <main aria-busy="true" className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12">
+    <p role="status" className="mb-4 text-sm font-medium text-slate-500">Loading your selected company profiles…</p>
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{compareCompanyIds.map((id) => <div key={id} className="h-72 animate-pulse rounded-2xl bg-[#eee8dc]" />)}</div>
+  </main>;
 
-  if (failed || unavailable) return <main className="mx-auto max-w-xl px-5 py-12 text-center sm:py-16">
+  if ((failed && companies.length < 2) || unavailable) return <main className="mx-auto max-w-xl px-5 py-12 text-center sm:py-16">
     <Card className="p-7">
-      <h1 className="font-heading text-xl font-semibold text-[#26354b]">Couldn’t load the comparison</h1>
+      <h1 className="font-heading text-xl font-semibold text-[#26354b]">{unavailable ? "A saved company is unavailable" : "Couldn’t load enough company profiles"}</h1>
       <p className="mt-2 text-sm leading-6 text-slate-500">
         {unavailable
           ? "A saved company is no longer available. Clear the shortlist, then choose companies again from the directory."
-          : "A company profile could not be loaded. Retry the request, or clear the shortlist and choose companies again."}
+          : `${getComparisonLoadHelp(failedRecords[0]?.error)} ${companies.length ? `${companies.length} profile${companies.length === 1 ? " is" : "s are"} available; at least two are needed to compare.` : "Retry after the data service is available."}`}
       </p>
       <div className="mt-5 flex flex-wrap justify-center gap-2">
-        {failed && <Button variant="outline" onClick={() => void Promise.all(records.map((record) => record.refetch()))}>
+        {failed && <Button variant="outline" onClick={retryFailedRecords}>
           <RefreshCw className="h-4 w-4" /> Try again
         </Button>}
         <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>
@@ -192,7 +216,7 @@ export function CompanyComparison() {
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#246b5d]"><GitCompareArrows className="h-3.5 w-3.5" /> Your research shortlist</p>
             <h1 className="mt-4 font-heading text-3xl font-semibold leading-tight tracking-tight text-[#26354b] sm:text-4xl">Compare companies, side by side.</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">A factual view of the available company and skill data to support your own research.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">Compare the available company and skill data. Sample profiles are labeled, and missing details stay visible.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline"><Link to="/"><ArrowLeft className="h-4 w-4" /> Add companies</Link></Button>
@@ -201,10 +225,15 @@ export function CompanyComparison() {
         </div>
       </header>
 
+      {failed && <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">
+        <p>{companies.length} of {compareCompanyIds.length} selected profiles loaded. {getComparisonLoadHelp(failedRecords[0]?.error)}</p>
+        <Button variant="outline" size="sm" onClick={retryFailedRecords}><RefreshCw className="h-4 w-4" /> Retry failed profiles</Button>
+      </div>}
+
       <section aria-labelledby="at-a-glance-heading">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div><p className="text-xs font-semibold uppercase tracking-[0.13em] text-[#a47d32]">At a glance</p><h2 id="at-a-glance-heading" className="mt-1 font-heading text-2xl font-semibold text-[#26354b]">Your selected companies</h2></div>
-          <span className="rounded-full border border-[#e9e1d5] bg-[#fffdf8] px-3 py-1.5 text-xs font-semibold text-slate-500">{companies.length} of 3 selected</span>
+          <span className="rounded-full border border-[#e9e1d5] bg-[#fffdf8] px-3 py-1.5 text-xs font-semibold text-slate-500">{companies.length} of {compareCompanyIds.length} selected profiles loaded</span>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {companies.map((company, index) => <CompanyOverview key={company.summary.companyId} company={company} index={index} />)}
@@ -233,7 +262,7 @@ export function CompanyComparison() {
                   <dl className="divide-y divide-[#f0eadd]">
                     {group.fields.map(([key, label]) => <div key={key} className="grid gap-1 py-3 sm:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] sm:gap-3">
                       <dt className="text-xs font-medium text-slate-500">{label}</dt>
-                      <dd className="min-w-0"><ValueContent value={company.raw[key]} /></dd>
+                      <dd className="min-w-0"><ValueContent value={key === "technology_stack" ? company.raw.technology_stack ?? company.raw.tech_stack : company.raw[key]} /></dd>
                     </div>)}
                   </dl>
                 </Card>

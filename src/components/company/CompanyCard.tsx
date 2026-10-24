@@ -46,7 +46,11 @@ export const CompanyCard = memo(function CompanyCard({
           <button type="button" onClick={onOpen} className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky focus-visible:ring-offset-2" aria-label={`Open ${company.name} profile`}>
             <CompanyLogo name={company.name} logoUrl={company.logoUrl} websiteUrl={company.websiteUrl} />
           </button>
-          <Badge variant="amber" className="max-w-[58%] truncate">{company.category || "Company"}</Badge>
+          <div className="flex max-w-[58%] flex-col items-end gap-1">
+            <Badge variant="amber" className="max-w-full truncate">{company.category || "Company"}</Badge>
+            {company.raw.data_status === "illustrative" && <Badge variant="purple">Fictional demo</Badge>}
+            {company.raw.data_status === "demo" && <Badge variant="outline">Sample profile</Badge>}
+          </div>
         </div>
 
         <div className="mt-4 min-w-0">

@@ -7,6 +7,7 @@ import { CompanyCard } from "@/components/company/CompanyCard";
 import { Button } from "@/components/ui/button";
 import { normalizeCompanySummary } from "@/lib/companyData";
 import { fetchCompanyDirectory } from "@/lib/companyRepository";
+import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import { useCompany } from "@/lib/companyContext";
 
 export function Index() {
@@ -80,8 +81,13 @@ export function Index() {
           </div>
 
           <div className="mt-9 max-w-3xl sm:mt-12">
+            <div className="flex flex-wrap gap-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/65 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#246b5d] shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-[#d29335]" /> Placement intelligence
+            </div>
+            <div className="inline-flex items-center rounded-full border border-white/80 bg-white/65 px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-sm backdrop-blur">
+              {isSupabaseConfigured ? "Supabase configured" : "Demo dataset · 2 fictional profiles"}
+            </div>
             </div>
             <h1 className="mt-4 max-w-3xl font-heading text-4xl font-semibold leading-[1.06] tracking-tight text-[#23334b] sm:text-5xl lg:text-6xl">
               Your next move starts with good research.

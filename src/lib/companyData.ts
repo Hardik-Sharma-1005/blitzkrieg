@@ -31,6 +31,13 @@ export interface DashboardSkill {
   requiredProficiency: string;
 }
 
+export interface CompanyDataProvenance {
+  sourceLabel: string;
+  sourceUrl: string;
+  freshnessLabel: string;
+  isIllustrative: boolean;
+}
+
 export function asRecord(value: unknown): JsonRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as JsonRecord)
@@ -115,4 +122,22 @@ export function normalizeDashboardSkills(skillLevels: unknown[]): DashboardSkill
       requiredProficiency: asString(skill.required_proficiency ?? skill.proficiency_name),
     }))
     .sort((a, b) => b.requiredLevel - a.requiredLevel || a.name.localeCompare(b.name));
+}
+
+export function getCompanyDataProvenance(
+  rawValue: unknown,
+  origin: "demo" | "supabase",
+): CompanyDataProvenance {
+  const raw = asRecord(rawValue);
+  const status = asString(raw.data_status).toLowerCase();
+  const isIllustrative = status === "illustrative";
+  const sourceLabel = asString(raw.data_source_label ?? raw.source_name ?? raw.data_source)
+    || (origin === "demo" ? "Bundled sample profile" : "Source not supplied");
+  const sourceCandidate = asString(raw.data_source_url ?? raw.source_url ?? raw.source_link);
+  const sourceUrl = /^https?:\/\//i.test(sourceCandidate) ? sourceCandidate : "";
+  const freshnessLabel = asString(
+    raw.data_as_of ?? raw.last_verified_at ?? raw.data_updated_at ?? raw.last_updated_at ?? raw.updated_at,
+  ) || (origin === "demo" ? "Not verified" : "Date not supplied");
+
+  return { sourceLabel, sourceUrl, freshnessLabel, isIllustrative };
 }

@@ -1,3 +1,66 @@
+type DemoSkill = { id: number; name: string; level: number; proficiency: string };
+
+function illustrativeCompany(
+  companyId: number,
+  name: string,
+  shortName: string,
+  category: string,
+  headquarters: string,
+  teamSize: string,
+  growth: string,
+  techStack: string,
+  aiSignal: string,
+  learning: string,
+  skills: DemoSkill[],
+) {
+  const common = {
+    name,
+    short_name: shortName,
+    category,
+    headquarters_address: headquarters,
+    employee_size: teamSize,
+    yoy_growth_rate: growth,
+    website_url: "",
+    data_status: "illustrative",
+    data_source_label: "Fictional scenario for product demonstration",
+    data_as_of: "Not applicable — fictional scenario",
+  };
+  return {
+    company_id: companyId,
+    short_json: common,
+    full_json: {
+      ...common,
+      overview_text: `${name} is a fictional employer profile created to demonstrate company research and skill comparison. It is not a real company or a statement about any employer.`,
+      technology_stack: techStack,
+      tech_stack: techStack,
+      ai_ml_adoption_level: aiSignal,
+      tech_adoption_rating: "Illustrative scenario only",
+      focus_sectors: category,
+      work_culture_summary: "Illustrative scenario only",
+      training_spend: "Not specified in this scenario",
+      onboarding_quality: "Not specified in this scenario",
+      learning_culture: learning,
+      mentorship_availability: "Illustrative peer and mentor support",
+      internal_mobility: "Not specified in this scenario",
+      promotion_clarity: "Not specified in this scenario",
+      remote_policy_details: "Not specified in this scenario",
+      future_projections: "Not specified in this scenario",
+      strategic_priorities: "Illustrative product and engineering priorities",
+      recent_news: "Not applicable — fictional scenario",
+      weaknesses_gaps: "Not specified in this scenario",
+      customer_concentration_risk: "Not specified in this scenario",
+      macro_risks: "Not specified in this scenario",
+      geopolitical_risks: "Not specified in this scenario",
+    },
+    skill_levels: skills.map(({ id, name: skillName, level, proficiency }) => ({
+      skill_set_id: id,
+      skill_set_name: skillName,
+      required_level: level,
+      required_proficiency: proficiency,
+    })),
+  };
+}
+
 export const SEED_COMPANIES = [
   {
     company_id: 1,
@@ -134,7 +197,10 @@ export const SEED_COMPANIES = [
       tech_stack: "SAP; Salesforce; AWS; Microsoft Azure; ServiceNow; Kubernetes; Python",
       cybersecurity_posture: "ISO 27001; SOC 2; Global cyber defense centers",
       partnership_ecosystem: "Microsoft; SAP; Oracle; Google; AWS; Salesforce",
-      tech_adoption_rating: "High, Industry Leader; Top-tier among peers"
+      tech_adoption_rating: "High, Industry Leader; Top-tier among peers",
+      data_status: "demo",
+      data_source_label: "Bundled demo profile; claims and figures are not independently verified",
+      data_as_of: "Not verified",
     },
        skill_levels: [
       { skill_set_id: 1, skill_set_name: "Data Structures & Algorithms", required_level: 8, required_proficiency: "Expert" },
@@ -150,5 +216,57 @@ export const SEED_COMPANIES = [
       { skill_set_id: 11, skill_set_name: "Git & Version Control", required_level: 5, required_proficiency: "Proficient" },
       { skill_set_id: 12, skill_set_name: "Generative AI Basics", required_level: 4, required_proficiency: "Intermediate" }
     ]
-  }
+  },
+  illustrativeCompany(
+    2,
+    "Northstar Digital Lab",
+    "Northstar",
+    "Product technology",
+    "Bengaluru, India",
+    "Illustrative: 1,200 employees",
+    "Illustrative: 12%",
+    "TypeScript; React; Node.js; PostgreSQL; AWS",
+    "Illustrative: experimenting with applied AI features",
+    "Illustrative: code reviews, project rotations, and guided learning",
+    [
+      { id: 1, name: "Data Structures & Algorithms", level: 7, proficiency: "Advanced" },
+      { id: 2, name: "Object-Oriented Programming", level: 6, proficiency: "Proficient" },
+      { id: 3, name: "SQL & Databases", level: 6, proficiency: "Proficient" },
+      { id: 4, name: "Cloud Fundamentals (AWS/Azure)", level: 6, proficiency: "Proficient" },
+      { id: 5, name: "Operating Systems", level: 4, proficiency: "Intermediate" },
+      { id: 6, name: "Computer Networks", level: 4, proficiency: "Intermediate" },
+      { id: 7, name: "Aptitude & Logical Reasoning", level: 6, proficiency: "Proficient" },
+      { id: 8, name: "Communication & Behavioral", level: 6, proficiency: "Proficient" },
+      { id: 9, name: "Web Development Basics", level: 8, proficiency: "Expert" },
+      { id: 10, name: "System Design (Intro)", level: 6, proficiency: "Proficient" },
+      { id: 11, name: "Git & Version Control", level: 6, proficiency: "Proficient" },
+      { id: 12, name: "Generative AI Basics", level: 6, proficiency: "Proficient" },
+    ],
+  ),
+  illustrativeCompany(
+    3,
+    "Meridian Cloud Services",
+    "Meridian Cloud",
+    "Enterprise technology",
+    "Noida, India",
+    "Illustrative: 8,000 employees",
+    "Illustrative: 8%",
+    "Java; Spring; Azure; Kubernetes; SQL",
+    "Illustrative: AI-assisted enterprise workflows",
+    "Illustrative: structured onboarding and certification paths",
+    [
+      { id: 1, name: "Data Structures & Algorithms", level: 6, proficiency: "Proficient" },
+      { id: 2, name: "Object-Oriented Programming", level: 8, proficiency: "Expert" },
+      { id: 3, name: "SQL & Databases", level: 7, proficiency: "Advanced" },
+      { id: 4, name: "Cloud Fundamentals (AWS/Azure)", level: 8, proficiency: "Expert" },
+      { id: 5, name: "Operating Systems", level: 6, proficiency: "Proficient" },
+      { id: 6, name: "Computer Networks", level: 6, proficiency: "Proficient" },
+      { id: 7, name: "Aptitude & Logical Reasoning", level: 6, proficiency: "Proficient" },
+      { id: 8, name: "Communication & Behavioral", level: 7, proficiency: "Advanced" },
+      { id: 9, name: "Web Development Basics", level: 5, proficiency: "Proficient" },
+      { id: 10, name: "System Design (Intro)", level: 7, proficiency: "Advanced" },
+      { id: 11, name: "Git & Version Control", level: 6, proficiency: "Proficient" },
+      { id: 12, name: "Generative AI Basics", level: 6, proficiency: "Proficient" },
+    ],
+  ),
 ];

@@ -11,6 +11,8 @@ export interface CompanyRecord extends CompanyDirectoryRecord {
   full_json: JsonRecord;
   skill_levels: JsonRecord[];
   topicsBySkillId: Record<number, string[]>;
+  dataOrigin: "demo" | "supabase";
+  skillDataWarnings: string[];
 }
 
 function withCompanyId(value: unknown, companyId: number): JsonRecord {
@@ -57,34 +59,43 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
       full_json: asRecord(seed.full_json),
       skill_levels: seed.skill_levels.map((skill) => asRecord(skill)),
       topicsBySkillId: {},
+      dataOrigin: "demo",
+      skillDataWarnings: [],
     };
   }
 
   const client = requireSupabase();
-  const [companyResult, skillLevelsResult] = await Promise.all([
-    client
-      .from("company_json")
-      .select("company_id, short_json, full_json")
-      .eq("company_id", companyId)
-      .maybeSingle(),
-    client
-      .from("company_skill_levels")
-      .select("skill_set_id, required_level, required_proficiency_level_id")
-      .eq("company_id", companyId),
-  ]);
-  throwIfError(companyResult.error, "Could not load this company profile");
-  throwIfError(skillLevelsResult.error, "Could not load this company's skill requirements");
+  const companyResult = await client
+    .from("company_json")
+    .select("company_id, short_json, full_json")
+    .eq("company_id", companyId)
+    .maybeSingle();
+  throwIfError(companyResult.error, "Could not load this company profile from company_json");
   if (!companyResult.data) return null;
+
+  const skillDataWarnings: string[] = [];
+  const skillLevelsResult = await client
+    .from("company_skill_levels")
+    .select("skill_set_id, required_level, required_proficiency_level_id")
+    .eq("company_id", companyId);
+  if (skillLevelsResult.error) {
+    skillDataWarnings.push("Skill requirements are unavailable. Check public SELECT access to company_skill_levels.");
+  }
 
   const skillRows = skillLevelsResult.data ?? [];
   const skillSetIds = [...new Set(skillRows.map((row) => Number(row.skill_set_id)).filter(Number.isFinite))];
 
-  const [skillSetsResult, proficienciesResult] = await Promise.all([
-    client.from("skill_set_master").select("skill_set_id, skill_set_name"),
-    client.from("proficiency_levels").select("proficiency_level_id, proficiency_name"),
-  ]);
-  throwIfError(skillSetsResult.error, "Could not load skill names");
-  throwIfError(proficienciesResult.error, "Could not load proficiency labels");
+  const [skillSetsResult, proficienciesResult] = skillSetIds.length
+    ? await Promise.all([
+        client.from("skill_set_master").select("skill_set_id, skill_set_name").in("skill_set_id", skillSetIds),
+        client.from("proficiency_levels").select("proficiency_level_id, proficiency_name"),
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
+  if (skillSetsResult.error) skillDataWarnings.push("Some skill names are unavailable. Check public SELECT access to skill_set_master.");
+  if (proficienciesResult.error) skillDataWarnings.push("Some proficiency labels are unavailable. Check public SELECT access to proficiency_levels.");
 
   const topicRowsResult = skillSetIds.length
     ? await client
@@ -94,7 +105,7 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
         .order("skill_set_id", { ascending: true })
         .order("level_number", { ascending: true })
     : { data: [], error: null };
-  throwIfError(topicRowsResult.error, "Could not load skill roadmaps");
+  if (topicRowsResult.error) skillDataWarnings.push("Database skill roadmaps are unavailable; built-in roadmaps remain available where provided.");
 
   const skillNames = new Map(
     (skillSetsResult.data ?? []).map((row) => [Number(row.skill_set_id), asString(row.skill_set_name)]),
@@ -137,5 +148,7 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
     full_json: asRecord(companyResult.data.full_json),
     skill_levels: skillLevels,
     topicsBySkillId,
+    dataOrigin: "supabase",
+    skillDataWarnings,
   };
 }

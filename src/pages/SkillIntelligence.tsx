@@ -1,14 +1,29 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, LockKeyhole } from "lucide-react";
+import { ChevronDown, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { DataProvenance } from "@/components/company/DataProvenance";
 import { getSkillTopics } from "@/data/skillTopics";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
 import { normalizeCompanyProfile, normalizeDashboardSkills } from "@/lib/companyData";
 import { useCompany } from "@/lib/companyContext";
+
+const SKILL_RATINGS_KEY = "student-skill-ratings";
+
+function readSkillRatings(): Record<string, number> {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(SKILL_RATINGS_KEY) ?? "{}");
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(Object.entries(value)
+      .filter(([, rating]) => Number.isInteger(rating) && Number(rating) >= 1 && Number(rating) <= 10)
+      .map(([name, rating]) => [name, Number(rating)]));
+  } catch {
+    return {};
+  }
+}
 
 const bloom = [
   { code: "CU", label: "Remember", className: "border-[#c9e6ef] bg-[#e8f5f8] text-[#276377]" },
@@ -35,6 +50,7 @@ function criticalityFor(score: number) {
 export function SkillIntelligence() {
   const { selectedCompany } = useCompany();
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [skillRatings, setSkillRatings] = useState<Record<string, number>>(readSkillRatings);
   const companyQuery = useQuery({
     queryKey: ["company-record", selectedCompany?.companyId],
     queryFn: () => fetchCompanyRecord(selectedCompany!.companyId),
@@ -46,6 +62,33 @@ export function SkillIntelligence() {
     [company],
   );
   const skills = useMemo(() => normalizeDashboardSkills(company?.skill_levels ?? []), [company]);
+  const ratedSkills = skills.filter((skill) => skillRatings[skill.name] !== undefined);
+  const readySkills = ratedSkills.filter((skill) => skillRatings[skill.name] >= skill.requiredLevel);
+  const biggestGaps = ratedSkills
+    .map((skill) => ({ name: skill.name, gap: Math.max(0, skill.requiredLevel - skillRatings[skill.name]) }))
+    .filter((skill) => skill.gap > 0)
+    .sort((a, b) => b.gap - a.gap || a.name.localeCompare(b.name))
+    .slice(0, 3);
+
+  const updateSkillRating = (skillName: string, value: number | null) => {
+    setSkillRatings((current) => {
+      const next = { ...current };
+      if (value === null) delete next[skillName];
+      else next[skillName] = value;
+      try {
+        if (Object.keys(next).length) localStorage.setItem(SKILL_RATINGS_KEY, JSON.stringify(next));
+        else localStorage.removeItem(SKILL_RATINGS_KEY);
+      } catch {
+        // The current page remains usable when browser storage is unavailable.
+      }
+      return next;
+    });
+  };
+
+  const clearSkillRatings = () => {
+    try { localStorage.removeItem(SKILL_RATINGS_KEY); } catch { /* State still resets for this visit. */ }
+    setSkillRatings({});
+  };
   if (companyQuery.isPending) return <div className="mx-auto max-w-xl p-10 text-center text-sm text-slate-500">Loading skill intelligence…</div>;
   if (companyQuery.isError || !company || !profile) return (
     <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
@@ -64,7 +107,12 @@ export function SkillIntelligence() {
             <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
             <div><p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]">Skill intelligence</p><h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-[#26354b] sm:text-3xl">{profile.shortName} Skill Intelligence</h1><p className="mt-1 text-sm text-slate-600">Required skills and target learning levels</p></div>
           </div>
+          <div className="relative mt-4"><DataProvenance raw={profile.raw} origin={company.dataOrigin} compact /></div>
         </div>
+
+        {company.skillDataWarnings.length > 0 && <div role="status" className="mt-4 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">
+          {company.skillDataWarnings.join(" ")}
+        </div>}
 
         <div className="mt-7 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
           <Card className="p-4 sm:p-5">
@@ -81,7 +129,25 @@ export function SkillIntelligence() {
           </Card>
         </div>
 
+        <Card className="mt-4 border-[#dce9de] bg-gradient-to-br from-[#f2f8f0] to-[#fffdf8] p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]"><Sparkles className="h-3.5 w-3.5" /> Your skill match</p>
+              <h2 className="mt-1 font-heading text-lg font-semibold text-[#26354b]">
+                {ratedSkills.length ? `${readySkills.length} of ${ratedSkills.length} rated skills meet the target` : "Build your personal readiness snapshot"}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">Rate yourself from 1–10 below. Your ratings stay in this browser and are never sent to the company database.</p>
+            </div>
+            {ratedSkills.length > 0 && <button type="button" onClick={clearSkillRatings} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:bg-white hover:text-slate-800"><RotateCcw className="h-3.5 w-3.5" /> Reset ratings</button>}
+          </div>
+          {biggestGaps.length > 0 && <div className="mt-4 flex flex-wrap items-center gap-2" aria-live="polite">
+            <span className="text-xs font-semibold text-slate-600">Largest gaps</span>
+            {biggestGaps.map((item) => <span key={item.name} className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#76591d] shadow-sm">{item.name} · +{item.gap} levels to target</span>)}
+          </div>}
+        </Card>
+
         <div className="mb-4 mt-8 flex items-end justify-between gap-3"><div><h2 className="font-heading text-xl font-semibold text-[#26354b]">Required capabilities</h2><p className="mt-1 text-sm text-slate-500">{skills.length} skills ranked by target proficiency.</p></div><Badge variant="outline">10-level roadmap</Badge></div>
+        {skills.length === 0 && <Card className="p-6 text-sm leading-6 text-slate-500">No company skill requirements are available yet. The company profile remains available while skill data is added.</Card>}
         <div className="space-y-3">
             {skills.map((skill) => {
             const bloomLevel = bloomFor(skill.requiredLevel);
@@ -97,6 +163,25 @@ export function SkillIntelligence() {
                   <span className="hidden min-w-[112px] text-right sm:block"><span className="block text-lg font-semibold tabular-nums text-slate-900">{skill.requiredLevel}<span className="text-sm text-slate-400">/10</span></span><span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#eee8dc]"><span className="block h-full rounded-full bg-[#399173]" style={{ width: `${skill.requiredLevel * 10}%` }} /></span></span>
                   <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
                 </button>
+                <div className="flex flex-col gap-2 border-t border-[#f0eadd] bg-[#fffdf8] px-4 py-3 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+                  <label htmlFor={`self-rating-${skill.id}`} className="shrink-0 text-xs font-semibold text-slate-600">Your current level</label>
+                  <select
+                    id={`self-rating-${skill.id}`}
+                    value={skillRatings[skill.name] ?? ""}
+                    onChange={(event) => updateSkillRating(skill.name, event.target.value ? Number(event.target.value) : null)}
+                    className="min-h-10 rounded-xl border border-[#e4dbca] bg-white px-3 text-sm text-slate-700 outline-none focus:border-[#80b7a4] focus:ring-4 focus:ring-[#dff0e5]"
+                  >
+                    <option value="">Not rated</option>
+                    {Array.from({ length: 10 }, (_, index) => index + 1).map((level) => <option key={level} value={level}>Level {level}</option>)}
+                  </select>
+                  <span className="text-xs text-slate-500">
+                    {skillRatings[skill.name] === undefined
+                      ? `Target: ${skill.requiredLevel}/10`
+                      : skillRatings[skill.name] >= skill.requiredLevel
+                        ? `At target · ${skill.requiredLevel}/10 required`
+                        : `${skill.requiredLevel - skillRatings[skill.name]} levels to target`}
+                  </span>
+                </div>
                 <AnimatePresence initial={false}>
                 {isOpen && <motion.div key="roadmap" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.24, ease: "easeOut" }} className="overflow-hidden">
                 <CardContent className="border-t border-[#eee8dc] bg-[#faf7f0] px-4 pt-4 sm:px-5">

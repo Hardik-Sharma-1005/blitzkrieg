@@ -29,7 +29,7 @@ function LayoutContent() {
             </Link>
             <div className="hidden items-center gap-2 text-xs text-slate-400 sm:flex">
               <span className={`h-2 w-2 rounded-full ${isSupabaseConfigured ? "bg-emerald-500" : "bg-amber-400"}`} />
-              {isSupabaseConfigured ? "Supabase data" : "Seed data preview"}
+              {isSupabaseConfigured ? "Supabase configured" : "Demo dataset"}
             </div>
           </div>
         </header>
