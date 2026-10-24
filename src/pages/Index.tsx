@@ -95,6 +95,7 @@ export function Index() {
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
               Explore company profiles, skill expectations, and career signals before campus placements.
             </p>
+            <Button className="mt-5" onClick={() => navigate("/jd-analytics")}>Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
           </div>
 
           <div className="mt-8 grid max-w-5xl gap-3 sm:grid-cols-[minmax(0,1fr)_220px_190px]">

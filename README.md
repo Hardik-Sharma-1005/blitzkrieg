@@ -6,11 +6,12 @@ The college name used in the interface is **JSS University, Noida**, with the sh
 
 ## Run locally
 
-1. Install Node.js 20.19+ or 22.12+.
-2. Run `npm install`.
-3. Run `npm run dev` and open the local address shown in the terminal.
+1. Install Node.js 20.19+ or 22.12+ and Python 3.12+.
+2. Install frontend dependencies with `npm install` and backend dependencies from `backend/` with `pip install -r requirements.txt`.
+3. Configure `backend/.env` with `OPENROUTER_API_KEY` if you want to use JD Analytics extraction.
+4. Run `py temprunner.py` from the project root. It starts both services, opens the site at `http://127.0.0.1:5173`, and stops them when you press Ctrl+C.
 
-Run `npm run build` to create a production build.
+You can still run only the frontend with `npm run dev`.
 
 ## Quick demo path
 
@@ -42,5 +43,30 @@ On the Skill Intelligence page, students can optionally rate themselves against 
 - `/company/intelligence` — 22 company profile sections
 - `/company/skills` — required skills and 10-level topic ladders
 - `/company/compare` — side-by-side comparison of up to three companies, with partial results if one profile cannot load
+- /jd-analytics — extract a JD skill list for Skill Matching
 
 Selected company, comparison shortlist, and optional skill self-ratings are stored in browser local storage so direct refreshes on company routes continue to work.
+
+## JD Analytics feature
+
+The JD Analytics screen is available from the home page and company sidebar at `/jd-analytics`. It accepts PDF/DOCX job descriptions, calls the RADIX extraction backend, displays the extracted skills, and lets the user download the Stage 1 JSON for Stage 5. The backend also writes the same response to its local `output/` folder when that filesystem is writable. The existing Supabase company data remains read-only; JD results are not inserted into Supabase.
+
+### Run the integrated app locally
+
+The integrated launcher above starts both services. For manual startup, use Python 3.12 or newer for the API:
+
+```powershell
+cd backend
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+# Add OPENROUTER_API_KEY in backend/.env
+uvicorn app.main:app --reload --port 8000
+```
+
+At the project root, copy `.env.example` to `.env.local` and set the Supabase values if you want live company data. `VITE_JD_ANALYTICS_API_URL` defaults to `http://127.0.0.1:8000` for local development. The OpenRouter key belongs only in `backend/.env`; never put it in a `VITE_` variable.
+
+### Hosted frontend
+
+The static Vercel frontend needs a separately reachable Stage 1 API. Set `VITE_JD_ANALYTICS_API_URL` in the Vercel project to that API's base URL, and configure the exact frontend origin in the backend's `CORS_ORIGINS`. Put `OPENROUTER_API_KEY` in the backend host's secret environment. Some serverless hosts have temporary filesystems, so the browser's **Download JSON** action is the portable way to keep a handoff file there; a persistent `output/` folder requires a backend host with persistent storage.

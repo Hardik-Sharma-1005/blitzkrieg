@@ -1,0 +1,552 @@
+{
+  "$schema": "../schemas/talent_check_company_skillsets.schema.json",
+  "schema_version": "1.0.0",
+  "source_basis": "provided_job_descriptions",
+  "profile_unit": "company_role",
+  "not_stated_policy": "Mark a category not_stated only after reviewing the JD; never infer a requirement from the employer name alone.",
+  "taxonomy": {
+    "id": "RADIX-12",
+    "version": "1.0.0",
+    "categories": {
+      "COD": "Coding",
+      "DSA": "Data Structures & Algorithms",
+      "OOD": "Object-Oriented Design",
+      "APTI": "Aptitude",
+      "COMM": "Communication",
+      "AI": "Artificial Intelligence",
+      "CLOUD": "Cloud",
+      "SQL": "SQL & Databases",
+      "SWE": "Software Engineering",
+      "SYSD": "System Design",
+      "NETW": "Networking",
+      "OS": "Operating Systems",
+      "OTHER": "Other"
+    }
+  },
+  "skill_level_scale": {
+    "1": {
+      "label": "Awareness",
+      "description": "Can recognize core concepts and explain basic terminology; needs guidance."
+    },
+    "2": {
+      "label": "Foundational",
+      "description": "Can handle simple, well-scoped tasks with support."
+    },
+    "3": {
+      "label": "Working",
+      "description": "Can independently perform common role-relevant tasks."
+    },
+    "4": {
+      "label": "Advanced",
+      "description": "Can handle complex tasks, troubleshoot issues, and choose effective approaches."
+    },
+    "5": {
+      "label": "Expert",
+      "description": "Can lead complex work, make high-impact decisions, and guide others."
+    }
+  },
+  "importance_weight_scale": {
+    "1": {
+      "label": "Peripheral",
+      "description": "A supplementary signal mentioned briefly or as a minor advantage."
+    },
+    "2": {
+      "label": "Useful",
+      "description": "Helpful to performance but limited in scope or frequency."
+    },
+    "3": {
+      "label": "Relevant",
+      "description": "Meaningful to recurring responsibilities in the role."
+    },
+    "4": {
+      "label": "Important",
+      "description": "Strongly connected to several core responsibilities."
+    },
+    "5": {
+      "label": "Core",
+      "description": "Explicitly essential or central to the main responsibilities."
+    }
+  },
+  "companies": [
+    {
+      "company_id": "google-llc",
+      "company_name": "Google LLC",
+      "roles": [
+        {
+          "role_id": "google-data-scientist",
+          "role_title": "Data Scientist",
+          "source": {
+            "canonical_document_id": "jd-google-data-scientist",
+            "posting_date": null,
+            "copies": [
+              {
+                "format": "pdf",
+                "path_within_archive": "Talent Match Hackathon/JDs/PDF/Google LLC - Data Scientist.pdf"
+              },
+              {
+                "format": "docx",
+                "path_within_archive": "Talent Match Hackathon/JDs/Word/Google LLC - Data Scientist.docx"
+              }
+            ]
+          },
+          "analysis": {
+            "status": "not_started",
+            "reviewed_at": null,
+            "reviewed_by": []
+          },
+          "skillsets": {
+            "COD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "DSA": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OOD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "APTI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "COMM": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "AI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "CLOUD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SQL": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SWE": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SYSD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "NETW": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OS": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OTHER": {
+              "status": "not_assessed",
+              "requirements": []
+            }
+          }
+        },
+        {
+          "role_id": "google-software-engineer",
+          "role_title": "Software Engineer",
+          "source": {
+            "canonical_document_id": "jd-google-software-engineer",
+            "posting_date": null,
+            "copies": [
+              {
+                "format": "pdf",
+                "path_within_archive": "Talent Match Hackathon/JDs/PDF/Google LLC - Software Engineer.pdf"
+              },
+              {
+                "format": "docx",
+                "path_within_archive": "Talent Match Hackathon/JDs/Word/Google LLC - Software Engineer.docx"
+              }
+            ]
+          },
+          "analysis": {
+            "status": "not_started",
+            "reviewed_at": null,
+            "reviewed_by": []
+          },
+          "skillsets": {
+            "COD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "DSA": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OOD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "APTI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "COMM": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "AI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "CLOUD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SQL": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SWE": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SYSD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "NETW": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OS": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OTHER": {
+              "status": "not_assessed",
+              "requirements": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "company_id": "microsoft",
+      "company_name": "Microsoft",
+      "roles": [
+        {
+          "role_id": "microsoft-data-analyst",
+          "role_title": "Data Analyst",
+          "source": {
+            "canonical_document_id": "jd-microsoft-data-analyst",
+            "posting_date": null,
+            "copies": [
+              {
+                "format": "pdf",
+                "path_within_archive": "Talent Match Hackathon/JDs/PDF/Microsoft - Data Analyst.pdf"
+              },
+              {
+                "format": "docx",
+                "path_within_archive": "Talent Match Hackathon/JDs/Word/Microsoft - Data Analyst.docx"
+              }
+            ]
+          },
+          "analysis": {
+            "status": "not_started",
+            "reviewed_at": null,
+            "reviewed_by": []
+          },
+          "skillsets": {
+            "COD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "DSA": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OOD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "APTI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "COMM": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "AI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "CLOUD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SQL": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SWE": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SYSD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "NETW": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OS": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OTHER": {
+              "status": "not_assessed",
+              "requirements": []
+            }
+          }
+        },
+        {
+          "role_id": "microsoft-software-engineer",
+          "role_title": "Software Engineer",
+          "source": {
+            "canonical_document_id": "jd-microsoft-software-engineer",
+            "posting_date": null,
+            "copies": [
+              {
+                "format": "pdf",
+                "path_within_archive": "Talent Match Hackathon/JDs/PDF/Microsoft - Software Engineer.pdf"
+              },
+              {
+                "format": "docx",
+                "path_within_archive": "Talent Match Hackathon/JDs/Word/Microsoft - Software Engineer.docx"
+              }
+            ]
+          },
+          "analysis": {
+            "status": "not_started",
+            "reviewed_at": null,
+            "reviewed_by": []
+          },
+          "skillsets": {
+            "COD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "DSA": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OOD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "APTI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "COMM": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "AI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "CLOUD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SQL": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SWE": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SYSD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "NETW": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OS": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OTHER": {
+              "status": "not_assessed",
+              "requirements": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "company_id": "oracle",
+      "company_name": "Oracle Financial Services Software Limited",
+      "roles": [
+        {
+          "role_id": "oracle-application-support-analyst",
+          "role_title": "Application Support Analyst",
+          "source": {
+            "canonical_document_id": "jd-oracle-application-support-analyst",
+            "posting_date": null,
+            "copies": [
+              {
+                "format": "pdf",
+                "path_within_archive": "Talent Match Hackathon/JDs/PDF/Oracle - Application Support Analyst.pdf"
+              },
+              {
+                "format": "docx",
+                "path_within_archive": "Talent Match Hackathon/JDs/Word/Oracle - Application Support Analyst.docx"
+              }
+            ]
+          },
+          "analysis": {
+            "status": "not_started",
+            "reviewed_at": null,
+            "reviewed_by": []
+          },
+          "skillsets": {
+            "COD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "DSA": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OOD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "APTI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "COMM": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "AI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "CLOUD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SQL": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SWE": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SYSD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "NETW": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OS": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OTHER": {
+              "status": "not_assessed",
+              "requirements": []
+            }
+          }
+        },
+        {
+          "role_id": "oracle-associate-software-engineer",
+          "role_title": "Associate Software Engineer",
+          "source": {
+            "canonical_document_id": "jd-oracle-associate-software-engineer",
+            "posting_date": null,
+            "copies": [
+              {
+                "format": "pdf",
+                "path_within_archive": "Talent Match Hackathon/JDs/PDF/Oracle - Associate Software Engineer.pdf"
+              },
+              {
+                "format": "docx",
+                "path_within_archive": "Talent Match Hackathon/JDs/Word/Oracle - Associate Software Engineer.docx"
+              }
+            ]
+          },
+          "analysis": {
+            "status": "not_started",
+            "reviewed_at": null,
+            "reviewed_by": []
+          },
+          "skillsets": {
+            "COD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "DSA": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OOD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "APTI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "COMM": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "AI": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "CLOUD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SQL": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SWE": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "SYSD": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "NETW": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OS": {
+              "status": "not_assessed",
+              "requirements": []
+            },
+            "OTHER": {
+              "status": "not_assessed",
+              "requirements": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RADIX JD Analytics handoff to Skill Matching",
+  "description": "One job description's extracted skill list, consumed by the Skill Matching stage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_type", "source_file", "company", "role", "skills"],
+  "properties": {
+    "source_type": { "const": "jd" },
+    "source_file": { "type": "string", "minLength": 1 },
+    "company": { "type": "string" },
+    "role": { "type": "string" },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill_name", "category_code", "evidence", "confidence"],
+        "properties": {
+          "skill_name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "category_code": {
+            "enum": ["COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS", "OTHER"]
+          },
+          "evidence": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "confidence": { "enum": ["high", "medium", "low"] }
+        }
+      }
+    }
+  }
+}
+
