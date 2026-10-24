@@ -1,0 +1,135 @@
+{
+  "source_type": "resume",
+  "source_file": "Rohan Verma.pdf",
+  "cv_file": "Rohan Verma.pdf",
+  "name": "Rohan Verma",
+  "email": "",
+  "education": [
+    "B.Tech, Computer Science and Engineering, Class of 2026 \u2014 CGPA 9.1 / 10"
+  ],
+  "projects": [
+    "Designed and built a scalable notification service (pub-sub architecture, horizontally-",
+    "scalable workers) as a personal system-design project, documented with architecture",
+    "diagrams",
+    "Built a recommendation engine using collaborative filtering on a movie-ratings dataset,",
+    "evaluated with precision/recall",
+    "Wrote a technical blog series on object-oriented design patterns used in real-world",
+    "systems"
+  ],
+  "hackathons": [
+    "Winner, national inter-college hackathon \u2014 built a real-time collaborative document editor",
+    "including tests and CI"
+  ],
+  "internships": [
+    "Software Engineering intern at a Series-B startup \u2014 shipped a feature end-to-end"
+  ],
+  "certifications": [],
+  "achievements": [
+    "500+ problems solved across competitive programming platforms; open-source contributor (2",
+    "merged PRs to a mid-size Python library)"
+  ],
+  "preferred_roles": [
+    "Software Engineer",
+    "Data Scientist",
+    "Backend Engineer"
+  ],
+  "skills": [
+    {
+      "skill_name": "Python",
+      "category_code": "COD",
+      "evidence": "### Technical Skills C++, Python, SQL, Data Structures & Algor...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Data Structures",
+      "category_code": "DSA",
+      "evidence": "...ical Skills C++, Python, SQL, Data Structures & Algorithms, System Design,...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Algorithms",
+      "category_code": "DSA",
+      "evidence": "...ython, SQL, Data Structures & Algorithms, System Design, Object-Orient...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Competitive Programming",
+      "category_code": "DSA",
+      "evidence": "...s 500+ problems solved across competitive programming platforms; open-source contri...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Object-Oriented Design",
+      "category_code": "OOD",
+      "evidence": "...& Algorithms, System Design, Object-Oriented Design, Operating Systems, basic Mac...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Design Patterns",
+      "category_code": "OOD",
+      "evidence": "...log series on object-oriented design patterns used in real-world systems  #...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Technical Writing",
+      "category_code": "COMM",
+      "evidence": "...th precision/recall \u2022 Wrote a technical blog series on object-oriented des...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Machine Learning",
+      "category_code": "AI",
+      "evidence": "...ign, Operating Systems, basic Machine Learning, Git, Docker  ### Projects \u2022...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Recommendation Systems",
+      "category_code": "AI",
+      "evidence": "...chitecture diagrams \u2022 Built a recommendation engine using collaborative filtering...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Docker",
+      "category_code": "CLOUD",
+      "evidence": "...basic Machine Learning, Git, Docker  ### Projects \u2022 Designed and...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "CI/CD",
+      "category_code": "CLOUD",
+      "evidence": "...nd-to-end including tests and CI  ### Achievements 500+ proble...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "SQL",
+      "category_code": "SQL",
+      "evidence": "...Technical Skills C++, Python, SQL, Data Structures & Algorithms...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Git",
+      "category_code": "SWE",
+      "evidence": "...tems, basic Machine Learning, Git, Docker  ### Projects \u2022 Desig...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "System Design",
+      "category_code": "SYSD",
+      "evidence": "...Data Structures & Algorithms, System Design, Object-Oriented Design, Oper...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Message Architecture (Pub-Sub)",
+      "category_code": "SYSD",
+      "evidence": "...Designed and built a scalable notification service (pub-sub architecture, horizo...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Operating Systems",
+      "category_code": "OS",
+      "evidence": "...sign, Object-Oriented Design, Operating Systems, basic Machine Learning, Git,...",
+      "confidence": "high"
+    }
+  ],
+  "extraction_mode": "offline_heuristic"
+}

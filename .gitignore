@@ -3,3 +3,10 @@ dist/
 .env
 .env.local
 *.tsbuildinfo
+.output/
+.wrangler/
+.tanstack/
+.lovable/
+__pycache__/
+*.pyc
+.venv/

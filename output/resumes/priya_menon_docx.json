@@ -1,0 +1,75 @@
+{
+  "source_type": "resume",
+  "source_file": "Priya Menon.docx",
+  "cv_file": "Priya Menon.docx",
+  "name": "Priya Menon",
+  "email": "",
+  "education": [
+    "B.Tech, Information Technology, Class of 2026 \u2014 CGPA 7.4 / 10"
+  ],
+  "projects": [
+    "Built a simple student attendance tracker using Java and a MySQL backend for a college project",
+    "Contributed to a college helpdesk simulation project, resolving simulated tickets and logging resolutions"
+  ],
+  "hackathons": [
+    "Participated (non-finalist), 12-hour campus hackathon"
+  ],
+  "internships": [
+    "Summer intern, IT support desk at a local business \u2014 handled first-level troubleshooting and escalations"
+  ],
+  "certifications": [
+    "Cisco Networking Basics (online course)"
+  ],
+  "achievements": [
+    "Volunteer coordinator for a college technical fest, coordinating logistics across teams"
+  ],
+  "preferred_roles": [
+    "Application Support Analyst",
+    "Associate Software Engineer"
+  ],
+  "skills": [
+    {
+      "skill_name": "Java",
+      "category_code": "COD",
+      "evidence": "...Technical Skills SQL (basic), Java, Linux basics, Networking fun...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "SQL",
+      "category_code": "SQL",
+      "evidence": "### Technical Skills SQL (basic), Java, Linux basics,...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Relational Databases",
+      "category_code": "SQL",
+      "evidence": "...ance tracker using Java and a MySQL backend for a college project...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Computer Networks",
+      "category_code": "NETW",
+      "evidence": "...(basic), Java, Linux basics, Networking fundamentals, MS Excel, expos...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Linux",
+      "category_code": "OS",
+      "evidence": "...cal Skills SQL (basic), Java, Linux basics, Networking fundamenta...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "MS Excel",
+      "category_code": "OTHER",
+      "evidence": "..., Networking fundamentals, MS Excel, exposure to ticketing tools...",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Ticketing & IT Support",
+      "category_code": "OTHER",
+      "evidence": "...entals, MS Excel, exposure to ticketing tools  ### Projects Built a simple...",
+      "confidence": "high"
+    }
+  ],
+  "extraction_mode": "offline_heuristic"
+}
