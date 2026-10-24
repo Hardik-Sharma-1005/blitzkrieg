@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RADIX Talent Match company skillsets",
+  "description": "Shared contract for evidence-backed job-description requirements, grouped by company role and RADIX category.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "source_basis",
+    "profile_unit",
+    "not_stated_policy",
+    "taxonomy",
+    "skill_level_scale",
+    "importance_weight_scale",
+    "companies"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "../schemas/talent_check_company_skillsets.schema.json"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "source_basis": {
+      "const": "provided_job_descriptions"
+    },
+    "profile_unit": {
+      "const": "company_role"
+    },
+    "not_stated_policy": {
+      "const": "Mark a category not_stated only after reviewing the JD; never infer a requirement from the employer name alone."
+    },
+    "taxonomy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "categories"],
+      "properties": {
+        "id": {
+          "const": "RADIX-12"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "categories": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS", "OTHER"],
+          "properties": {
+            "COD": { "const": "Coding" },
+            "DSA": { "const": "Data Structures & Algorithms" },
+            "OOD": { "const": "Object-Oriented Design" },
+            "APTI": { "const": "Aptitude" },
+            "COMM": { "const": "Communication" },
+            "AI": { "const": "Artificial Intelligence" },
+            "CLOUD": { "const": "Cloud" },
+            "SQL": { "const": "SQL & Databases" },
+            "SWE": { "const": "Software Engineering" },
+            "SYSD": { "const": "System Design" },
+            "NETW": { "const": "Networking" },
+            "OS": { "const": "Operating Systems" },
+            "OTHER": { "const": "Other" }
+          }
+        }
+      }
+    },
+    "skill_level_scale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["1", "2", "3", "4", "5"],
+      "properties": {
+        "1": { "$ref": "#/$defs/rubricEntry" },
+        "2": { "$ref": "#/$defs/rubricEntry" },
+        "3": { "$ref": "#/$defs/rubricEntry" },
+        "4": { "$ref": "#/$defs/rubricEntry" },
+        "5": { "$ref": "#/$defs/rubricEntry" }
+      }
+    },
+    "importance_weight_scale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["1", "2", "3", "4", "5"],
+      "properties": {
+        "1": { "$ref": "#/$defs/rubricEntry" },
+        "2": { "$ref": "#/$defs/rubricEntry" },
+        "3": { "$ref": "#/$defs/rubricEntry" },
+        "4": { "$ref": "#/$defs/rubricEntry" },
+        "5": { "$ref": "#/$defs/rubricEntry" }
+      }
+    },
+    "companies": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/company" }
+    }
+  },
+  "$defs": {
+    "rubricEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "description"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    },
+    "company": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["company_id", "company_name", "roles"],
+      "properties": {
+        "company_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "company_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/role" }
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role_id", "role_title", "source", "analysis", "skillsets"],
+      "properties": {
+        "role_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "role_title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["canonical_document_id", "posting_date", "copies"],
+          "properties": {
+            "canonical_document_id": {
+              "type": "string",
+              "pattern": "^jd-[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            "posting_date": {
+              "oneOf": [
+                { "type": "string", "format": "date" },
+                { "type": "null" }
+              ]
+            },
+            "copies": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "$ref": "#/$defs/sourceCopy" },
+              "allOf": [
+                {
+                  "contains": {
+                    "type": "object",
+                    "properties": { "format": { "const": "pdf" } },
+                    "required": ["format"]
+                  },
+                  "minContains": 1,
+                  "maxContains": 1
+                },
+                {
+                  "contains": {
+                    "type": "object",
+                    "properties": { "format": { "const": "docx" } },
+                    "required": ["format"]
+                  },
+                  "minContains": 1,
+                  "maxContains": 1
+                }
+              ]
+            }
+          }
+        },
+        "analysis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reviewed_at", "reviewed_by"],
+          "properties": {
+            "status": {
+              "enum": ["not_started", "in_progress", "reviewed"]
+            },
+            "reviewed_at": {
+              "oneOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ]
+            },
+            "reviewed_by": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        },
+        "skillsets": {
+          "$ref": "#/$defs/skillsets"
+        }
+      }
+    },
+    "sourceCopy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "path_within_archive"],
+      "properties": {
+        "format": {
+          "enum": ["pdf", "docx"]
+        },
+        "path_within_archive": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "skillsets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS", "OTHER"],
+      "properties": {
+        "COD": { "$ref": "#/$defs/categoryAssessment" },
+        "DSA": { "$ref": "#/$defs/categoryAssessment" },
+        "OOD": { "$ref": "#/$defs/categoryAssessment" },
+        "APTI": { "$ref": "#/$defs/categoryAssessment" },
+        "COMM": { "$ref": "#/$defs/categoryAssessment" },
+        "AI": { "$ref": "#/$defs/categoryAssessment" },
+        "CLOUD": { "$ref": "#/$defs/categoryAssessment" },
+        "SQL": { "$ref": "#/$defs/categoryAssessment" },
+        "SWE": { "$ref": "#/$defs/categoryAssessment" },
+        "SYSD": { "$ref": "#/$defs/categoryAssessment" },
+        "NETW": { "$ref": "#/$defs/categoryAssessment" },
+        "OS": { "$ref": "#/$defs/categoryAssessment" },
+        "OTHER": { "$ref": "#/$defs/categoryAssessment" }
+      }
+    },
+    "categoryAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "requirements"],
+      "properties": {
+        "status": {
+          "enum": ["not_assessed", "not_stated", "specified"],
+          "description": "not_assessed means review is pending; not_stated means the reviewed JD has no supported requirement in this category."
+        },
+        "requirements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/requirement" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "specified" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": { "requirements": { "minItems": 1 } }
+          },
+          "else": {
+            "properties": { "requirements": { "maxItems": 0 } }
+          }
+        }
+      ]
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_id",
+        "skill_name",
+        "requirement_type",
+        "target_level",
+        "target_level_basis",
+        "importance_weight",
+        "importance_weight_basis",
+        "interpretation_confidence",
+        "evidence"
+      ],
+      "properties": {
+        "requirement_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "skill_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A normalized, specific skill or competency supported by the cited JD evidence."
+        },
+        "requirement_type": {
+          "enum": ["required", "preferred", "nice_to_have"]
+        },
+        "target_level": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 5 },
+            { "type": "null" }
+          ]
+        },
+        "target_level_basis": {
+          "enum": ["explicit", "inferred", "not_specified"]
+        },
+        "importance_weight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "importance_weight_basis": {
+          "enum": ["explicit", "inferred"]
+        },
+        "interpretation_confidence": {
+          "enum": ["high", "medium", "low"],
+          "description": "Confidence in the analyst's category and requirement classification."
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidence" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "target_level": { "type": "null" } },
+            "required": ["target_level"]
+          },
+          "then": {
+            "properties": { "target_level_basis": { "const": "not_specified" } }
+          },
+          "else": {
+            "properties": { "target_level_basis": { "enum": ["explicit", "inferred"] } }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "page", "section", "excerpt"],
+      "properties": {
+        "format": {
+          "enum": ["pdf", "docx"]
+        },
+        "page": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ],
+          "description": "Use null when a stable page number is unavailable, such as in a Word source."
+        },
+        "section": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "excerpt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A short, exact excerpt from the cited source copy."
+        }
+      }
+    }
+  }
+}
