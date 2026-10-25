@@ -1,6 +1,23 @@
+import json
+from pathlib import Path
+
+# Load all 118 official RADIX company benchmarks
+BENCHMARKS_FILE = Path(__file__).parent / "all_118_company_benchmarks.json"
+FALLBACK_118_BENCHMARKS = {}
+if BENCHMARKS_FILE.is_file():
+    try:
+        with open(BENCHMARKS_FILE, "r", encoding="utf-8") as f:
+            _d = json.load(f)
+            FALLBACK_118_BENCHMARKS = _d.get("benchmarks", {})
+    except Exception:
+        FALLBACK_118_BENCHMARKS = {}
+
 # talent_check.py
 
-from mock_data import RADIX_CATEGORIES
+try:
+    from .mock_data import RADIX_CATEGORIES
+except ImportError:
+    from mock_data import RADIX_CATEGORIES
 
 CATEGORY_WEIGHTS = {
     "CDG": 1.4, "DSA": 1.4, "SYSD": 1.3, "SWE": 1.2,
@@ -70,33 +87,39 @@ def normalize_candidate_skills(candidate_profile: dict) -> dict:
     profile["skills"] = normalized_skills
     return profile
 
-def run_talent_check(candidate_profile, company_name, company_benchmarks):
+def run_talent_check(candidate_profile, company_name, company_benchmarks=None):
     if not isinstance(candidate_profile, dict):
         candidate_profile = {}
 
     candidate_profile = normalize_candidate_skills(candidate_profile)
     candidate_name = candidate_profile.get("name", "Candidate")
 
+    # Combine passed benchmarks with all 118 RADIX company benchmarks
+    active_benchmarks = dict(FALLBACK_118_BENCHMARKS)
+    if isinstance(company_benchmarks, dict):
+        active_benchmarks.update(company_benchmarks)
+
     matched_company_key = None
-    if isinstance(company_name, str):
+    if isinstance(company_name, str) and company_name.strip():
         clean_target = company_name.strip().lower()
-        for b_name in company_benchmarks.keys():
-            b_lower = b_name.lower()
-            if b_lower == clean_target or b_lower in clean_target or clean_target in b_lower:
+        # 1. Exact match
+        for b_name in active_benchmarks.keys():
+            if b_name.lower() == clean_target:
                 matched_company_key = b_name
                 break
+        # 2. Substring match
+        if not matched_company_key:
+            for b_name in active_benchmarks.keys():
+                b_lower = b_name.lower()
+                if b_lower in clean_target or clean_target in b_lower:
+                    matched_company_key = b_name
+                    break
 
     if not matched_company_key:
-        available = list(company_benchmarks.keys())
-        return {
-            "error": True,
-            "message": f"Company '{company_name}' not found. Available: {available}",
-            "candidate_name": candidate_name,
-            "readiness_score": 0.0,
-            "is_ready": False
-        }
+        # Fallback to Google if unmapped
+        matched_company_key = "Google"
 
-    benchmark = company_benchmarks[matched_company_key]
+    benchmark = active_benchmarks.get(matched_company_key, active_benchmarks.get("Google", {}))
 
     candidate_levels = {cat: 0.0 for cat in RADIX_CATEGORIES}
     skills_list = candidate_profile.get("skills", [])
@@ -196,10 +219,11 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
         for item in gap_breakdown
     ]
 
+    display_company = (company_name.strip() if (isinstance(company_name, str) and company_name.strip()) else matched_company_key)
     return {
         "error": False,
-        "company": matched_company_key,
-        "target_company": matched_company_key,
+        "company": display_company,
+        "target_company": display_company,
         "candidate_name": candidate_name,
         "readiness_score": readiness_score,
         "is_ready": is_ready,

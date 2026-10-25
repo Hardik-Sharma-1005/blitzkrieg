@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, FileText, LoaderCircle, ShieldCheck, Sparkles,
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ALL_118_COMPANIES } from "@/data/allCompaniesList";
 
 type Skill = {
   skill_name: string;
@@ -73,7 +74,7 @@ export function ResumeProfile() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [targetCompany, setTargetCompany] = useState("Google");
+  const [targetCompany, setTargetCompany] = useState("Google LLC (Subsidiary of Alphabet Inc.)");
   const [talentReport, setTalentReport] = useState<any | null>(null);
   const [checkingTalent, setCheckingTalent] = useState(false);
   const [talentError, setTalentError] = useState("");
@@ -625,15 +626,17 @@ export function ResumeProfile() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <label className="text-xs font-semibold uppercase text-slate-500">Target Company:</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Target Company:</label>
                 <select
                   value={targetCompany}
                   onChange={(e) => { setTargetCompany(e.target.value); setTalentReport(null); resetInteractiveSessions(); }}
-                  className="rounded-xl border border-[#d9d2c5] bg-[#faf7f0] px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm focus:border-[#246b5d] focus:outline-none"
+                  className="rounded-xl border border-[#d9d2c5] bg-[#faf7f0] px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm focus:border-[#246b5d] focus:outline-none max-w-xs sm:max-w-md truncate"
                 >
-                  <option value="Google">Google LLC</option>
-                  <option value="Microsoft">Microsoft Corporation</option>
-                  <option value="Oracle">Oracle Financial Services</option>
+                  {ALL_118_COMPANIES.map((co) => (
+                    <option key={co.company_id} value={co.name}>
+                      {co.name}
+                    </option>
+                  ))}
                 </select>
                 <Button
                   type="button"

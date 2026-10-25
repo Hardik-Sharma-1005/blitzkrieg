@@ -331,15 +331,25 @@ async def analyze_jd(
 # --- Role 4: Talent Check Endpoint ---
 from .talent_check import run_talent_check, get_radar_chart_data
 from .mock_data import company_benchmarks
+from pathlib import Path
+import json
+
+_benchmarks_path = Path(__file__).parent / "all_118_company_benchmarks.json"
+try:
+    with open(_benchmarks_path, "r", encoding="utf-8") as _bf:
+        _d = json.load(_bf)
+        ALL_BENCHMARKS = _d.get("benchmarks", company_benchmarks)
+except Exception:
+    ALL_BENCHMARKS = company_benchmarks
 
 class TalentCheckRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     candidate_profile: dict
-    company_name: str = "Google"
+    company_name: str = "Google LLC (Subsidiary of Alphabet Inc.)"
 
 @app.post("/api/talent-check")
 async def talent_check_endpoint(req: TalentCheckRequest) -> dict:
-    report = run_talent_check(req.candidate_profile, req.company_name, company_benchmarks)
+    report = run_talent_check(req.candidate_profile, req.company_name, ALL_BENCHMARKS)
     radar = get_radar_chart_data(report)
     return {
         "report": report,
