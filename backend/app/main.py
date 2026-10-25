@@ -326,3 +326,22 @@ async def analyze_jd(
     except OSError:
         logger.warning("The extraction completed, but the output directory is not writable.")
     return result
+
+
+# --- Role 4: Talent Check Endpoint ---
+from .talent_check import run_talent_check, get_radar_chart_data
+from .mock_data import company_benchmarks
+
+class TalentCheckRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    candidate_profile: dict
+    company_name: str = "Google"
+
+@app.post("/api/talent-check")
+async def talent_check_endpoint(req: TalentCheckRequest) -> dict:
+    report = run_talent_check(req.candidate_profile, req.company_name, company_benchmarks)
+    radar = get_radar_chart_data(report)
+    return {
+        "report": report,
+        "radar_chart_data": radar,
+    }
