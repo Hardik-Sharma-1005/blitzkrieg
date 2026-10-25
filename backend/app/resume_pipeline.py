@@ -34,6 +34,7 @@ class ResumePipeline:
         file_path: str,
         output_json_path: Optional[str] = None,
         validate_type: bool = True,
+        source_filename: Optional[str] = None,
     ) -> Dict[str, Any]:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Resume file not found: {file_path}")
@@ -70,8 +71,8 @@ class ResumePipeline:
 
         profile_data = {
             "source_type": "resume",
-            "source_file": parsed["source_file"],
-            "cv_file": parsed["cv_file"],
+            "source_file": os.path.basename(source_filename) if source_filename else parsed["source_file"],
+            "cv_file": os.path.basename(source_filename) if source_filename else parsed["cv_file"],
             "name": parsed["name"],
             "email": parsed["email"],
             "education": parsed["education"],

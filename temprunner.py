@@ -1,131 +1,153 @@
-"""
-RADIX Talent Match Hackathon - Role 2 Test Runner (temprunner.py)
-Executes end-to-end verification of Candidate Resume Parsing across PDF and DOCX,
-generates output JSON files in output/resumes/, and tests guardrail rejection on JDs.
-"""
+from __future__ import annotations
 
-import json
 import os
+from pathlib import Path
+import shutil
+import subprocess
 import sys
+import time
+import urllib.error
+import urllib.request
+import webbrowser
 
-# Configure stdout for UTF-8 on Windows
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-BACKEND_DIR = os.path.join(BASE_DIR, "backend")
-if BACKEND_DIR not in sys.path:
-    sys.path.insert(0, BACKEND_DIR)
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
-try:
-    from backend.app.resume_pipeline import ResumePipeline
-except ImportError:
-    from backend.resume_pipeline import ResumePipeline
+ROOT = Path(__file__).resolve().parent
+BACKEND_DIR = ROOT / "backend"
+FRONTEND_URL = "http://127.0.0.1:5173"
+BACKEND_HEALTH_URL = "http://127.0.0.1:8000/api/health"
+STARTUP_TIMEOUT_SECONDS = 30
 
 
-def run():
-    print("=" * 80)
-    print("RADIX TALENT MATCH - ROLE 2 (RESUME PARSING) VERIFICATION")
-    print("=" * 80)
+def backend_python() -> str:
+    windows_venv_python = BACKEND_DIR / ".venv" / "Scripts" / "python.exe"
+    unix_venv_python = BACKEND_DIR / ".venv" / "bin" / "python"
+    if windows_venv_python.is_file():
+        interpreter = str(windows_venv_python)
+    elif unix_venv_python.is_file():
+        interpreter = str(unix_venv_python)
+    else:
+        interpreter = sys.executable
 
-    data_dir = os.path.join(BASE_DIR, "data", "resumes")
-    output_dir = os.path.join(BASE_DIR, "output", "resumes")
-    os.makedirs(output_dir, exist_ok=True)
+    version = subprocess.run(
+        [interpreter, "-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    major, minor = (int(part) for part in version.split(".", maxsplit=1))
+    if (major, minor) < (3, 12):
+        raise RuntimeError(
+            f"JD Analytics requires Python 3.12 or newer; the selected backend interpreter is {version}. "
+            "Create backend/.venv with Python 3.12+ and install backend/requirements.txt there."
+        )
+    return interpreter
 
-    pdf_dir = os.path.join(data_dir, "PDF")
-    docx_dir = os.path.join(data_dir, "Word")
 
-    pipeline = ResumePipeline()
-    passed = 0
-    total = 0
+def start_backend() -> subprocess.Popen[bytes]:
+    return subprocess.Popen(
+        [backend_python(), "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        cwd=BACKEND_DIR,
+    )
 
-    # ---------------------------------------------------------------------------
-    # 1. Process PDF Resumes
-    # ---------------------------------------------------------------------------
-    print("\n[PHASE 1] Processing Sample PDF Resumes...")
-    if os.path.exists(pdf_dir):
-        for f in sorted(os.listdir(pdf_dir)):
-            if f.endswith(".pdf"):
-                total += 1
-                in_path = os.path.join(pdf_dir, f)
-                candidate_slug = os.path.splitext(f)[0].replace(" ", "_").lower()
-                out_path = os.path.join(output_dir, f"{candidate_slug}_pdf.json")
 
-                try:
-                    profile = pipeline.process_resume(in_path, output_json_path=out_path)
-                    name = profile["name"]
-                    skills_cnt = len(profile["skills"])
-                    hacks_cnt = len(profile["hackathons"])
-                    intern_cnt = len(profile["internships"])
-                    certs_cnt = len(profile["certifications"])
-                    mode = profile["extraction_mode"]
-                    print(
-                        f"  [PASS] {f:<25} | Name: {name:<20} | Skills: {skills_cnt:<2} "
-                        f"| Hacks: {hacks_cnt} | Interns: {intern_cnt} | Certs: {certs_cnt} | Mode: {mode}"
-                    )
-                    passed += 1
-                except Exception as e:
-                    print(f"  [FAIL] {f}: {e}")
+def start_frontend() -> subprocess.Popen[bytes]:
+    if os.name == "nt":
+        npm_command = shutil.which("npm.cmd") or shutil.which("npm")
+        if not npm_command:
+            raise RuntimeError("npm was not found. Install Node.js/npm and try again.")
+        command = f'"{npm_command}" run dev -- --host 127.0.0.1 --port 5173 --strictPort'
+        return subprocess.Popen(command, cwd=ROOT, shell=True)
 
-    # ---------------------------------------------------------------------------
-    # 2. Process Word Resumes (.docx)
-    # ---------------------------------------------------------------------------
-    print("\n[PHASE 2] Processing Sample Word Resumes (.docx)...")
-    if os.path.exists(docx_dir):
-        for f in sorted(os.listdir(docx_dir)):
-            if f.endswith(".docx"):
-                total += 1
-                in_path = os.path.join(docx_dir, f)
-                candidate_slug = os.path.splitext(f)[0].replace(" ", "_").lower()
-                out_path = os.path.join(output_dir, f"{candidate_slug}_docx.json")
+    npm_command = shutil.which("npm")
+    if not npm_command:
+        raise RuntimeError("npm was not found. Install Node.js/npm and try again.")
+    return subprocess.Popen(
+        [npm_command, "run", "dev", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
+        cwd=ROOT,
+    )
 
-                try:
-                    profile = pipeline.process_resume(in_path, output_json_path=out_path)
-                    name = profile["name"]
-                    skills_cnt = len(profile["skills"])
-                    hacks_cnt = len(profile["hackathons"])
-                    intern_cnt = len(profile["internships"])
-                    certs_cnt = len(profile["certifications"])
-                    print(
-                        f"  [PASS] {f:<25} | Name: {name:<20} | Skills: {skills_cnt:<2} "
-                        f"| Hacks: {hacks_cnt} | Interns: {intern_cnt} | Certs: {certs_cnt}"
-                    )
-                    passed += 1
-                except Exception as e:
-                    print(f"  [FAIL] {f}: {e}")
 
-    # ---------------------------------------------------------------------------
-    # 3. Guardrail Check (Upload Mismatch Protection)
-    # ---------------------------------------------------------------------------
-    print("\n[PHASE 3] Upload Guardrail Check (Reject Accidental JD Uploads)...")
-    sample_jd_path = None
-    for candidate_jd in [
-        os.path.join(BASE_DIR, "data", "jds", "PDF", "Google LLC - Software Engineer.pdf"),
-        os.path.join(BASE_DIR, "sample_data", "JDs", "PDF", "Google LLC - Software Engineer.pdf"),
-        r"C:\Users\daksh\Desktop\Bootcamp Hackathon\sample_data\JDs\PDF\Google LLC - Software Engineer.pdf",
-    ]:
-        if os.path.exists(candidate_jd):
-            sample_jd_path = candidate_jd
-            break
+def responds(url: str) -> bool:
+    try:
+        with urllib.request.urlopen(url, timeout=0.5) as response:
+            return 200 <= response.status < 400
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return False
 
-    if sample_jd_path:
-        total += 1
-        try:
-            pipeline.process_resume(sample_jd_path)
-            print(f"  [FAIL] Guardrail did not reject JD: {os.path.basename(sample_jd_path)}")
-        except ValueError as e:
-            print(f"  [PASS] Guardrail correctly caught JD upload:\n         \"{e}\"")
-            passed += 1
-        except Exception as e:
-            print(f"  [FAIL] Unexpected error: {e}")
 
-    print("\n" + "=" * 80)
-    print(f"VERIFICATION SUMMARY: {passed}/{total} Passed ({passed/total*100:.1f}%)")
-    print(f"Candidate JSON profiles saved to: {output_dir}")
-    print("=" * 80)
+def wait_until_ready(processes: list[tuple[str, subprocess.Popen[bytes], str]]) -> bool:
+    deadline = time.monotonic() + STARTUP_TIMEOUT_SECONDS
+    pending = {name: url for name, _, url in processes}
+    while pending and time.monotonic() < deadline:
+        for name, process, url in processes:
+            if name not in pending:
+                continue
+            if process.poll() is not None:
+                print(f"{name} exited during startup (code {process.returncode}).", file=sys.stderr)
+                return False
+            if responds(url):
+                print(f"{name} is ready.")
+                del pending[name]
+        if pending:
+            time.sleep(0.25)
+    if pending:
+        print(f"Timed out waiting for: {', '.join(pending)}.", file=sys.stderr)
+        return False
+    return True
+
+
+def stop_process(process: subprocess.Popen[bytes]) -> None:
+    if process.poll() is not None:
+        return
+    if os.name == "nt":
+        subprocess.run(
+            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+    else:
+        process.terminate()
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait()
+
+
+def main() -> int:
+    if not (ROOT / "node_modules").is_dir():
+        print("Frontend packages are missing. Run `npm install` in the project folder first.", file=sys.stderr)
+        return 1
+    if not (BACKEND_DIR / ".env").is_file():
+        print("Note: backend/.env is missing. JD Analytics needs OPENROUTER_API_KEY; resume parsing can still use local heuristics.")
+
+    processes: list[tuple[str, subprocess.Popen[bytes], str]] = []
+    try:
+        backend = start_backend()
+        processes.append(("Backend", backend, BACKEND_HEALTH_URL))
+        frontend = start_frontend()
+        processes.append(("Frontend", frontend, FRONTEND_URL))
+        if not wait_until_ready(processes):
+            return 1
+        print(f"\nRADIX Talent Match is running at {FRONTEND_URL}")
+        print("Press Ctrl+C to stop the frontend and backend.")
+        webbrowser.open(FRONTEND_URL)
+        while True:
+            for name, process, _ in processes:
+                if process.poll() is not None:
+                    print(f"{name} stopped (code {process.returncode}). Shutting down the other service.")
+                    return process.returncode or 1
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print("\nStopping the local website…")
+        return 0
+    except (OSError, RuntimeError) as exc:
+        print(f"Could not start the local website: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        for _, process, _ in reversed(processes):
+            stop_process(process)
 
 
 if __name__ == "__main__":
-    run()
+    raise SystemExit(main())

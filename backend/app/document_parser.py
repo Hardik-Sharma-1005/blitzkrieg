@@ -174,23 +174,41 @@ class ResumeDocumentParser:
         extracted_lines: List[str] = []
         try:
             import docx
+            from docx.oxml.ns import qn
+            from docx.table import Table
+            from docx.text.paragraph import Paragraph
 
-            doc = docx.Document(file_path)
-            for p in doc.paragraphs:
-                cleaned = self.clean_text_line(p.text)
-                if cleaned:
-                    extracted_lines.append(cleaned)
-        except Exception:
-            with zipfile.ZipFile(file_path) as z:
-                xml_content = z.read("word/document.xml")
+            document = docx.Document(file_path)
+            for child in document.element.body.iterchildren():
+                if child.tag == qn("w:p"):
+                    paragraph = Paragraph(child, document)
+                    raw_lines = [paragraph.text]
+                elif child.tag == qn("w:tbl"):
+                    table = Table(child, document)
+                    raw_lines = [
+                        line
+                        for row in table.rows
+                        for cell in row.cells
+                        for line in cell.text.splitlines()
+                    ]
+                else:
+                    continue
+
+                for raw_line in raw_lines:
+                    cleaned = self.clean_text_line(raw_line)
+                    if cleaned:
+                        extracted_lines.append(cleaned)
+        except ImportError:
+            with zipfile.ZipFile(file_path) as archive:
+                xml_content = archive.read("word/document.xml")
                 tree = ET.fromstring(xml_content)
                 namespaces = {
                     "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
                 }
-                for p in tree.iterfind(".//w:p", namespaces):
+                for paragraph in tree.iterfind(".//w:p", namespaces):
                     texts = [
                         node.text
-                        for node in p.iterfind(".//w:t", namespaces)
+                        for node in paragraph.iterfind(".//w:t", namespaces)
                         if node.text
                     ]
                     if texts:
@@ -198,7 +216,6 @@ class ResumeDocumentParser:
                         if cleaned:
                             extracted_lines.append(cleaned)
         return extracted_lines
-
     def is_valid_resume(self, lines: List[str]) -> bool:
         norm_lines = [
             re.sub(r"[:\-\–\—\*\#]+", "", l.strip().lower()).strip() for l in lines
@@ -249,7 +266,7 @@ class ResumeDocumentParser:
         ext = os.path.splitext(file_path)[1].lower()
         if ext == ".pdf":
             lines = self._parse_pdf(file_path)
-        elif ext in [".docx", ".doc"]:
+        elif ext == ".docx":
             lines = self._parse_docx(file_path)
         else:
             raise ValueError(

@@ -1,14 +1,8 @@
-"""
-RADIX Talent Match Hackathon - Candidate Profile & Skill Schemas (Role 2)
-Defines Pydantic data contracts for Resume Parsing and Role 3 handoff.
-"""
+"""Shared Pydantic contracts for JD and resume analysis handoffs."""
 
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Union
+
 from pydantic import BaseModel, ConfigDict, Field
-
-# ---------------------------------------------------------------------------
-# 1. RADIX Skill Taxonomy Codes
-# ---------------------------------------------------------------------------
 
 CategoryCode = Literal[
     "COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL",
@@ -16,14 +10,11 @@ CategoryCode = Literal[
 ]
 RadixCategory = CategoryCode
 Confidence = Literal["high", "medium", "low"]
+ExtractionMode = Literal["llm_live", "offline_heuristic", "offline_heuristic_fallback"]
 
-
-# ---------------------------------------------------------------------------
-# 2. Skill Extraction Schemas
-# ---------------------------------------------------------------------------
 
 class Skill(BaseModel):
-    """An individual extracted candidate skill mapped to the 12 RADIX categories."""
+    """A resume skill mapped to one RADIX category and backed by source text."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -37,22 +28,22 @@ ExtractedSkill = Skill
 
 
 class SkillExtractionResponse(BaseModel):
-    """Container schema for structured LLM extraction response."""
+    """Structured response requested from the optional LLM provider."""
+
+    model_config = ConfigDict(extra="forbid")
 
     skills: List[Skill] = Field(default_factory=list)
 
 
-# ---------------------------------------------------------------------------
-# 3. Candidate Profile Schemas (Role 3 Data Contract)
-# ---------------------------------------------------------------------------
-
 class CandidateProfile(BaseModel):
-    """Full candidate profile schema matching the Role 3 Profile Builder contract."""
+    """Candidate profile handoff from Resume Parsing to Profile Builder."""
+
+    model_config = ConfigDict(extra="forbid")
 
     source_type: Literal["resume"] = "resume"
-    source_file: str
-    cv_file: str
-    name: str
+    source_file: str = Field(min_length=1)
+    cv_file: str = Field(min_length=1)
+    name: str = Field(min_length=1)
     email: str = ""
     education: List[Union[str, Dict[str, Any]]] = Field(default_factory=list)
     projects: List[Union[str, Dict[str, Any]]] = Field(default_factory=list)
@@ -62,10 +53,10 @@ class CandidateProfile(BaseModel):
     achievements: List[str] = Field(default_factory=list)
     preferred_roles: List[str] = Field(default_factory=list)
     skills: List[Skill] = Field(default_factory=list)
-    extraction_mode: str = "offline_heuristic"
+    extraction_mode: ExtractionMode = "offline_heuristic"
 
 
 class HealthCheckResponse(BaseModel):
     ok: bool = True
-    role: str = "Role 2 - Resume Parsing"
-    parsers: List[str] = Field(default_factory=list)
+    services: Dict[str, bool] = Field(default_factory=dict)
+    providers: Dict[str, bool] = Field(default_factory=dict)
