@@ -100,6 +100,19 @@ export function ResumeProfile() {
   const [evaluatingSprint, setEvaluatingSprint] = useState(false);
   const [sprintResult, setSprintResult] = useState<any | null>(null);
 
+  // Automatically reset all interactive sessions when candidate changes
+  const resetInteractiveSessions = () => {
+    setChatMessages([]);
+    setChatInput("");
+    setInterviewQuestions([]);
+    setInterviewAnswer("");
+    setInterviewFeedback("");
+    setSprintChallenge(null);
+    setSprintSolution("");
+    setSprintResult(null);
+    setActiveTab("matrix");
+  };
+
   // Download 1-Page Competency Report (.md)
   const downloadReportFile = async () => {
     if (!talentReport) return;
@@ -424,6 +437,7 @@ export function ResumeProfile() {
       }
       const data = await res.json();
       setTalentReport(data.report);
+      resetInteractiveSessions();
     } catch (err) {
       setTalentError(err instanceof Error ? err.message : "Failed to run talent check.");
     } finally {
@@ -435,6 +449,8 @@ export function ResumeProfile() {
     if (loading) return;
     setError("");
     setProfile(null);
+    setTalentReport(null);
+    resetInteractiveSessions();
     if (!candidate) return;
     const extension = candidate.name.split(".").pop()?.toLowerCase();
     if (extension !== "pdf" && extension !== "docx") {
@@ -463,6 +479,8 @@ export function ResumeProfile() {
     setLoading(true);
     setError("");
     setProfile(null);
+    setTalentReport(null);
+    resetInteractiveSessions();
     const body = new FormData();
     body.set("file", file);
     try {
@@ -490,6 +508,7 @@ export function ResumeProfile() {
     setFile(null);
     setProfile(null);
     setTalentReport(null);
+    resetInteractiveSessions();
     setError("");
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -609,7 +628,7 @@ export function ResumeProfile() {
                 <label className="text-xs font-semibold uppercase text-slate-500">Target Company:</label>
                 <select
                   value={targetCompany}
-                  onChange={(e) => setTargetCompany(e.target.value)}
+                  onChange={(e) => { setTargetCompany(e.target.value); setTalentReport(null); resetInteractiveSessions(); }}
                   className="rounded-xl border border-[#d9d2c5] bg-[#faf7f0] px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm focus:border-[#246b5d] focus:outline-none"
                 >
                   <option value="Google">Google LLC</option>
