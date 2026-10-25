@@ -44,7 +44,7 @@ def backend_python() -> str:
 
 def start_backend() -> subprocess.Popen[bytes]:
     return subprocess.Popen(
-        [backend_python(), "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        [backend_python(), "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
         cwd=BACKEND_DIR,
     )
 
