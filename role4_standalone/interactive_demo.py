@@ -1,5 +1,10 @@
 # interactive_demo.py
 # Full Step-by-Step Interactive Candidate Experience
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 
 from mock_data import sample_candidate, company_benchmarks
 from talent_check import run_talent_check

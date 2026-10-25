@@ -1,7 +1,34 @@
 # config.py
 import os
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(dotenv_path=None, **kwargs):
+        """Pure-Python fallback when python-dotenv is not installed."""
+        if dotenv_path is None:
+            candidates = [
+                os.path.join(os.getcwd(), ".env"),
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+                os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
+            ]
+            for p in candidates:
+                if os.path.exists(p):
+                    dotenv_path = p
+                    break
+        if not dotenv_path or not os.path.exists(dotenv_path):
+            return False
+        try:
+            with open(dotenv_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+            return True
+        except Exception:
+            return False
+
 from google import genai
 from google.genai import errors
 import httpx
