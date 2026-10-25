@@ -27,7 +27,6 @@ The frontend reads company_json, company_skill_levels, skill_set_master, profici
 
 With Supabase configured, the app uses live company data and reports query failures with a retry state. It does not silently replace a failed live query with demo records. Without Supabase settings, it uses bundled demo profiles; the Accenture sample has not been independently verified, while Northstar Digital Lab and Meridian Cloud Services are fictional scenarios labeled in the UI.
 
-Company source and freshness labels come from optional JSON metadata keys: data_source_label (or source_name / data_source), data_source_url (or source_url / source_link), and data_as_of (or last_verified_at, data_updated_at, last_updated_at, or updated_at). When those fields are absent, the UI says the information is unavailable rather than implying the data is current.
 
 The SQL & Design 10-level roadmap remains app-local because that skill has no database topics yet. Student self-ratings are stored only in browser local storage; they are not sent to Supabase.
 

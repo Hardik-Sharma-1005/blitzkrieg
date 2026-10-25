@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { DataProvenance } from "@/components/company/DataProvenance";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
 import { asString, normalizeCompanyProfile, normalizeCompanySummary, normalizeDashboardSkills, splitItems, type CompanyProfile, type CompanySummary, type DashboardSkill, type JsonRecord } from "@/lib/companyData";
 import { useCompany } from "@/lib/companyContext";
@@ -17,7 +16,6 @@ interface ComparisonCompany {
   profile: CompanyProfile;
   skills: DashboardSkill[];
   raw: JsonRecord;
-  dataOrigin: "demo" | "supabase";
   skillDataWarnings: string[];
 }
 
@@ -146,7 +144,6 @@ function CompanyOverview({ company, index }: { company: ComparisonCompany; index
             <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.08em] text-[#354b54]"><Sparkles className="h-3.5 w-3.5" /> What this means for students</p>
             <StudentTakeaway company={company} />
           </div>
-          <div className="mt-4"><DataProvenance raw={raw} origin={company.dataOrigin} compact /></div>
           {company.skillDataWarnings.length > 0 && <p role="status" className="mt-3 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-3 py-2 text-xs leading-5 text-[#76591d]">{company.skillDataWarnings.join(" ")}</p>}
         </div>
       </Card>
@@ -166,7 +163,7 @@ export function CompanyComparison() {
     if (!record) return [];
     const summary = normalizeCompanySummary(record.short_json);
     const profile = normalizeCompanyProfile(record.full_json, record.short_json);
-    return [{ summary, profile, skills: normalizeDashboardSkills(record.skill_levels), raw: profile.raw, dataOrigin: record.dataOrigin, skillDataWarnings: record.skillDataWarnings }];
+    return [{ summary, profile, skills: normalizeDashboardSkills(record.skill_levels), raw: profile.raw, skillDataWarnings: record.skillDataWarnings }];
   }), [compareCompanyIds, records]);
   const loading = records.some((record) => record.isPending);
   const failedRecords = records.filter((record) => record.isError);

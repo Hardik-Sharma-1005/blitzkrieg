@@ -22,8 +22,6 @@ function illustrativeCompany(
     yoy_growth_rate: growth,
     website_url: "",
     data_status: "illustrative",
-    data_source_label: "Fictional scenario for product demonstration",
-    data_as_of: "Not applicable — fictional scenario",
   };
   return {
     company_id: companyId,
@@ -199,8 +197,6 @@ export const SEED_COMPANIES = [
       partnership_ecosystem: "Microsoft; SAP; Oracle; Google; AWS; Salesforce",
       tech_adoption_rating: "High, Industry Leader; Top-tier among peers",
       data_status: "demo",
-      data_source_label: "Bundled demo profile; claims and figures are not independently verified",
-      data_as_of: "Not verified",
     },
        skill_levels: [
       { skill_set_id: 1, skill_set_name: "Data Structures & Algorithms", required_level: 8, required_proficiency: "Expert" },

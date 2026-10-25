@@ -11,7 +11,6 @@ export interface CompanyRecord extends CompanyDirectoryRecord {
   full_json: JsonRecord;
   skill_levels: JsonRecord[];
   topicsBySkillId: Record<number, string[]>;
-  dataOrigin: "demo" | "supabase";
   skillDataWarnings: string[];
 }
 
@@ -59,7 +58,6 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
       full_json: asRecord(seed.full_json),
       skill_levels: seed.skill_levels.map((skill) => asRecord(skill)),
       topicsBySkillId: {},
-      dataOrigin: "demo",
       skillDataWarnings: [],
     };
   }
@@ -148,7 +146,6 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
     full_json: asRecord(companyResult.data.full_json),
     skill_levels: skillLevels,
     topicsBySkillId,
-    dataOrigin: "supabase",
     skillDataWarnings,
   };
 }

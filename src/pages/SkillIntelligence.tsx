@@ -5,7 +5,6 @@ import { ChevronDown, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { DataProvenance } from "@/components/company/DataProvenance";
 import { getSkillTopics } from "@/data/skillTopics";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
 import { normalizeCompanyProfile, normalizeDashboardSkills } from "@/lib/companyData";
@@ -107,7 +106,6 @@ export function SkillIntelligence() {
             <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
             <div><p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]">Skill intelligence</p><h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-[#26354b] sm:text-3xl">{profile.shortName} Skill Intelligence</h1><p className="mt-1 text-sm text-slate-600">Required skills and target learning levels</p></div>
           </div>
-          <div className="relative mt-4"><DataProvenance raw={profile.raw} origin={company.dataOrigin} compact /></div>
         </div>
 
         {company.skillDataWarnings.length > 0 && <div role="status" className="mt-4 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">
