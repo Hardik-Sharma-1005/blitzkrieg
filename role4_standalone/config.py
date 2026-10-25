@@ -30,7 +30,7 @@ except ImportError:
             return False
 
 from google import genai
-from google.genai import errors
+from google.genai import errors, types
 import httpx
 
 def get_gemini_key() -> str:
@@ -39,7 +39,7 @@ def get_gemini_key() -> str:
 
 def call_gemini_api(prompt: str) -> str:
     """
-    Send a prompt to the configured Gemini model and return its text response.
+    Send a prompt to the configured Gemini model with fast response settings (timeout capped, thinking capped).
     """
     api_key = get_gemini_key()
     if not api_key:
@@ -48,19 +48,35 @@ def call_gemini_api(prompt: str) -> str:
             "environment or a local .env file."
         )
 
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
-    if not model_name:
-        return "[API Error]: GEMINI_MODEL is empty. Set it to an available Gemini model."
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip() or "gemini-3.8-flash"
+
+    # Fast response settings: disable multi-minute thinking delays and cap tokens
+    try:
+        config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+            max_output_tokens=300,
+            temperature=0.7,
+        )
+    except Exception:
+        config = None
 
     try:
-        with genai.Client(api_key=api_key) as client:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt,
-            )
+        # Strict 15-second timeout ensures the live demo NEVER freezes for minutes
+        with genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=15.0)) as client:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=config,
+                )
+            except Exception:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
     except errors.APIError as error:
         return f"[API Error]: Gemini request failed ({error.code}): {error.message}"
-    except httpx.HTTPError as error:
+    except (httpx.HTTPError, Exception) as error:
         return f"[API Error]: Unable to connect to Gemini: {error}"
 
     answer = response.text
