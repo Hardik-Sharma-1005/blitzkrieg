@@ -43,6 +43,8 @@ The shared FastAPI app exposes:
 
 JD Analytics uses OpenRouter when OPENROUTER_API_KEY is configured. Resume parsing can use OpenRouter or OpenAI, selected by LLM_PROVIDER=auto|openrouter|openai|off. With no resume-provider key, it uses local heuristic extraction. The resume sample verification command always forces offline mode and never sends candidate documents to an external provider.
 
+Live resume skills are kept only when their evidence is a verbatim excerpt from the extracted resume text. If the model returns no grounded evidence, the parser falls back to local heuristic extraction.
+
 The resume endpoint enforces a 12 MB limit, uses a temporary file that is removed after processing, rejects unsupported files and likely JDs, and returns a structured response. It does not store uploaded resumes in Supabase or write them to the repository's output folder. JD analysis JSON is written to the ignored local output/ folder when available.
 
 AI-provider requests send extracted document text, and for image-based JDs may send rendered page images, to the configured provider. The project has no login or API authentication/rate limiting. Keep the integrated API local for the hackathon demo; add access controls before exposing it as a public service. Do not upload real candidate resumes without their consent.
