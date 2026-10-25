@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { DataProvenance } from "@/components/company/DataProvenance";
 import { IntelligenceSectionCard } from "@/components/company/IntelligenceSectionCard";
 import { buildIntelligenceSections } from "@/data/intelligenceData";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
@@ -110,9 +109,6 @@ export function CompanyIntelligence() {
               <dd className="mt-1 break-words text-sm font-semibold text-[#31445a]">{value || <span className="font-normal italic text-slate-400">Not publicly available</span>}</dd>
             </div>)}
           </dl>
-          <div className="relative mt-3">
-            <DataProvenance raw={profile.raw} origin={companyRecord.dataOrigin} />
-          </div>
           {companyRecord.skillDataWarnings.length > 0 && <div role="status" className="relative mt-3 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-3 py-2 text-xs leading-5 text-[#76591d]">
             {companyRecord.skillDataWarnings.join(" ")}
           </div>}

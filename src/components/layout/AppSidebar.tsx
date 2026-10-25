@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { ArrowLeft, Building2, GitCompareArrows, GraduationCap, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ArrowLeft, Building2, FileSearch, GitCompareArrows, GraduationCap, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useSidebar } from "@/components/layout/SidebarContext";
 
 const links = [
   { to: "/company/intelligence", label: "Company Intelligence", icon: Building2 },
   { to: "/company/skills", label: "Skill Intelligence", icon: GraduationCap },
   { to: "/company/compare", label: "Compare Companies", icon: GitCompareArrows },
+  { to: "/jd-analytics", label: "Analyze a JD", icon: FileSearch },
 ];
 
 export function AppSidebar() {

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RADIX Resume Parsing handoff to Profile Builder",
+  "description": "Candidate profile with evidence-backed skill extraction and segmented experience.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_type",
+    "source_file",
+    "cv_file",
+    "name",
+    "email",
+    "education",
+    "projects",
+    "hackathons",
+    "internships",
+    "certifications",
+    "achievements",
+    "preferred_roles",
+    "skills",
+    "extraction_mode"
+  ],
+  "properties": {
+    "source_type": { "const": "resume" },
+    "source_file": { "type": "string", "minLength": 1 },
+    "cv_file": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "email": { "type": "string" },
+    "education": { "$ref": "#/$defs/profileItems" },
+    "projects": { "$ref": "#/$defs/profileItems" },
+    "hackathons": { "$ref": "#/$defs/profileItems" },
+    "internships": { "$ref": "#/$defs/profileItems" },
+    "certifications": { "type": "array", "items": { "type": "string" } },
+    "achievements": { "type": "array", "items": { "type": "string" } },
+    "preferred_roles": { "type": "array", "items": { "type": "string" } },
+    "skills": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/skill" }
+    },
+    "extraction_mode": {
+      "enum": ["llm_live", "offline_heuristic", "offline_heuristic_fallback"]
+    }
+  },
+  "$defs": {
+    "profileItems": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "object" }
+        ]
+      }
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_name", "category_code", "evidence", "confidence"],
+      "properties": {
+        "skill_name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "category_code": {
+          "enum": ["COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS", "OTHER"]
+        },
+        "evidence": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "confidence": { "enum": ["high", "medium", "low"] }
+      }
+    }
+  }
+}

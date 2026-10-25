@@ -11,6 +11,8 @@ const CompanyIntelligence = lazy(() => import("@/pages/CompanyIntelligence").the
 const SkillIntelligence = lazy(() => import("@/pages/SkillIntelligence").then(({ SkillIntelligence }) => ({ default: SkillIntelligence })));
 const CompanyComparison = lazy(() => import("@/pages/CompanyComparison").then(({ CompanyComparison }) => ({ default: CompanyComparison })));
 const NotFound = lazy(() => import("@/pages/NotFound").then(({ NotFound }) => ({ default: NotFound })));
+const JDAnalytics = lazy(() => import("@/pages/JDAnalytics").then(({ JDAnalytics }) => ({ default: JDAnalytics })));
+const ResumeProfile = lazy(() => import("@/pages/ResumeProfile").then(({ ResumeProfile }) => ({ default: ResumeProfile })));
 
 export default function App() {
   const [queryClient] = useState(() => new QueryClient({
@@ -28,6 +30,8 @@ export default function App() {
             <Suspense fallback={<div className="grid min-h-screen place-items-center text-sm text-slate-500">Loading portal…</div>}>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/jd-analytics" element={<JDAnalytics />} />
+                <Route path="/resume-profile" element={<ResumeProfile />} />
                 <Route path="/company" element={<AppLayout />}>
                   <Route index element={<Navigate to="intelligence" replace />} />
                   <Route path="intelligence" element={<CompanyIntelligence />} />

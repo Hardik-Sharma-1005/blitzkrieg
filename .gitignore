@@ -1,5 +1,17 @@
 node_modules/
 dist/
+.venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
 .env
 .env.local
+backend/.env
 *.tsbuildinfo
+output/*.json
+!output/.gitkeep
+.output/
+.wrangler/
+.tanstack/
+.lovable/
+output/resumes/*.json
