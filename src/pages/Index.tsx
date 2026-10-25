@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Building2, Check, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
+import { ArrowRight, Building2, Check, FileText, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
 import { CompanyCard } from "@/components/company/CompanyCard";
 import { Button } from "@/components/ui/button";
 import { normalizeCompanySummary } from "@/lib/companyData";
@@ -95,7 +95,10 @@ export function Index() {
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
               Explore company profiles, skill expectations, and career signals before campus placements.
             </p>
-            <Button className="mt-5" onClick={() => navigate("/jd-analytics")}>Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button onClick={() => navigate("/jd-analytics")}>Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
+              <Button variant="soft" onClick={() => navigate("/resume-profile")}><FileText className="h-4 w-4" /> Build your resume profile</Button>
+            </div>
           </div>
 
           <div className="mt-8 grid max-w-5xl gap-3 sm:grid-cols-[minmax(0,1fr)_220px_190px]">

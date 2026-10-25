@@ -151,6 +151,7 @@ export function JDAnalytics() {
             <h2 className="font-heading text-lg font-semibold text-[#26354b]">Look beyond keywords</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">Important skills can be described through responsibilities and expectations, not just listed by name. The analysis considers the context of the whole job description.</p>
             <div className="mt-5 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">Scanned and image-based PDFs are supported.</div>
+            <Link to="/resume-profile" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#246b5d] hover:text-[#185546]">Build your resume profile <ArrowLeft className="h-4 w-4 rotate-180" /></Link>
           </Card>
         </div>
 

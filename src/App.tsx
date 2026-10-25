@@ -12,6 +12,7 @@ const SkillIntelligence = lazy(() => import("@/pages/SkillIntelligence").then(({
 const CompanyComparison = lazy(() => import("@/pages/CompanyComparison").then(({ CompanyComparison }) => ({ default: CompanyComparison })));
 const NotFound = lazy(() => import("@/pages/NotFound").then(({ NotFound }) => ({ default: NotFound })));
 const JDAnalytics = lazy(() => import("@/pages/JDAnalytics").then(({ JDAnalytics }) => ({ default: JDAnalytics })));
+const ResumeProfile = lazy(() => import("@/pages/ResumeProfile").then(({ ResumeProfile }) => ({ default: ResumeProfile })));
 
 export default function App() {
   const [queryClient] = useState(() => new QueryClient({
@@ -30,6 +31,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/jd-analytics" element={<JDAnalytics />} />
+                <Route path="/resume-profile" element={<ResumeProfile />} />
                 <Route path="/company" element={<AppLayout />}>
                   <Route index element={<Navigate to="intelligence" replace />} />
                   <Route path="intelligence" element={<CompanyIntelligence />} />
