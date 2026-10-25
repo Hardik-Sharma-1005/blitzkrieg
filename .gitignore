@@ -1,5 +1,15 @@
+
 node_modules/
 dist/
 .env
 .env.local
 *.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+# Skill Matching generated outputs
+backend/skill_matching/match_result.json
+backend/skill_matching/*_match_result.json

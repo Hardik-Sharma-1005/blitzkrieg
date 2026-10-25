@@ -1,0 +1,19 @@
+
+{
+  "source_type": "resume",
+  "source_file": "second_resume.pdf",
+  "skills": [
+    {
+      "skill_name": "Java",
+      "category_code": "PROGRAMMING",
+      "evidence": "Java projects",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "PYTHN",
+      "category_code": "WEB",
+      "evidence": "Created web pages",
+      "confidence": "high"
+    }
+  ]
+}

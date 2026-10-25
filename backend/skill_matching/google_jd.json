@@ -1,0 +1,44 @@
+{
+  "source_type": "jd",
+  "source_file": "Google LLC - Data Scientist.pdf",
+  "company": "Google LLC",
+  "role": "Data Scientist",
+  "skills": [
+    {
+      "skill_name": "SQL",
+      "category_code": "SQL",
+      "evidence": "Write efficient, production-grade SQL against very large datasets, including schema design and query optimization",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Machine Learning",
+      "category_code": "AI",
+      "evidence": "Foundational machine learning knowledge: bias-variance tradeoff, regression vs. classification, how gradient descent works, and how to recognize overfitting",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Experimentation / A/B Testing",
+      "category_code": "APTI",
+      "evidence": "Design and run experiments (A/B tests) and interpret their results rigorously",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Data Analysis & Statistics",
+      "category_code": "APTI",
+      "evidence": "Solid quantitative and analytical reasoning — comfortable interpreting experiment results, probability, and metrics under ambiguity",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Communication Skills",
+      "category_code": "COMM",
+      "evidence": "Excellent communication skills — able to explain a complex model or a surprising result to a product manager in plain language, and defend assumptions when challenged",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Data Visualization / BI Tools",
+      "category_code": "OTHER",
+      "evidence": "Experience with a BI/visualization tool; exposure to experimentation platforms; a portfolio of applied data projects",
+      "confidence": "medium"
+    }
+  ]
+}

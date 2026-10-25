@@ -1,0 +1,28 @@
+
+
+{
+  "source_type": "jd",
+  "source_file": "sample_job.pdf",
+  "company": "Demo Company",
+  "role": "Python Developer",
+  "skills": [
+    {
+      "skill_name": "Python",
+      "category_code": "COD",
+      "evidence": "Python development experience required",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Java",
+      "category_code": "COD",
+      "evidence": "Java knowledge required",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "SQL",
+      "category_code": "SQL",
+      "evidence": "SQL database experience required",
+      "confidence": "medium"
+    }
+  ]
+}
