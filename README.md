@@ -20,7 +20,8 @@ You can also run only the frontend with npm run dev. The API's interactive docum
 3. Open Skill Intelligence, rate a few skills, and review the largest gaps to the selected company's targets.
 4. Analyze a supplied job description from Analyze a JD and inspect the extracted skills and supporting evidence.
 5. Open Build your resume profile, upload a supplied resume, and review the structured candidate profile.
-6. Try POST /api/talent-check in Swagger with a candidate profile and explicit 1–5 ratings for the assessed categories.
+6. Open Match resume to a job, parse a resume and JD, and inspect confirmed, possible, and missing skill matches with source evidence.
+7. Open Talent Check, upload a resume, select a company benchmark, and continue through the Talent Check report, Gemini Coach, Interview Practice, and Skill Proof Sprint.
 
 ## Frontend and Supabase
 
@@ -39,12 +40,19 @@ The shared FastAPI app exposes:
 
 - GET /api/health — status for the JD and resume services, plus configured providers.
 - POST /api/analyze — accepts a PDF or DOCX JD and returns a categorized skill list with evidence.
-- POST /api/parse-resume — accepts a PDF or DOCX resume and returns the CandidateProfile handoff for Profile Builder.
-- POST /api/talent-check — compares a CandidateProfile with the current demo benchmarks. It requires explicit 1–5 student ratings for every assessed category; parser confidence is never used as proficiency.
+- POST /api/parse-resume — accepts a PDF or DOCX resume and returns the CandidateProfile handoff for Profile Builder. AI extraction is attempted first; local heuristic extraction is a labeled fallback if no provider is configured or the AI result fails validation.
+- POST /api/skill-match — compares the parsed resume skills and evidence with the parsed JD requirements. Exact names and known aliases count toward confirmed coverage; fuzzy text similarities are returned separately as possible matches.
+- GET /api/talent-check/companies — returns the 118 companies available to Talent Check and identifies the five that use a RADIX-wide fallback.
+- POST /api/talent-check — scores the parsed resume against the selected company’s RADIX-12 profile and returns the report and radar-chart data.
+- POST /api/talent-check/coach — sends a report question to the AI Career Coach, trying Gemini and then the configured OpenRouter/OpenAI providers.
+- POST /api/talent-check/interview/questions and `/evaluate` — generates gap-based practice questions and evaluates an answer.
+- POST /api/talent-check/sprint/challenge and `/evaluate` — creates a Skill Proof Sprint and evaluates a submitted solution.
+- POST /api/talent-check/report — returns the downloadable Markdown report.
+- Vansh's integrated Talent Match page also uses `/api/ai-coach`, `/api/interview-practice/generate|evaluate`, `/api/skill-sprint/generate|evaluate`, and `/api/talent-check/report-md` compatibility routes.
 
-The Talent Check endpoint's company benchmarks, category weights, readiness threshold, and study-hour estimates are illustrative demo values. They are not verified employer requirements. The company-role requirements file has not yet been assessed, so do not present these demo scores as real hiring-readiness results.
+Talent Check follows Vansh’s resume → company → 12-skill RADIX report workflow, with his Career Coach, Interview Practice, and Skill Proof Sprint. `data/radix_company_benchmarks.json` is a snapshot of the project’s 118-company Supabase directory and its `company_skill_levels` table. 113 companies have company-specific skill profiles. The other five use the RADIX-wide median across the 113 complete profiles; the UI and report identify this clearly instead of implying those values are employer-specific. Company profiles are preparation benchmarks, not live job-description requirements or hiring decisions. The source database uses a 1–10 scale; Talent Check converts it to the report’s 1–5 scale.
 
-JD Analytics uses OpenRouter when OPENROUTER_API_KEY is configured. Resume parsing can use OpenRouter or OpenAI, selected by LLM_PROVIDER=auto|openrouter|openai|off. With no resume-provider key, it uses local heuristic extraction. The resume sample verification command always forces offline mode and never sends candidate documents to an external provider.
+JD Analytics and resume parsing try configured providers with bounded requests. If JD AI extraction fails, local fallback scans readable document text for explicit skill and tool names, returns source evidence, and labels the result as a local fallback. It can miss skills expressed indirectly and cannot extract text from image-only pages. Resume parsing uses its own labeled local heuristic fallback. Talent Check AI features try Gemini for 30 seconds, then the configured OpenRouter/OpenAI providers, each with a 30-second limit and no hidden SDK retries. These AI fallbacks receive the report details or answer text needed for the requested feature. Set `LLM_PROVIDER`, `OPENROUTER_API_KEY`, and/or `OPENAI_API_KEY` in `backend/.env`; set `GEMINI_API_KEY` in `role4_standalone/.env`. Keep both environment files local and untracked.
 
 Live resume skills are kept only when their evidence is a verbatim excerpt from the extracted resume text. If the model returns no grounded evidence, the parser falls back to local heuristic extraction.
 
@@ -61,4 +69,7 @@ To verify the bundled PDF and Word resume samples locally, run python scripts/ve
 - /company/skills — skill expectations and topic roadmaps
 - /company/compare — comparison of up to three companies
 - /jd-analytics — job-description skill extraction
-- /resume-profile — upload and review a parsed resume profile
+- /resume-profile — upload and review a parsed resume, then run Vansh's integrated Talent Match workflow
+- /talent-check — opens the same integrated workflow
+- /skill-match — parse a resume and job description, then compare their extracted skills and evidence
+- /talent-check — run the Role 4 company-benchmark preparation workflow

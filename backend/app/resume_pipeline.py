@@ -29,18 +29,8 @@ class ResumePipeline:
         self.parser = parser or ResumeDocumentParser(x_tolerance=2.0, y_tolerance=3.0)
         self.extractor = extractor or ResumeSkillExtractor()
 
-    def process_resume(
-        self,
-        file_path: str,
-        output_json_path: Optional[str] = None,
-        validate_type: bool = True,
-        source_filename: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Resume file not found: {file_path}")
-
-        parsed = self.parser.parse(file_path)
-
+    @staticmethod
+    def skill_text(parsed: Dict[str, Any]) -> str:
         sections = parsed.get("sections", {})
         skill_text_parts = []
         if sections.get("technical_skills"):
@@ -61,14 +51,19 @@ class ResumePipeline:
                 "### Achievements\n" + "\n".join(sections["achievements"])
             )
 
-        markdown_for_llm = (
+        return (
             "\n\n".join(skill_text_parts)
             if skill_text_parts
             else parsed.get("raw_text", "")
         )
 
-        extraction_result = self.extractor.extract_skills(markdown_for_llm)
-
+    @staticmethod
+    def build_profile(
+        parsed: Dict[str, Any],
+        extraction_result: Dict[str, Any],
+        source_filename: Optional[str] = None,
+        output_json_path: Optional[str] = None,
+    ) -> Dict[str, Any]:
         profile_data = {
             "source_type": "resume",
             "source_file": os.path.basename(source_filename) if source_filename else parsed["source_file"],
@@ -92,6 +87,25 @@ class ResumePipeline:
                 json.dump(profile_data, f, indent=2)
 
         return profile_data
+
+    def process_resume(
+        self,
+        file_path: str,
+        output_json_path: Optional[str] = None,
+        validate_type: bool = True,
+        source_filename: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Resume file not found: {file_path}")
+
+        parsed = self.parser.parse(file_path)
+        extraction_result = self.extractor.extract_skills(self.skill_text(parsed))
+        return self.build_profile(
+            parsed,
+            extraction_result,
+            source_filename=source_filename,
+            output_json_path=output_json_path,
+        )
 
 
 def parse_and_extract_resume(

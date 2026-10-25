@@ -46,6 +46,8 @@ Provide concise feedback with 3 bullet points:
 """
 
     response = call_gemini_api(prompt)
+    if response.startswith("[API Error]"):
+        return "AI feedback is temporarily unavailable. Review whether your answer includes a clear situation, your specific action, technical trade-offs, and the result."
     if response:
         return response
     return "Good effort! Make sure to include specific technical metrics and use the STAR method."

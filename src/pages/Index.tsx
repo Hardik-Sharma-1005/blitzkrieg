@@ -96,8 +96,10 @@ export function Index() {
               Explore company profiles, skill expectations, and career signals before campus placements.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
-              <Button onClick={() => navigate("/jd-analytics")}>Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
+              <Button onClick={() => navigate("/skill-match")}><GitCompareArrows className="h-4 w-4" /> Match resume to a job</Button>
+              <Button variant="soft" onClick={() => navigate("/jd-analytics")}>Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
               <Button variant="soft" onClick={() => navigate("/resume-profile")}><FileText className="h-4 w-4" /> Build your resume profile</Button>
+              <Button variant="outline" onClick={() => navigate("/talent-check")}><Sparkles className="h-4 w-4" /> Run Talent Check</Button>
             </div>
           </div>
 

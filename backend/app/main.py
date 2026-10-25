@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -7,26 +8,42 @@ import os
 import re
 from io import BytesIO
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Any, Literal
 import zipfile
 
 import httpx
 from dotenv import load_dotenv
 from docx import Document
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field
 from PIL import Image, ImageOps
 import pypdfium2 as pdfium
 from pypdf import PdfReader
+from starlette.concurrency import run_in_threadpool
 
 
 load_dotenv(Path(__file__).resolve().parents[1] / '.env')
 
 from .resume_api import resume_router
-from .mock_data import company_benchmarks
-from .schemas import CandidateProfile
+from .mock_data import (
+    company_benchmark_metadata,
+    company_benchmarks_by_id,
+)
 from .talent_check import get_radar_chart_data, run_talent_check
+from .llm_extractor import get_ai_provider_configs
+from .jd_fallback import extract_jd_fallback
+from .role4_service import (
+    ask_ai_agent_single_question,
+    ensure_report,
+    evaluate_interview_answer,
+    evaluate_sprint_submission,
+    generate_interview_questions,
+    generate_markdown_report,
+    generate_sprint_challenge,
+)
+from .skill_matching import match_profiles
 
 CategoryCode = Literal[
     "COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL",
@@ -59,6 +76,24 @@ class JDResult(BaseModel):
     company: str = ""
     role: str = ""
     skills: list[Skill]
+    extraction_mode: Literal["llm_live", "offline_heuristic", "offline_heuristic_fallback"] = "llm_live"
+    extraction_note: str = ""
+
+
+class SkillMatchCandidate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source_type: Literal["resume"] = "resume"
+    source_file: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=200)
+    skills: list[Skill] = Field(max_length=300)
+
+
+class SkillMatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    candidate_profile: SkillMatchCandidate
+    job_description: JDResult
 
 
 class LLMExtraction(BaseModel):
@@ -69,15 +104,40 @@ class LLMExtraction(BaseModel):
     skills: list[Skill]
 
 
-SkillRatingInput = Annotated[int, Field(strict=True, ge=1, le=5)]
-
-
 class TalentCheckRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
-    candidate_profile: CandidateProfile
-    company_name: str = Field(min_length=1, max_length=120)
-    skill_ratings: dict[CategoryCode, SkillRatingInput]
+    candidate_profile: dict[str, Any]
+    company_id: int | None = Field(default=None, ge=1)
+    company_name: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class TalentWorkflowRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    report: dict[str, Any]
+
+
+class TalentCoachRequest(TalentWorkflowRequest):
+    question: str = Field(min_length=1, max_length=2000)
+
+
+class InterviewEvaluationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    question: str = Field(min_length=1, max_length=3000)
+    candidate_answer: str = Field(min_length=1, max_length=12000)
+
+
+class VanshInterviewEvaluationRequest(BaseModel):
+    """Request shape used by the workflow on Vansh's branch."""
+    model_config = ConfigDict(extra="forbid")
+    question: str = Field(min_length=1, max_length=3000)
+    answer: str = Field(min_length=1, max_length=12000)
+
+
+class SprintEvaluationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    challenge: dict[str, Any]
+    solution: str = Field(min_length=1, max_length=12000)
 
 
 app = FastAPI(title="RADIX Talent Match API", version="0.1.0")
@@ -97,7 +157,7 @@ app.include_router(resume_router)
 async def health() -> dict[str, object]:
     return {
         "ok": True,
-        "services": {"jd_analytics": True, "resume_parsing": True, "talent_check": True},
+        "services": {"jd_analytics": True, "resume_parsing": True, "talent_check": True, "skill_matching": True},
         "providers": {
             "openrouter": bool(os.getenv("OPENROUTER_API_KEY")),
             "openai": bool(os.getenv("OPENAI_API_KEY")),
@@ -215,16 +275,9 @@ def unique_skills(skills: list[Skill]) -> list[Skill]:
 async def analyze_with_llm(
     text: str, company_hint: str, role_hint: str, images: list[dict[str, str]]
 ) -> LLMExtraction:
-    api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
-    model = os.getenv("OPENROUTER_MODEL", "").strip() or "openrouter/free"
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
-    if not api_key:
-        raise HTTPException(503, "Add OPENROUTER_API_KEY to backend/.env and restart the API.")
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "HTTP-Referer": "http://localhost:5173",
-        "X-Title": "RADIX Talent Match",
-    }
+    providers = get_ai_provider_configs()
+    if not providers:
+        raise HTTPException(503, "Configure an AI provider key in backend/.env and restart the API.")
     system_prompt = """You extract job requirements from job descriptions for RADIX Talent Match.
 Return only a JSON object with exactly the keys company, role, and skills. Do not add other keys. Each skill must have exactly
 skill_name, category_code, evidence, and confidence. Use only these category codes:
@@ -259,7 +312,6 @@ string. If no skills can be supported, return an empty skills array."""
                 "image_url": {"url": image["data_url"], "detail": "high"},
             })
     payload = {
-        "model": model,
         "temperature": 0,
         "response_format": {"type": "json_object"},
         "messages": [
@@ -267,32 +319,36 @@ string. If no skills can be supported, return an empty skills array."""
             {"role": "user", "content": user_content},
         ],
     }
-    try:
-        async with httpx.AsyncClient(timeout=90) as client:
-            response = await client.post(
-                f"{base_url}/chat/completions",
-                headers=headers,
-                json=payload,
-            )
-        response.raise_for_status()
-        body = response.json()
-        raw_content = body["choices"][0]["message"]["content"]
-        parsed = LLMExtraction.model_validate(json.loads(raw_content))
-        return parsed.model_copy(update={"skills": unique_skills(parsed.skills)})
-    except httpx.TimeoutException as exc:
-        raise HTTPException(504, "The extraction service took too long. Please try again.") from exc
-    except httpx.HTTPStatusError as exc:
-        if exc.response.status_code == 404 and images:
-            detail = "The selected model may not support image input. Choose a vision-capable model."
-        elif exc.response.status_code == 401:
-            detail = "The OpenRouter API key was rejected. Check its key in backend/.env."
-        elif exc.response.status_code == 429:
-            detail = "OpenRouter is rate limited. Wait a moment and try again."
-        else:
-            detail = "The LLM service could not complete the extraction. Please try again."
-        raise HTTPException(502, detail) from exc
-    except (httpx.HTTPError, KeyError, IndexError, json.JSONDecodeError, ValidationError) as exc:
-        raise HTTPException(502, "The extraction service returned an unreadable response.") from exc
+    timed_out = False
+    for provider in providers:
+        headers = {"Authorization": f"Bearer {provider['api_key']}"}
+        if provider["provider"] == "openrouter":
+            headers.update({
+                "HTTP-Referer": "http://localhost:5173",
+                "X-Title": "RADIX Talent Match",
+            })
+        provider_payload = {**payload, "model": provider["model"]}
+        try:
+            async with asyncio.timeout(30):
+                async with httpx.AsyncClient(timeout=httpx.Timeout(28, connect=8)) as client:
+                    response = await client.post(
+                        f"{provider['base_url']}/chat/completions",
+                        headers=headers,
+                        json=provider_payload,
+                    )
+                    response.raise_for_status()
+            body = response.json()
+            raw_content = body["choices"][0]["message"]["content"]
+            parsed = LLMExtraction.model_validate(json.loads(raw_content))
+            return parsed.model_copy(update={"skills": unique_skills(parsed.skills)})
+        except (TimeoutError, httpx.TimeoutException):
+            timed_out = True
+        except Exception:
+            logger.exception("JD extraction provider attempt failed: %s", provider["provider"])
+
+    if timed_out:
+        raise HTTPException(504, "AI providers did not finish within 30 seconds each. Check provider configuration or try again.")
+    raise HTTPException(502, "All configured AI providers failed to extract this job description. Check provider settings and try again.")
 
 
 @app.post("/api/analyze", response_model=JDResult)
@@ -323,12 +379,36 @@ async def analyze_jd(
 
     company_hint = (company or "").strip()[:200]
     role_hint = (role or "").strip()[:200]
-    extraction = await analyze_with_llm(jd_text, company_hint, role_hint, images)
+    ai_providers_configured = bool(get_ai_provider_configs())
+    try:
+        extraction = await analyze_with_llm(jd_text, company_hint, role_hint, images)
+        extraction_mode = "llm_live"
+        if not extraction.skills:
+            local_extraction = extract_jd_fallback(jd_text, company_hint, role_hint)
+            if local_extraction["skills"]:
+                extraction = LLMExtraction.model_validate(local_extraction)
+                extraction_mode = "offline_heuristic_fallback"
+    except HTTPException as exc:
+        logger.warning(
+            "JD AI extraction unavailable (HTTP %s); using local explicit-skill extraction.",
+            exc.status_code,
+        )
+        local_extraction = extract_jd_fallback(jd_text, company_hint, role_hint)
+        extraction = LLMExtraction.model_validate(local_extraction)
+        extraction_mode = "offline_heuristic_fallback" if ai_providers_configured else "offline_heuristic"
+    if extraction_mode == "llm_live":
+        extraction_note = "AI extraction completed. Review the extracted requirements and source evidence."
+    elif not jd_text.strip() and images:
+        extraction_note = "AI extraction was unavailable. The local fallback cannot read skills from image-only pages, so upload a text-based copy or try again when AI service is available."
+    else:
+        extraction_note = "AI extraction was unavailable; local fallback found explicit skill names only. It may miss requirements expressed indirectly, so review the job description."
     result = JDResult(
         source_file=filename,
         company=company_hint or extraction.company,
         role=role_hint or extraction.role,
         skills=extraction.skills,
+        extraction_mode=extraction_mode,
+        extraction_note=extraction_note,
     )
     try:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -342,27 +422,181 @@ async def analyze_jd(
     return result
 
 
-# --- Role 4: Talent Check Endpoint ---
-@app.post(
-    "/api/talent-check",
-    summary="Compare a candidate profile with demo company benchmarks",
-    description=(
-        "Requires an explicit 1–5 student rating for every assessed category. "
-        "Current company benchmarks are illustrative demo values, not verified employer requirements."
-    ),
-)
-async def talent_check_endpoint(req: TalentCheckRequest) -> dict:
+@app.post("/api/skill-match")
+async def skill_match_endpoint(req: SkillMatchRequest) -> dict[str, Any]:
+    """Compare the real parsed resume and JD handoffs produced by this platform."""
     try:
-        report = run_talent_check(
+        result = match_profiles(
             req.candidate_profile.model_dump(mode="json"),
-            req.company_name,
-            company_benchmarks,
-            skill_ratings=req.skill_ratings,
+            req.job_description.model_dump(mode="json"),
         )
     except ValueError as exc:
-        raise HTTPException(422, str(exc)) from exc
-    radar = get_radar_chart_data(report)
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"report": result}
+
+
+@app.get("/api/talent-check/companies")
+async def talent_check_companies() -> dict[str, Any]:
+    return get_talent_check_companies()
+
+
+def get_talent_check_companies() -> dict[str, Any]:
     return {
-        "report": report,
-        "radar_chart_data": radar,
+        "companies": [
+            {
+                "company_id": record["company_id"],
+                "name": record["name"],
+                "benchmark_source": record["benchmark_source"],
+                "benchmark_note": record["benchmark_note"],
+            }
+            for record in company_benchmark_metadata["companies"]
+        ],
+        "radix_skill_count": len(company_benchmark_metadata["skill_categories"]),
+    }
+
+
+@app.post("/api/talent-check")
+async def talent_check_endpoint(req: TalentCheckRequest) -> dict[str, Any]:
+    return score_talent_check(req)
+
+
+def score_talent_check(req: TalentCheckRequest) -> dict[str, Any]:
+    record = company_benchmarks_by_id.get(req.company_id) if req.company_id is not None else None
+    if record is None and req.company_name:
+        record = next(
+            (entry for entry in company_benchmark_metadata["companies"] if entry["name"].casefold() == req.company_name.strip().casefold()),
+            None,
+        )
+    if record is None:
+        raise HTTPException(404, "Choose a company from the 118 available company profiles.")
+    report = run_talent_check(
+        req.candidate_profile,
+        record["name"],
+        {record["name"]: record["benchmark"]},
+    )
+    if report.get("error"):
+        raise HTTPException(422, report.get("message", "The Talent Check could not score this profile."))
+    report["company_id"] = record["company_id"]
+    report["benchmark_source"] = record["benchmark_source"]
+    report["benchmark_notice"] = record["benchmark_note"]
+    return {"report": report, "radar_chart_data": get_radar_chart_data(report)}
+
+
+@app.post("/api/talent-check/report")
+async def talent_check_report(req: TalentWorkflowRequest) -> Response:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return Response(
+        content=generate_markdown_report(report),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="RADIX-Talent-Check.md"'},
+    )
+
+
+@app.post("/api/talent-check/coach")
+async def talent_check_coach(req: TalentCoachRequest) -> dict[str, str]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    answer = await run_in_threadpool(ask_ai_agent_single_question, report, req.question)
+    if answer.startswith("[API Error]"):
+        raise HTTPException(502, answer)
+    return {"answer": answer}
+
+
+@app.post("/api/talent-check/interview/questions")
+async def talent_check_interview_questions(req: TalentWorkflowRequest) -> dict[str, list[str]]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    questions = await run_in_threadpool(generate_interview_questions, report)
+    return {"questions": questions}
+
+
+@app.post("/api/talent-check/interview/evaluate")
+async def talent_check_interview_evaluate(req: InterviewEvaluationRequest) -> dict[str, str]:
+    feedback = await run_in_threadpool(
+        evaluate_interview_answer, req.question, req.candidate_answer
+    )
+    if feedback.startswith("[API Error]"):
+        raise HTTPException(502, feedback)
+    return {"feedback": feedback}
+
+
+@app.post("/api/talent-check/sprint/challenge")
+async def talent_check_sprint_challenge(req: TalentWorkflowRequest) -> dict[str, Any]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return await run_in_threadpool(generate_sprint_challenge, report)
+
+
+@app.post("/api/talent-check/sprint/evaluate")
+async def talent_check_sprint_evaluate(req: SprintEvaluationRequest) -> dict[str, Any]:
+    return await run_in_threadpool(
+        evaluate_sprint_submission, req.challenge, req.solution
+    )
+
+
+# Compatibility routes consumed by Vansh's integrated Talent Match page.
+@app.post("/api/ai-coach")
+async def vansh_ai_coach(req: TalentCoachRequest) -> dict[str, str]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    answer = await run_in_threadpool(ask_ai_agent_single_question, report, req.question)
+    if answer.startswith("[API Error]"):
+        raise HTTPException(502, answer)
+    return {"answer": answer}
+
+
+@app.post("/api/interview-practice/generate")
+async def vansh_interview_generate(req: TalentWorkflowRequest) -> dict[str, list[str]]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return {"questions": await run_in_threadpool(generate_interview_questions, report)}
+
+
+@app.post("/api/interview-practice/evaluate")
+async def vansh_interview_evaluate(req: VanshInterviewEvaluationRequest) -> dict[str, str]:
+    feedback = await run_in_threadpool(evaluate_interview_answer, req.question, req.answer)
+    if feedback.startswith("[API Error]"):
+        raise HTTPException(502, feedback)
+    return {"feedback": feedback}
+
+
+@app.post("/api/skill-sprint/generate")
+async def vansh_sprint_generate(req: TalentWorkflowRequest) -> dict[str, Any]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return {"challenge": await run_in_threadpool(generate_sprint_challenge, report)}
+
+
+@app.post("/api/skill-sprint/evaluate")
+async def vansh_sprint_evaluate(req: SprintEvaluationRequest) -> dict[str, Any]:
+    result = await run_in_threadpool(evaluate_sprint_submission, req.challenge, req.solution)
+    return {"result": result}
+
+
+@app.post("/api/talent-check/report-md")
+async def vansh_report_markdown(req: TalentWorkflowRequest) -> dict[str, str]:
+    try:
+        report = ensure_report(req.report)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    candidate = re.sub(r"[^A-Za-z0-9._-]+", "_", str(report.get("candidate_name") or "candidate")).strip("_.") or "candidate"
+    company = re.sub(r"[^A-Za-z0-9._-]+", "_", str(report.get("target_company") or report.get("company") or "company")).strip("_.") or "company"
+    return {
+        "markdown": generate_markdown_report(report),
+        "filename": f"RADIX_Report_{candidate}_{company}.md",
     }

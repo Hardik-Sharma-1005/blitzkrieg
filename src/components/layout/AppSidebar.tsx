@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { ArrowLeft, Building2, FileSearch, GitCompareArrows, GraduationCap, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ArrowLeft, Building2, FileSearch, GitCompareArrows, GraduationCap, PanelLeftClose, PanelLeftOpen, Sparkles } from "lucide-react";
 import { useSidebar } from "@/components/layout/SidebarContext";
 
 const links = [
@@ -7,6 +7,8 @@ const links = [
   { to: "/company/skills", label: "Skill Intelligence", icon: GraduationCap },
   { to: "/company/compare", label: "Compare Companies", icon: GitCompareArrows },
   { to: "/jd-analytics", label: "Analyze a JD", icon: FileSearch },
+  { to: "/skill-match", label: "Match resume to a job", icon: GitCompareArrows },
+  { to: "/talent-check", label: "Talent Check", icon: Sparkles },
 ];
 
 export function AppSidebar() {

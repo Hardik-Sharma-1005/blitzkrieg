@@ -11,6 +11,8 @@ def generate_markdown_report(report: dict) -> str:
     lines.append(f"# RADIX Talent Match – Readiness Report")
     lines.append(f"**Candidate:** {report['candidate_name']}")
     lines.append(f"**Target Company:** {report['target_company']}")
+    if report.get("benchmark_notice"):
+        lines.append(f"**Benchmark source:** {report['benchmark_notice']}")
     lines.append(f"**Generated on:** {datetime.now().strftime('%d %B %Y, %I:%M %p')}")
     lines.append("")
     lines.append("---")

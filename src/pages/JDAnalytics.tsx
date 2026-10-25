@@ -17,6 +17,8 @@ type JDResult = {
   company: string;
   role: string;
   skills: Skill[];
+  extraction_mode: "llm_live" | "offline_heuristic" | "offline_heuristic_fallback";
+  extraction_note: string;
 };
 
 const apiBase = (import.meta.env.VITE_JD_ANALYTICS_API_URL || "http://127.0.0.1:8000").trim().replace(/\/$/, "");
@@ -152,14 +154,15 @@ export function JDAnalytics() {
             <p className="mt-2 text-sm leading-6 text-slate-600">Important skills can be described through responsibilities and expectations, not just listed by name. The analysis considers the context of the whole job description.</p>
             <div className="mt-5 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">Scanned and image-based PDFs are supported.</div>
             <Link to="/resume-profile" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#246b5d] hover:text-[#185546]">Build your resume profile <ArrowLeft className="h-4 w-4 rotate-180" /></Link>
+            <Link to="/skill-match" className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#246b5d] hover:text-[#185546]">Compare a resume with a job <ArrowLeft className="h-4 w-4 rotate-180" /></Link>
           </Card>
         </div>
 
         {result && <Card className="mt-6 overflow-hidden">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e9e1d5] p-5 sm:p-6">
-            <div className="flex gap-3"><span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e4f2e9] text-[#246b5d]"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]">Analysis complete</p><h2 className="mt-1 font-heading text-xl font-semibold text-[#26354b]">{result.role || "JD skill list"}{result.company ? ` · ${result.company}` : ""}</h2><p className="mt-1 text-sm text-slate-500">{result.source_file} · {result.skills.length} extracted {result.skills.length === 1 ? "skill" : "skills"}</p></div></div>
+            <div className="flex gap-3"><span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e4f2e9] text-[#246b5d]"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]">{result.extraction_mode === "llm_live" ? "AI analysis complete" : "Local fallback analysis complete"}</p><h2 className="mt-1 font-heading text-xl font-semibold text-[#26354b]">{result.role || "JD skill list"}{result.company ? ` · ${result.company}` : ""}</h2><p className="mt-1 text-sm text-slate-500">{result.source_file} · {result.skills.length} extracted {result.skills.length === 1 ? "skill" : "skills"}</p><p className="mt-2 text-sm leading-5 text-slate-600">{result.extraction_note}</p></div></div>
           </div>
-          {result.skills.length === 0 ? <p className="p-6 text-sm text-slate-600">No supported skills were found in this JD.</p> : <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">{result.skills.map((skill, index) => <div key={`${skill.skill_name}-${index}`} className="rounded-xl border border-[#e9e1d5] bg-white p-4"><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="font-semibold text-slate-900">{skill.skill_name}</h3><Badge variant="outline">{skill.category_code}</Badge></div><p className="mt-1 text-xs font-medium text-slate-500">{categories[skill.category_code] ?? "Other"} · {skill.confidence} confidence</p><blockquote className="mt-3 border-l-2 border-[#80b7a4] pl-3 text-sm leading-6 text-slate-600">{skill.evidence}</blockquote></div>)}</div>}
+          {result.skills.length === 0 ? <p className="p-6 text-sm text-slate-600">No supported skills were identified. {result.extraction_mode === "llm_live" ? "Review the document text and try again." : "The local fallback only recognizes explicit skill and tool names in readable text; try a text-based copy or retry when AI extraction is available."}</p> : <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">{result.skills.map((skill, index) => <div key={`${skill.skill_name}-${index}`} className="rounded-xl border border-[#e9e1d5] bg-white p-4"><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="font-semibold text-slate-900">{skill.skill_name}</h3><Badge variant="outline">{skill.category_code}</Badge></div><p className="mt-1 text-xs font-medium text-slate-500">{categories[skill.category_code] ?? "Other"} · {skill.confidence} confidence</p><blockquote className="mt-3 border-l-2 border-[#80b7a4] pl-3 text-sm leading-6 text-slate-600">{skill.evidence}</blockquote></div>)}</div>}
 
         </Card>}
       </main>

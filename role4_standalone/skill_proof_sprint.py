@@ -4,7 +4,7 @@ from config import call_gemini_api
 
 def generate_sprint_challenge(talent_check_output: dict) -> dict:
     gaps = [item for item in talent_check_output.get("per_skillset_gap_breakdown", []) if item["gap"] > 0]
-    cat = gaps[0]["category"] if gaps else "CDG"
+    cat = gaps[0]["category"] if gaps else "COD"
 
     prompt = f"""
 Create a 3-minute technical micro-challenge for category '{cat}'.
@@ -53,6 +53,14 @@ Return ONLY a valid JSON object with these exact keys:
 """
 
     response = call_gemini_api(prompt)
+    if response.startswith("[API Error]"):
+        return {
+            "is_passed": False,
+            "score_pct": 0,
+            "feedback": "AI evaluation is temporarily unavailable. Your submission was received but was not scored or marked as passed. Please retry when the AI service is available.",
+            "verified_skill_badge": "",
+            "evaluation_status": "unavailable",
+        }
     try:
         raw_text = response.strip()
         if "```" in raw_text:
@@ -64,8 +72,9 @@ Return ONLY a valid JSON object with these exact keys:
         pass
 
     return {
-        "is_passed": True,
-        "score_pct": 85,
-        "feedback": "Solid architectural solution with good trade-off awareness.",
-        "verified_skill_badge": f"Verified Evidence: {cat} Sprint"
+        "is_passed": False,
+        "score_pct": 0,
+        "feedback": "The AI response could not be validated. Your submission was not scored or marked as passed; please retry.",
+        "verified_skill_badge": "",
+        "evaluation_status": "unavailable",
     }
