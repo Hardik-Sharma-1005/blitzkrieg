@@ -15,3 +15,5 @@ output/*.json
 .tanstack/
 .lovable/
 output/resumes/*.json
+
+output/talent_check/
