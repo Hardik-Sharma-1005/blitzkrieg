@@ -237,12 +237,16 @@ class ResumeSkillExtractor:
                 seen.add(skill_name)
                 start = max(0, match.start() - 30)
                 end = min(len(text), match.end() + 30)
-                evidence = text[start:end].replace("\n", " ").strip()
+                while start > 0 and not text[start - 1].isspace():
+                    start -= 1
+                while end < len(text) and not text[end].isspace():
+                    end += 1
+                evidence = re.sub(r"\s+", " ", text[start:end]).strip()
                 extracted.append(
                     {
                         "skill_name": skill_name,
                         "category_code": category_code,
-                        "evidence": f"...{evidence}..." if start > 0 else f"{evidence}...",
+                        "evidence": evidence,
                         "confidence": confidence,
                     }
                 )
