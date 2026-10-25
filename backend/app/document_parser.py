@@ -116,6 +116,11 @@ class ResumeDocumentParser:
         if not text:
             return None
 
+        # Some PDF text extractors replace bullet and em-dash glyphs with U+FFFD.
+        if text.startswith("\ufffd"):
+            text = "•" + text[1:]
+        text = text.replace("\ufffd", " — ")
+
         for pattern in self.NOISE_PATTERNS:
             if pattern.search(text):
                 cleaned = pattern.sub("", text).strip()
@@ -259,6 +264,25 @@ class ResumeDocumentParser:
 
         return sections
 
+    @staticmethod
+    def _merge_wrapped_pdf_items(sections: Dict[str, Any]) -> Dict[str, Any]:
+        """Join unbulleted PDF wrap lines to their preceding bullet within each section."""
+        bullet_start = re.compile(r"^\s*[•●▪◦*\-–—]\s*")
+        for section_name, lines in sections.items():
+            if section_name == "preamble":
+                continue
+            merged: List[str] = []
+            previous_was_bulleted = False
+            for line in lines:
+                is_bulleted = bool(bullet_start.match(line))
+                if is_bulleted or not merged or not previous_was_bulleted:
+                    merged.append(line)
+                else:
+                    merged[-1] = f"{merged[-1].rstrip()} {line.strip()}"
+                previous_was_bulleted = is_bulleted or (previous_was_bulleted and bool(merged))
+            sections[section_name] = merged
+        return sections
+
     def parse(self, file_path: str) -> Dict[str, Any]:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -280,6 +304,8 @@ class ResumeDocumentParser:
             )
 
         sections = self.segment_sections(lines)
+        if ext == ".pdf":
+            sections = self._merge_wrapped_pdf_items(sections)
         preamble = sections.get("preamble", [])
 
         name = preamble[0] if preamble else "Unknown Candidate"

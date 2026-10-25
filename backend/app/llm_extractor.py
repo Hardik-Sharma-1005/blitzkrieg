@@ -150,7 +150,7 @@ OFFLINE_SKILL_PATTERNS = [
     (r"\bindexing\b|\bquery optimization\b", "Query Optimization & Indexing", "SQL", "high"),
     # SWE
     (r"\bGit\b", "Git", "SWE", "high"),
-    (r"\btesting\b|\bunit tests?\b|\bpytest\b", "Software Testing", "SWE", "high"),
+    (r"\b(?:unit|integration|software|automated?)\s+testing\b|\b(?:unit|integration|software|automated?)\s+tests?\b|\bpytest\b|\bjest\b", "Software Testing", "SWE", "high"),
     (r"\bcode review\b", "Code Reviews", "SWE", "high"),
     (r"\bAgile\b|\bScrum\b", "Agile & Scrum", "SWE", "high"),
     # SYSD
