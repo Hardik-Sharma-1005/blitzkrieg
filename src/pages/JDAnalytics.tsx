@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Download, FileJson2, FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -81,13 +81,13 @@ export function JDAnalytics() {
         throw new Error(detail || "The JD could not be analyzed. Please try again.");
       }
       if (!payload || !("skills" in payload) || !Array.isArray(payload.skills)) {
-        throw new Error("The analyzer returned a response that does not match the Stage 1 handoff format.");
+        throw new Error("The analyzer returned an unexpected result. Please try again.");
       }
       setResult(payload as JDResult);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "The JD could not be analyzed.";
       if (message.toLowerCase().includes("failed to fetch")) {
-        setError(`Could not reach the JD Analytics service at ${apiBase}. Start the backend or set VITE_JD_ANALYTICS_API_URL to its address.`);
+        setError(`We could not connect to the analysis service. Please try again in a moment.`);
       } else {
         setError(message);
       }
@@ -96,18 +96,6 @@ export function JDAnalytics() {
     }
   };
 
-  const downloadResult = () => {
-    if (!result) return;
-    const blob = new Blob([`${JSON.stringify(result, null, 2)}\n`], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${result.source_file.replace(/\.[^.]+$/, "") || "jd-skill-list"}.json`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
 
   return (
     <div className="min-h-screen bg-[#fbf8f1]">
@@ -120,9 +108,9 @@ export function JDAnalytics() {
 
       <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
         <div className="max-w-3xl">
-          <p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]"><Sparkles className="h-3.5 w-3.5" /> JD Analytics · Stage 1</p>
+          <p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]"><Sparkles className="h-3.5 w-3.5" /> JOB INSIGHTS</p>
           <h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-[#26354b] sm:text-4xl">Understand what a job actually asks for.</h1>
-          <p className="mt-3 text-base leading-7 text-slate-600">Upload a job description to extract its skills and technologies, grouped into the RADIX categories. The result is the JD skill list used by Skill Matching.</p>
+          <p className="mt-3 text-base leading-7 text-slate-600">Upload a job description to see the skills and technologies the role calls for.</p>
         </div>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
@@ -149,7 +137,7 @@ export function JDAnalytics() {
                 <div><label htmlFor="jd-company" className="mb-1.5 block text-sm font-medium text-slate-700">Company <span className="font-normal text-slate-400">(optional)</span></label><input id="jd-company" value={company} onChange={(event) => setCompany(event.target.value)} maxLength={200} placeholder="e.g. Google LLC" className="h-11 w-full rounded-xl border border-[#ded7ca] bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-[#80b7a4] focus:ring-4 focus:ring-[#dff0e5]" /></div>
                 <div><label htmlFor="jd-role" className="mb-1.5 block text-sm font-medium text-slate-700">Role <span className="font-normal text-slate-400">(optional)</span></label><input id="jd-role" value={role} onChange={(event) => setRole(event.target.value)} maxLength={200} placeholder="e.g. Data Scientist" className="h-11 w-full rounded-xl border border-[#ded7ca] bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-[#80b7a4] focus:ring-4 focus:ring-[#dff0e5]" /></div>
               </div>
-              <p className="text-xs text-slate-500">Skill extraction uses OpenRouter. The API key stays on the backend and is never sent to the browser.</p>
+              <p className="text-xs text-slate-500">Your document is analyzed to identify role-related skills and requirements.</p>
 
               {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{error}</div>}
 
@@ -160,25 +148,19 @@ export function JDAnalytics() {
           </Card>
 
           <Card className="p-5 sm:p-7">
-            <h2 className="font-heading text-lg font-semibold text-[#26354b]">What this stage returns</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">One structured JD result with company and role context, plus skills that Stage 5 can compare with a candidate profile.</p>
-            <div className="mt-5 space-y-3">
-              {["Skill or technology name", "One RADIX category code", "Evidence from the JD", "Extraction confidence"].map((item, index) => <div key={item} className="flex items-center gap-3 rounded-xl bg-[#faf7f0] px-3 py-2.5"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#e4f2e9] text-xs font-semibold text-[#246b5d]">{index + 1}</span><span className="text-sm text-slate-700">{item}</span></div>)}
-            </div>
-            <div className="mt-5 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">The extraction focuses on “Key Responsibilities” and “What We’re Looking For.” Image-only PDF pages are sent to a vision-capable model.</div>
+            <h2 className="font-heading text-lg font-semibold text-[#26354b]">Look beyond keywords</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Important skills can be described through responsibilities and expectations, not just listed by name. The analysis considers the context of the whole job description.</p>
+            <div className="mt-5 rounded-xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">Scanned and image-based PDFs are supported.</div>
           </Card>
         </div>
 
         {result && <Card className="mt-6 overflow-hidden">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#e9e1d5] p-5 sm:p-6">
             <div className="flex gap-3"><span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e4f2e9] text-[#246b5d]"><CheckCircle2 className="h-5 w-5" /></span><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]">Analysis complete</p><h2 className="mt-1 font-heading text-xl font-semibold text-[#26354b]">{result.role || "JD skill list"}{result.company ? ` · ${result.company}` : ""}</h2><p className="mt-1 text-sm text-slate-500">{result.source_file} · {result.skills.length} extracted {result.skills.length === 1 ? "skill" : "skills"}</p></div></div>
-            <Button type="button" onClick={downloadResult} variant="outline"><Download className="h-4 w-4" /> Download JSON</Button>
           </div>
           {result.skills.length === 0 ? <p className="p-6 text-sm text-slate-600">No supported skills were found in this JD.</p> : <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">{result.skills.map((skill, index) => <div key={`${skill.skill_name}-${index}`} className="rounded-xl border border-[#e9e1d5] bg-white p-4"><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="font-semibold text-slate-900">{skill.skill_name}</h3><Badge variant="outline">{skill.category_code}</Badge></div><p className="mt-1 text-xs font-medium text-slate-500">{categories[skill.category_code] ?? "Other"} · {skill.confidence} confidence</p><blockquote className="mt-3 border-l-2 border-[#80b7a4] pl-3 text-sm leading-6 text-slate-600">{skill.evidence}</blockquote></div>)}</div>}
-          <div className="flex items-center gap-2 border-t border-[#e9e1d5] bg-[#faf7f0] px-5 py-3 text-xs text-slate-500 sm:px-6"><FileJson2 className="h-4 w-4 shrink-0" /> The saved JSON follows the Stage 1 handoff schema for Skill Matching.</div>
-        </Card>}
 
-        <p className="mt-8 text-center text-xs leading-5 text-slate-400">Job descriptions are sent to OpenRouter for analysis. The Stage 1 API saves its JSON response in the backend’s local <code className="rounded bg-white px-1 py-0.5">output/</code> folder; use Download JSON to keep a copy in this browser.</p>
+        </Card>}
       </main>
     </div>
   );

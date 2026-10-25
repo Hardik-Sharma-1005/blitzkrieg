@@ -49,7 +49,7 @@ Selected company, comparison shortlist, and optional skill self-ratings are stor
 
 ## JD Analytics feature
 
-The JD Analytics screen is available from the home page and company sidebar at `/jd-analytics`. It accepts PDF/DOCX job descriptions, calls the RADIX extraction backend, displays the extracted skills, and lets the user download the Stage 1 JSON for Stage 5. The backend also writes the same response to its local `output/` folder when that filesystem is writable. The existing Supabase company data remains read-only; JD results are not inserted into Supabase.
+The JD Analytics screen is available from the home page and company sidebar at `/jd-analytics`. It accepts PDF/DOCX job descriptions, calls the RADIX extraction backend and displays the extracted skills. The backend saves the structured result in its local `output/` folder when that filesystem is writable. The existing Supabase company data remains read-only; JD results are not inserted into Supabase.
 
 ### Run the integrated app locally
 
@@ -69,4 +69,4 @@ At the project root, copy `.env.example` to `.env.local` and set the Supabase va
 
 ### Hosted frontend
 
-The static Vercel frontend needs a separately reachable Stage 1 API. Set `VITE_JD_ANALYTICS_API_URL` in the Vercel project to that API's base URL, and configure the exact frontend origin in the backend's `CORS_ORIGINS`. Put `OPENROUTER_API_KEY` in the backend host's secret environment. Some serverless hosts have temporary filesystems, so the browser's **Download JSON** action is the portable way to keep a handoff file there; a persistent `output/` folder requires a backend host with persistent storage.
+The static Vercel frontend needs a separately reachable Stage 1 API. Set `VITE_JD_ANALYTICS_API_URL` in the Vercel project to that API's base URL, and configure the exact frontend origin in the backend's `CORS_ORIGINS`. Put `OPENROUTER_API_KEY` in the backend host's secret environment. Some serverless hosts have temporary filesystems; use a backend host with persistent storage if the generated JSON files need to remain available.
