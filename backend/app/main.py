@@ -7,7 +7,7 @@ import os
 import re
 from io import BytesIO
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 import zipfile
 
 import httpx
@@ -24,6 +24,9 @@ from pypdf import PdfReader
 load_dotenv(Path(__file__).resolve().parents[1] / '.env')
 
 from .resume_api import resume_router
+from .mock_data import company_benchmarks
+from .schemas import CandidateProfile
+from .talent_check import get_radar_chart_data, run_talent_check
 
 CategoryCode = Literal[
     "COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL",
@@ -66,7 +69,18 @@ class LLMExtraction(BaseModel):
     skills: list[Skill]
 
 
-app = FastAPI(title="RADIX JD Analytics", version="0.1.0")
+SkillRatingInput = Annotated[int, Field(strict=True, ge=1, le=5)]
+
+
+class TalentCheckRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    candidate_profile: CandidateProfile
+    company_name: str = Field(min_length=1, max_length=120)
+    skill_ratings: dict[CategoryCode, SkillRatingInput]
+
+
+app = FastAPI(title="RADIX Talent Match API", version="0.1.0")
 configured_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
 app.add_middleware(
     CORSMiddleware,
@@ -83,7 +97,7 @@ app.include_router(resume_router)
 async def health() -> dict[str, object]:
     return {
         "ok": True,
-        "services": {"jd_analytics": True, "resume_parsing": True},
+        "services": {"jd_analytics": True, "resume_parsing": True, "talent_check": True},
         "providers": {
             "openrouter": bool(os.getenv("OPENROUTER_API_KEY")),
             "openai": bool(os.getenv("OPENAI_API_KEY")),
@@ -329,17 +343,24 @@ async def analyze_jd(
 
 
 # --- Role 4: Talent Check Endpoint ---
-from .talent_check import run_talent_check, get_radar_chart_data
-from .mock_data import company_benchmarks
-
-class TalentCheckRequest(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    candidate_profile: dict
-    company_name: str = "Google"
-
-@app.post("/api/talent-check")
+@app.post(
+    "/api/talent-check",
+    summary="Compare a candidate profile with demo company benchmarks",
+    description=(
+        "Requires an explicit 1–5 student rating for every assessed category. "
+        "Current company benchmarks are illustrative demo values, not verified employer requirements."
+    ),
+)
 async def talent_check_endpoint(req: TalentCheckRequest) -> dict:
-    report = run_talent_check(req.candidate_profile, req.company_name, company_benchmarks)
+    try:
+        report = run_talent_check(
+            req.candidate_profile.model_dump(mode="json"),
+            req.company_name,
+            company_benchmarks,
+            skill_ratings=req.skill_ratings,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     radar = get_radar_chart_data(report)
     return {
         "report": report,

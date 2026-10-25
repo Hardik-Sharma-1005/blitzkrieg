@@ -16,10 +16,11 @@ You can also run only the frontend with npm run dev. The API's interactive docum
 ## Demo path
 
 1. Search the company directory and open a company profile.
-2. Compare two or three companies and review their sources, freshness, skill expectations, and learning signals.
+2. Compare two or three companies and review their profiles, skill expectations, and learning signals.
 3. Open Skill Intelligence, rate a few skills, and review the largest gaps to the selected company's targets.
 4. Analyze a supplied job description from Analyze a JD and inspect the extracted skills and supporting evidence.
-5. Send a supplied resume to the resume parsing endpoint and review the structured candidate profile.
+5. Open Build your resume profile, upload a supplied resume, and review the structured candidate profile.
+6. Try POST /api/talent-check in Swagger with a candidate profile and explicit 1–5 ratings for the assessed categories.
 
 ## Frontend and Supabase
 
@@ -39,6 +40,9 @@ The shared FastAPI app exposes:
 - GET /api/health — status for the JD and resume services, plus configured providers.
 - POST /api/analyze — accepts a PDF or DOCX JD and returns a categorized skill list with evidence.
 - POST /api/parse-resume — accepts a PDF or DOCX resume and returns the CandidateProfile handoff for Profile Builder.
+- POST /api/talent-check — compares a CandidateProfile with the current demo benchmarks. It requires explicit 1–5 student ratings for every assessed category; parser confidence is never used as proficiency.
+
+The Talent Check endpoint's company benchmarks, category weights, readiness threshold, and study-hour estimates are illustrative demo values. They are not verified employer requirements. The company-role requirements file has not yet been assessed, so do not present these demo scores as real hiring-readiness results.
 
 JD Analytics uses OpenRouter when OPENROUTER_API_KEY is configured. Resume parsing can use OpenRouter or OpenAI, selected by LLM_PROVIDER=auto|openrouter|openai|off. With no resume-provider key, it uses local heuristic extraction. The resume sample verification command always forces offline mode and never sends candidate documents to an external provider.
 
@@ -57,3 +61,4 @@ To verify the bundled PDF and Word resume samples locally, run python scripts/ve
 - /company/skills — skill expectations and topic roadmaps
 - /company/compare — comparison of up to three companies
 - /jd-analytics — job-description skill extraction
+- /resume-profile — upload and review a parsed resume profile
