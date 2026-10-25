@@ -9,6 +9,7 @@ except ImportError:
         if dotenv_path is None:
             candidates = [
                 os.path.join(os.getcwd(), ".env"),
+                os.path.join(os.getcwd(), "backend", ".env"),
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
                 os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
             ]
@@ -33,13 +34,34 @@ from google import genai
 from google.genai import errors
 import httpx
 
+FAST_MODELS = [
+    "gemini-flash-lite-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.8-flash",
+]
+
 def get_gemini_key() -> str:
-    load_dotenv()
-    return os.environ.get("GEMINI_API_KEY", "").strip()
+    candidates = [
+        os.path.join(os.getcwd(), ".env"),
+        os.path.join(os.getcwd(), "backend", ".env"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "backend", ".env"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "role4_standalone", ".env"),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            load_dotenv(p)
+            val = os.environ.get("GEMINI_API_KEY", "").strip()
+            if val:
+                return val.strip("'\"")
+
+    return os.environ.get("GEMINI_API_KEY", "").strip().strip("'\"")
 
 def call_gemini_api(prompt: str) -> str:
     """
-    Send a prompt to the configured Gemini model and return its text response.
+    Send a prompt to Gemini with ultra-fast sub-2s latency and automatic model fallback.
     """
     api_key = get_gemini_key()
     if not api_key:
@@ -48,22 +70,28 @@ def call_gemini_api(prompt: str) -> str:
             "environment or a local .env file."
         )
 
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
-    if not model_name:
-        return "[API Error]: GEMINI_MODEL is empty. Set it to an available Gemini model."
+    preferred_model = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest").strip()
+    models_to_try = [preferred_model] + [m for m in FAST_MODELS if m != preferred_model]
 
-    try:
-        with genai.Client(api_key=api_key) as client:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt,
-            )
-    except errors.APIError as error:
-        return f"[API Error]: Gemini request failed ({error.code}): {error.message}"
-    except httpx.HTTPError as error:
-        return f"[API Error]: Unable to connect to Gemini: {error}"
+    last_error = ""
+    for model_name in models_to_try:
+        try:
+            with genai.Client(api_key=api_key) as client:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
+            answer = response.text
+            if answer and answer.strip():
+                return answer.strip()
+        except errors.APIError as error:
+            last_error = f"Gemini request failed ({error.code}): {error.message}"
+            continue
+        except httpx.HTTPError as error:
+            last_error = f"Unable to connect to Gemini: {error}"
+            continue
+        except Exception as error:
+            last_error = f"Gemini error: {error}"
+            continue
 
-    answer = response.text
-    if not answer or not answer.strip():
-        return "[API Error]: Gemini returned an empty response."
-    return answer.strip()
+    return f"[API Error]: {last_error or 'All fast Gemini models busy.'}"

@@ -345,3 +345,82 @@ async def talent_check_endpoint(req: TalentCheckRequest) -> dict:
         "report": report,
         "radar_chart_data": radar,
     }
+
+
+# --- Role 4 AI Features: Coach, Interview Practice, Sprint & Report ---
+from .ai_agent import ask_ai_agent_single_question
+from .interview_practice import generate_interview_questions, evaluate_interview_answer
+from .skill_proof_sprint import generate_sprint_challenge, evaluate_sprint_submission
+from .report_generator import generate_markdown_report
+
+
+class AICoachRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    report: dict
+    question: str
+
+
+class InterviewGenRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    report: dict
+
+
+class InterviewEvalRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    question: str
+    answer: str
+
+
+class SprintGenRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    report: dict
+
+
+class SprintEvalRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    challenge: dict
+    solution: str
+
+
+class ReportMDRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    report: dict
+
+
+@app.post("/api/ai-coach")
+async def ai_coach_endpoint(req: AICoachRequest) -> dict:
+    answer = ask_ai_agent_single_question(req.report, req.question)
+    return {"answer": answer}
+
+
+@app.post("/api/interview-practice/generate")
+async def interview_generate_endpoint(req: InterviewGenRequest) -> dict:
+    questions = generate_interview_questions(req.report)
+    return {"questions": questions}
+
+
+@app.post("/api/interview-practice/evaluate")
+async def interview_evaluate_endpoint(req: InterviewEvalRequest) -> dict:
+    feedback = evaluate_interview_answer(req.question, req.answer)
+    return {"feedback": feedback}
+
+
+@app.post("/api/skill-sprint/generate")
+async def skill_sprint_generate_endpoint(req: SprintGenRequest) -> dict:
+    challenge = generate_sprint_challenge(req.report)
+    return {"challenge": challenge}
+
+
+@app.post("/api/skill-sprint/evaluate")
+async def skill_sprint_evaluate_endpoint(req: SprintEvalRequest) -> dict:
+    result = evaluate_sprint_submission(req.challenge, req.solution)
+    return {"result": result}
+
+
+@app.post("/api/talent-check/report-md")
+async def report_md_endpoint(req: ReportMDRequest) -> dict:
+    content = generate_markdown_report(req.report)
+    safe_name = req.report.get("candidate_name", "candidate").replace(" ", "_")
+    company = req.report.get("company") or req.report.get("target_company") or "company"
+    filename = f"RADIX_Report_{safe_name}_{company}.md"
+    return {"markdown": content, "filename": filename}
