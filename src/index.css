@@ -88,6 +88,15 @@ body {
 .space-theme [class*="text-[#176d55]"], .space-theme [class*="text-[#246b5d]"], .space-theme [class*="text-[#216b5c]"] { color: #c4b5fd !important; }
 .space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) { color: #26354b !important; }
 .space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) * { color: #26354b !important; }
+/* Keep the talent report readable when its legacy paper-colored panels are inside the dark theme. */
+.app-shell:not(.theme-light) .space-theme [class*="bg-[#f3f8f1]"], .app-shell:not(.theme-light) .space-theme [class*="bg-[#f3f8f1]"] * { color: #e6e9f3 !important; }
+.app-shell:not(.theme-light) .space-theme [class*="bg-[#f3f8f1]"] { border-color: #303647 !important; background-color: #121521 !important; }
+.app-shell:not(.theme-light) .space-theme thead[class*="bg-[#f5f0e6]"] { border-color: #303647 !important; background-color: #1a1e2a !important; color: #e6e9f3 !important; }
+.app-shell:not(.theme-light) .space-theme thead[class*="bg-[#f5f0e6]"] * { color: #e6e9f3 !important; }
+.app-shell:not(.theme-light) .space-theme tr[class*="bg-red-50"] { background-color: rgba(127, 29, 29, .34) !important; }
+.app-shell:not(.theme-light) .space-theme tr[class*="bg-red-50"] td { border-color: rgba(248, 113, 113, .3) !important; color: #e6e9f3 !important; }
+.app-shell:not(.theme-light) .space-theme tr[class*="bg-red-50"] [class*="text-red-700"] { color: #fca5a5 !important; }
+.app-shell:not(.theme-light) .space-theme tr[class*="bg-red-50"] [class*="text-amber-700"] { color: #fbbf24 !important; }
 .space-theme a { color: #c4b5fd; }
 .space-theme a:hover { color: #eee9ff; }
 .space-theme header, .space-theme .sticky {

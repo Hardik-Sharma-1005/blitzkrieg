@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Building2, Check, FileText, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
 import { CompanyCard } from "@/components/company/CompanyCard";
 import { InteractiveCosmos } from "@/components/InteractiveCosmos";
+import { InteractiveTerminalMark } from "@/components/InteractiveTerminalMark";
 import { Button } from "@/components/ui/button";
 import { normalizeCompanySummary } from "@/lib/companyData";
 import { fetchCompanyDirectory } from "@/lib/companyRepository";
@@ -76,10 +77,10 @@ export function Index() {
   });
 
   return (
-    <div className={`portal-home min-h-screen overflow-hidden bg-[#f8f8f5] pb-8 ${theme === "light" ? "theme-light" : ""}`}>
+    <div className={`portal-home min-h-screen overflow-hidden bg-[#050609] ${theme === "light" ? "theme-light" : ""}`}>
       <header onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); const x = (event.clientX - bounds.left) / bounds.width; const y = (event.clientY - bounds.top) / bounds.height; event.currentTarget.style.setProperty("--pointer-x", `${x * 100}%`); event.currentTarget.style.setProperty("--pointer-y", `${y * 100}%`); event.currentTarget.style.setProperty("--parallax-x", `${(0.5 - x) * 12}px`); event.currentTarget.style.setProperty("--parallax-y", `${(0.5 - y) * 9}px`); event.currentTarget.style.setProperty("--tilt-x", `${(x - 0.5) * 1.2}deg`); event.currentTarget.style.setProperty("--tilt-y", `${(0.5 - y) * 1.2}deg`); }} onPointerLeave={(event) => { event.currentTarget.style.setProperty("--parallax-x", "0px"); event.currentTarget.style.setProperty("--parallax-y", "0px"); event.currentTarget.style.setProperty("--tilt-x", "0deg"); event.currentTarget.style.setProperty("--tilt-y", "0deg"); }} className="portal-hero relative isolate overflow-hidden border-b border-white/10 bg-[#071311] text-white">
         <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0" />
-        <InteractiveCosmos variant="constellation" />
+        {theme === "dark" ? <InteractiveCosmos variant="constellation" /> : <InteractiveTerminalMark />}
         <div className="relative z-10 mx-auto max-w-[1440px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16 sm:pt-9 lg:px-12 lg:pb-20">
           <motion.div {...reveal(.05)} className="flex items-center gap-3">
             <img src="/jss-university-logo.png" alt="JSS University, Noida" className="h-11 w-11 rounded-xl bg-white object-contain p-1 shadow-sm" />
@@ -89,15 +90,11 @@ export function Index() {
             </div>
           </motion.div>
 
+          <motion.div {...reveal(.12)} className="absolute right-5 top-20 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold text-white/65 backdrop-blur sm:right-8 sm:top-9 lg:right-12">
+            {isSupabaseConfigured ? "Supabase configured" : "Demo dataset · 2 fictional profiles"}
+          </motion.div>
+
           <div className="mt-12 max-w-3xl sm:mt-20">
-            <motion.div {...reveal(.28)} className="flex flex-wrap gap-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#dce4ef] backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-[#d4dbe8]" /> Placement intelligence
-            </div>
-            <div className="inline-flex items-center rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold text-white/65 backdrop-blur">
-              {isSupabaseConfigured ? "Supabase configured" : "Demo dataset · 2 fictional profiles"}
-            </div>
-            </motion.div>
             <motion.h1 {...reveal(.5)} className="mt-5 max-w-3xl font-heading text-5xl font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[5.25rem]">
               Make your next move <span className="text-[#dce5f2]">with clarity.</span>
             </motion.h1>
@@ -135,7 +132,7 @@ export function Index() {
       </header>
 
       <main onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); event.currentTarget.style.setProperty("--pointer-y", `${((event.clientY - bounds.top) / bounds.height) * 100}%`); }} className="portal-cosmos relative isolate overflow-hidden bg-[#070d17] px-5 py-8 sm:px-8 sm:py-10 lg:px-12">
-        <InteractiveCosmos variant="starfield" />
+        {theme === "dark" && <InteractiveCosmos variant="starfield" />}
         <div className="relative z-10 mx-auto max-w-[1440px]">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
           <div>

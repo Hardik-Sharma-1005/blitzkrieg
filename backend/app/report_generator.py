@@ -56,7 +56,7 @@ def generate_markdown_report(report: dict) -> str:
             else:
                 hours_val = round(gap_val * 10.0, 1)
 
-            if item.get("is_deal_breaker") or (gap_val >= 1.5 and req_lvl >= 4.0):
+            if item.get("is_deal_breaker") or gap_val >= 1.5:
                 status_str = "DEAL-BREAKER"
             elif gap_val > 0:
                 status_str = f"Needs Prep (+{gap_val:.1f})"

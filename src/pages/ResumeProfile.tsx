@@ -761,7 +761,7 @@ export function ResumeProfile() {
                     onClick={() => setActiveTab("coach")}
                     className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${activeTab === "coach" ? "bg-[#246b5d] text-white shadow-sm" : "bg-[#faf7f0] text-slate-600 hover:bg-[#e9e1d5]"}`}
                   >
-                    <MessageSquare className="h-4 w-4" /> 2. AI Career Coach Chat
+                    <MessageSquare className="h-4 w-4" /> 2. BlitzyAI Chat
                   </button>
                   <button
                     type="button"
@@ -786,7 +786,7 @@ export function ResumeProfile() {
                       <div className="rounded-2xl border border-[#dbe9dd] bg-[#f3f8f1] p-5">
                         <div className="flex items-center gap-2">
                           <Zap className="h-5 w-5 text-[#246b5d]" />
-                          <h4 className="font-semibold text-[#26354b]">AI Career Coach Diagnostic</h4>
+                          <h4 className="font-semibold text-[#26354b]">BlitzyAI Diagnostic</h4>
                         </div>
                         <p className="mt-3 text-sm leading-6 text-slate-700">
                           {talentReport.ai_candidate_agent_advice}
@@ -854,13 +854,13 @@ export function ResumeProfile() {
                   </div>
                 )}
 
-                {/* TAB 2: Live AI Career Coach Chat */}
+                {/* TAB 2: Live BlitzyAI Chat */}
                 {activeTab === "coach" && (
                   <div className="rounded-2xl border border-[#e9e1d5] bg-white p-5 space-y-4">
                     <div className="flex items-center justify-between border-b border-[#e9e1d5] pb-3">
                       <div className="flex items-center gap-2">
                         <MessageSquare className="h-5 w-5 text-[#246b5d]" />
-                        <h4 className="font-semibold text-[#26354b]">Live AI Career Coach (Grounded in your report)</h4>
+                        <h4 className="font-semibold text-[#26354b]">Live BlitzyAI (Grounded in your report)</h4>
                       </div>
                       <span className="text-xs text-slate-500">Ask anything: study roadmap, gap fixes, mock questions</span>
                     </div>
@@ -868,7 +868,7 @@ export function ResumeProfile() {
                     <div className="min-h-52 max-h-96 overflow-y-auto space-y-3 p-3 bg-[#faf7f0] rounded-xl border border-[#e9e1d5]">
                       <div className="rounded-xl bg-white p-3.5 text-sm text-slate-700 shadow-sm border border-[#e9e1d5]">
                         <p className="font-semibold text-[#246b5d] mb-1 flex items-center gap-1">
-                          <Sparkles className="h-3.5 w-3.5" /> AI Coach Initial Diagnostic:
+                          <Sparkles className="h-3.5 w-3.5" /> BlitzyAI Initial Diagnostic:
                         </p>
                         <p>{talentReport.ai_candidate_agent_advice}</p>
                       </div>
@@ -878,7 +878,7 @@ export function ResumeProfile() {
                           key={i}
                           className={`rounded-xl p-3.5 text-sm shadow-sm max-w-[85%] ${msg.sender === "user" ? "ml-auto bg-[#246b5d] text-white" : "mr-auto bg-white text-slate-800 border border-[#e9e1d5]"}`}
                         >
-                          <p className="font-semibold mb-1 text-xs opacity-80">{msg.sender === "user" ? "You:" : "AI Coach:"}</p>
+                          <p className="font-semibold mb-1 text-xs opacity-80">{msg.sender === "user" ? "You:" : "BlitzyAI:"}</p>
                           <p className="whitespace-pre-wrap">{msg.text}</p>
                         </div>
                       ))}
@@ -886,7 +886,7 @@ export function ResumeProfile() {
                       {sendingChat && (
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-500 italic border border-[#e9e1d5] flex items-center gap-2">
                           <LoaderCircle className="h-3.5 w-3.5 animate-spin text-[#246b5d]" />
-                          AI Coach is analyzing your candidate report and thinking...
+                          BlitzyAI is analyzing your candidate report and thinking...
                         </div>
                       )}
                     </div>

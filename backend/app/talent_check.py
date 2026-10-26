@@ -156,7 +156,9 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks=None):
         total_weighted_achieved += achieved_ratio * weight
         total_possible_weight += weight
 
-        is_deal_breaker = (gap >= 1.5) and (weight >= 1.2)
+        # The report defines critical gaps as any shortfall of at least 1.5 levels.
+        # Keep this rule independent of category weight so row flags and summary counts agree.
+        is_deal_breaker = gap >= 1.5
         if is_deal_breaker:
             deal_breakers.append({
                 "category": cat,
