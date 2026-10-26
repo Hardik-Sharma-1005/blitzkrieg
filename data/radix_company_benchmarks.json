@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "taxonomy": "RADIX-12",
   "level_scale": "1-5 (source levels 1-10 divided by 2)",
-  "source": "Connected JSS Placement Intelligence Portal Supabase company_json and company_skill_levels tables",
+  "source": "Snapshot from JSS University Supabase company_json and company_skill_levels tables",
   "company_count": 118,
   "company_specific_benchmark_count": 113,
   "radix_median_fallback_count": 5,

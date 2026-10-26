@@ -22,7 +22,7 @@ export function AppSidebar() {
         <div className="flex h-[72px] items-center justify-between border-b border-[#e6dfd2] px-4">
           <button type="button" onClick={() => navigate("/")} className={`flex items-center gap-3 overflow-hidden text-left ${collapsed ? "lg:justify-center" : ""}`}>
             <img src="/jss-university-logo.png" alt="JSS University, Noida" className="h-11 w-11 shrink-0 rounded-xl object-contain" />
-            <span className={`${collapsed ? "lg:hidden" : ""}`}><span className="block font-heading text-sm font-semibold text-slate-900">JSS University</span><span className="block text-xs text-slate-500">Student Career Hub</span></span>
+            <span className={`${collapsed ? "lg:hidden" : ""}`}><span className="block font-heading text-sm font-semibold text-slate-900">blitzkrieg!</span><span className="block text-xs text-slate-500">Career platform</span></span>
           </button>
           <button type="button" className="hidden rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:block" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}

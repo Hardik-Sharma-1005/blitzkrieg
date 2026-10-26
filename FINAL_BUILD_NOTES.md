@@ -1,6 +1,6 @@
 # RADIX Talent Match integration notes
 
-The repository contains the JSS Student Career Hub frontend and one shared FastAPI backend. The JD and resume features use separate routes and handoff schemas, so both are served by the same process.
+The repository contains the blitzkrieg! frontend and one shared FastAPI backend. The JD and resume features use separate routes and handoff schemas, so both are served by the same process.
 
 ## Data handoffs
 

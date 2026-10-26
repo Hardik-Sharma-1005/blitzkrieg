@@ -75,8 +75,8 @@ export function Index() {
           <div className="flex items-center gap-3">
             <img src="/jss-university-logo.png" alt="JSS University, Noida" className="h-12 w-12 rounded-xl object-contain shadow-sm" />
             <div>
-              <p className="font-heading text-sm font-semibold text-[#25334a]">JSS University, Noida</p>
-              <p className="text-xs text-slate-500">Student Career Hub</p>
+              <p className="font-heading text-sm font-semibold text-[#25334a]">blitzkrieg!</p>
+              <p className="text-xs text-slate-500">Career platform</p>
             </div>
           </div>
 
@@ -200,7 +200,7 @@ export function Index() {
             <Button variant="soft" className="mt-5" onClick={clearFilters}>Clear filters <ArrowRight className="h-4 w-4" /></Button>
           </div>
         )}
-        <div className={`mt-8 border-t border-[#e9e1d5] pt-5 text-center text-xs text-slate-400 ${compareCompanies.length ? "pb-28 sm:pb-20" : ""}`}>JSS University, Noida · Student Career Hub</div>
+        <div className={`mt-8 border-t border-[#e9e1d5] pt-5 text-center text-xs text-slate-400 ${compareCompanies.length ? "pb-28 sm:pb-20" : ""}`}>blitzkrieg! is an exclusive career platform for JSS University, Noida.</div>
       </main>
 
       <AnimatePresence>

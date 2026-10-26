@@ -18,7 +18,7 @@ function LayoutContent() {
         <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e8e0d2] bg-[#fffdf8]/95 px-4 backdrop-blur sm:px-6">
           <button type="button" onClick={() => setMobileOpen(true)} className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-400">JSS University, Noida <span className="mx-1">/</span> Student Career Hub</p>
+            <p className="text-xs font-medium text-slate-400">blitzkrieg!</p>
             <p className="truncate text-sm font-semibold text-slate-800">{isComparePage ? "Company comparison" : selectedCompany?.companyName}</p>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">

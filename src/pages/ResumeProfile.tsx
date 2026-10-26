@@ -519,7 +519,7 @@ export function ResumeProfile() {
       <header className="border-b border-[#e9e1d5] bg-[#fffdf8]">
         <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 sm:px-8">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#216b5c]"><ArrowLeft className="h-4 w-4" /> Back to company directory</Link>
-          <div className="flex items-center gap-2"><img src="/jss-university-logo.png" alt="" className="h-9 w-9 rounded-lg object-contain" /><span className="hidden text-sm font-semibold text-[#26354b] sm:inline">JSS Student Career Hub</span></div>
+          <div className="flex items-center gap-2"><img src="/jss-university-logo.png" alt="" className="h-9 w-9 rounded-lg object-contain" /><span className="hidden text-sm font-semibold text-[#26354b] sm:inline">blitzkrieg!</span></div>
         </div>
       </header>
 
