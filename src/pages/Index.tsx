@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Building2, Check, FileText, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
@@ -16,6 +16,7 @@ export function Index() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState<"name-asc" | "name-desc" | "location">("name-asc");
+  const prefersReducedMotion = useReducedMotion();
   const navigate = useNavigate();
   const { selectCompany, compareCompanyIds, toggleCompareCompany } = useCompany();
   const directoryQuery = useQuery({
@@ -66,6 +67,11 @@ export function Index() {
     selectCompany(company);
     navigate("/company/intelligence");
   };
+  const reveal = (delay: number) => ({
+    initial: { opacity: 0, y: prefersReducedMotion ? 0 : 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: prefersReducedMotion ? 0 : .9, delay: prefersReducedMotion ? 0 : delay, ease: "easeOut" as const },
+  });
 
   return (
     <div className="portal-home min-h-screen overflow-hidden bg-[#f8f8f5] pb-8">
@@ -73,38 +79,38 @@ export function Index() {
         <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0" />
         <InteractiveCosmos variant="constellation" />
         <div className="relative z-10 mx-auto max-w-[1440px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16 sm:pt-9 lg:px-12 lg:pb-20">
-          <div className="flex items-center gap-3">
+          <motion.div {...reveal(.05)} className="flex items-center gap-3">
             <img src="/jss-university-logo.png" alt="JSS University, Noida" className="h-11 w-11 rounded-xl bg-white object-contain p-1 shadow-sm" />
             <div>
               <p className="font-heading text-sm font-semibold text-white">JSS University, Noida</p>
               <p className="text-xs text-white/55">Student Career Hub</p>
             </div>
-          </div>
+          </motion.div>
 
           <div className="mt-12 max-w-3xl sm:mt-20">
-            <div className="flex flex-wrap gap-2">
+            <motion.div {...reveal(.28)} className="flex flex-wrap gap-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#dce4ef] backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-[#d4dbe8]" /> Placement intelligence
             </div>
             <div className="inline-flex items-center rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold text-white/65 backdrop-blur">
               {isSupabaseConfigured ? "Supabase configured" : "Demo dataset · 2 fictional profiles"}
             </div>
-            </div>
-            <h1 className="mt-5 max-w-3xl font-heading text-5xl font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[5.25rem]">
+            </motion.div>
+            <motion.h1 {...reveal(.5)} className="mt-5 max-w-3xl font-heading text-5xl font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[5.25rem]">
               Make your next move <span className="text-[#dce5f2]">with clarity.</span>
-            </h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
+            </motion.h1>
+            <motion.p {...reveal(.82)} className="mt-5 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
               Explore company profiles, skill expectations, and career signals before campus placements.
-            </p>
-            <div className="mt-7 flex max-w-3xl flex-wrap items-center gap-2.5">
+            </motion.p>
+            <motion.div {...reveal(1.08)} className="mt-7 flex max-w-3xl flex-wrap items-center gap-2.5">
               <Button onClick={() => navigate("/skill-match")} className="min-h-11 rounded-full bg-[#f1f4f8] px-5 text-[#11151b] shadow-[0_8px_30px_rgba(210,222,240,.12)] hover:bg-white"><GitCompareArrows className="h-4 w-4" /> Match resume to a job <ArrowRight className="h-4 w-4" /></Button>
               <Button variant="outline" onClick={() => navigate("/jd-analytics")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white">Analyze a job description</Button>
               <Button variant="outline" onClick={() => navigate("/resume-profile")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white"><FileText className="h-4 w-4" /> Resume profile</Button>
               <Button variant="outline" onClick={() => navigate("/talent-check")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white"><Sparkles className="h-4 w-4" /> Talent Check</Button>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="mt-10 grid max-w-5xl gap-3 sm:grid-cols-[minmax(0,1fr)_220px_190px]">
+          <motion.div {...reveal(1.36)} className="mt-10 grid max-w-5xl gap-3 sm:grid-cols-[minmax(0,1fr)_220px_190px]">
             <div className="relative">
               <label htmlFor="company-search" className="sr-only">Search by company, industry, or location</label>
               <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#aab4c2]" />
@@ -122,7 +128,7 @@ export function Index() {
               <option value="name-desc">Name: Z to A</option>
               <option value="location">Location</option>
             </select>
-          </div>
+          </motion.div>
         </div>
       </header>
 
