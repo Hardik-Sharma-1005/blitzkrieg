@@ -1,6 +1,7 @@
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { ArrowLeft, Menu } from "lucide-react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { InteractiveCosmos } from "@/components/InteractiveCosmos";
 import { SidebarProvider, useSidebar } from "@/components/layout/SidebarContext";
 import { useCompany } from "@/lib/companyContext";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
@@ -12,7 +13,8 @@ function LayoutContent() {
   const isComparePage = pathname === "/company/compare";
   if (!selectedCompany && !isComparePage) return <Navigate to="/" replace />;
   return (
-    <div className="min-h-screen bg-[#f8f8f5] lg:flex">
+    <div className="space-theme space-theme-shell min-h-screen bg-[#f8f8f5] lg:flex">
+      <InteractiveCosmos variant="starfield" className="space-page-stars" />
       <AppSidebar />
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e5e9e5] bg-white/95 px-4 backdrop-blur sm:px-6">

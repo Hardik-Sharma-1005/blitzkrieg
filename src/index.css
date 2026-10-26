@@ -72,11 +72,90 @@ body {
   color: hsl(var(--foreground));
   font-family: "Inter", sans-serif;
 }
+.space-theme {
+  position: relative;
+  isolation: isolate;
+  color: #e5e8f2;
+  background-color: #080a12 !important;
+  background-image: radial-gradient(ellipse at 78% 0%, rgba(69, 53, 123, .13), transparent 42%), linear-gradient(180deg, #090b14, #070910 58%, #050609) !important;
+}
+.space-theme > .space-page-stars { z-index: -1; opacity: .42; }
+.space-theme-shell .space-theme { background: transparent !important; }
+.space-theme :is(h1, h2, h3, h4, h5, h6) { color: #eef0fa !important; }
+.space-theme [class*="text-[#26354b]"], .space-theme [class*="text-slate-900"], .space-theme [class*="text-slate-800"] { color: #e6e9f3 !important; }
+.space-theme [class*="text-slate-700"], .space-theme [class*="text-slate-600"] { color: #c0c6d4 !important; }
+.space-theme [class*="text-slate-500"], .space-theme [class*="text-slate-400"] { color: #939caf !important; }
+.space-theme [class*="text-[#176d55]"], .space-theme [class*="text-[#246b5d]"], .space-theme [class*="text-[#216b5c]"] { color: #c4b5fd !important; }
+.space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) { color: #26354b !important; }
+.space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) * { color: #26354b !important; }
+.space-theme a { color: #c4b5fd; }
+.space-theme a:hover { color: #eee9ff; }
+.space-theme header, .space-theme .sticky {
+  border-color: rgba(173, 181, 205, .14) !important;
+  background-color: rgba(10, 12, 21, .92) !important;
+  color: #e5e8f2;
+}
+.space-theme aside {
+  border-color: rgba(173, 181, 205, .14) !important;
+  background-color: rgba(10, 12, 21, .97) !important;
+  color: #d4d8e4;
+}
+.space-theme .rounded-2xl.border {
+  border-color: #303647 !important;
+  background-color: rgba(16, 19, 30, .94) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .2);
+}
+.space-theme [class*="bg-white"], .space-theme [class*="bg-[#fffdf8]"], .space-theme [class*="bg-[#faf7f0]"] { background-color: #121521 !important; }
+.space-theme [class*="bg-gradient-to"] {
+  background-image: linear-gradient(135deg, rgba(28, 29, 47, .96), rgba(16, 19, 31, .98) 60%, rgba(20, 24, 38, .98)) !important;
+}
+.space-theme input:not([type="file"]), .space-theme select, .space-theme textarea {
+  border-color: #343a4c !important;
+  background-color: #11141f !important;
+  color: #edf0f7 !important;
+}
+.space-theme input::placeholder, .space-theme textarea::placeholder { color: #858da0 !important; }
+.space-theme input:focus, .space-theme select:focus, .space-theme textarea:focus { border-color: #8d7ad1 !important; --tw-ring-color: rgba(141, 122, 209, .24) !important; }
+.space-theme button[class*="bg-[#216b5c]"] {
+  background: linear-gradient(135deg, #7161bd, #51448f) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 24px rgba(77, 60, 143, .24);
+}
+.space-theme button[class*="bg-[#e4f2e9]"], .space-theme button[class*="bg-white"], .space-theme button[class*="border-[#ddd5c8]"] {
+  border-color: rgba(191, 176, 255, .3) !important;
+  background-color: rgba(23, 24, 39, .88) !important;
+  color: #e4e0f6 !important;
+}
+.space-theme button:hover:not(:disabled) { border-color: rgba(207, 194, 255, .52); }
+.space-theme button:focus-visible, .space-theme a:focus-visible { outline-color: #b9a8ff !important; }
+.space-theme :is(table, th, td) { border-color: #303647 !important; }
+.space-theme th { color: #d8dced !important; }
+.space-theme .border-b, .space-theme .border-t, .space-theme .border-r, .space-theme .border-l { border-color: rgba(173, 181, 205, .15) !important; }
 h1, h2, h3, h4, h5, h6 { font-family: "Outfit", sans-serif; }
 button, input, select { font: inherit; }
 .font-heading { font-family: "Outfit", sans-serif; }
 .portal-home main { background: #050609; }
-.portal-home .portal-cosmos { --pointer-x: 50%; --pointer-y: 42%; background: radial-gradient(ellipse at 50% 0%, #11141a 0%, #090b10 52%, #050609 100%); }
+.portal-home .portal-cosmos {
+  --pointer-x: 50%;
+  --pointer-y: 42%;
+  background-color: #050609;
+  background-image: linear-gradient(to bottom, #050609 0%, rgba(5, 6, 12, .9) 90px, rgba(5, 6, 12, .64) 230px, rgba(5, 6, 12, .7) 100%), url("/night-stars-company-directory.jpg");
+  background-position: center, center top;
+  background-size: auto, 100% auto;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+.portal-home .portal-cosmos::before {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 230px;
+  content: "";
+  background: linear-gradient(to bottom, #050609 0%, rgba(5, 6, 9, .76) 34%, rgba(5, 6, 9, .28) 72%, transparent 100%);
+  pointer-events: none;
+}
 .portal-cosmos h2 { color: #f0f2f6; letter-spacing: -.025em; }
 .portal-cosmos h2 + p, .portal-cosmos > div > div:first-child > div:first-child p { color: #a5aebb; }
 .portal-cosmos article h2 { color: #edf1f7; }
@@ -94,8 +173,54 @@ button, input, select { font: inherit; }
 .portal-home button:hover:not(:disabled) { transform: translateY(-1px); }
 .portal-home button:active:not(:disabled) { transform: translateY(0) scale(.965); transition-duration: 75ms; }
 .portal-home button:focus-visible { outline: 2px solid #c4d2e6; outline-offset: 3px; }
-.portal-hero { --pointer-x: 72%; --pointer-y: 38%; }
+.portal-hero {
+  --pointer-x: 72%;
+  --pointer-y: 38%;
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+}
+.portal-home .portal-hero { border-bottom: 0; }
+.portal-home .portal-hero::after {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 180px;
+  content: "";
+  background: linear-gradient(to bottom, transparent 0%, rgba(5, 6, 9, .48) 46%, #050609 100%);
+  pointer-events: none;
+}
+.portal-hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: -2%;
+  content: "";
+  background:
+    radial-gradient(ellipse at 72% 38%, rgba(81, 47, 150, .27), transparent 43%),
+    radial-gradient(ellipse at 20% 82%, rgba(29, 75, 145, .2), transparent 42%),
+    radial-gradient(ellipse at 50% 0%, #111321 0%, #070911 54%, #030407 100%);
+  transform: perspective(1400px) translate3d(var(--parallax-x), var(--parallax-y), 0) rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) scale(1.035);
+  transform-origin: center;
+  transition: transform 520ms cubic-bezier(.2, .75, .2, 1);
+  will-change: transform;
+}
 .hero-glow { background: radial-gradient(600px circle at var(--pointer-x) var(--pointer-y), rgba(138, 158, 188, .14), transparent 68%), radial-gradient(520px circle at 82% 68%, rgba(74, 91, 119, .12), transparent 70%); }
+.portal-hero button {
+  border-color: rgba(191, 176, 255, .3);
+  background-color: rgba(18, 20, 34, .78);
+  color: #f2efff;
+  box-shadow: inset 0 1px rgba(255,255,255,.07), 0 8px 24px rgba(0,0,0,.22);
+  backdrop-filter: blur(12px);
+}
+.portal-hero button:hover:not(:disabled) {
+  border-color: rgba(207, 194, 255, .62);
+  background-color: rgba(43, 36, 72, .88);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(77, 55, 143, .24);
+}
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
@@ -107,4 +232,5 @@ button, input, select { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .portal-hero::before { transform: none; }
 }

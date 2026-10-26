@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 type InteractiveCosmosProps = { variant: "constellation" | "starfield"; className?: string };
-type Star = { x: number; y: number; radius: number; phase: number; speed: number; alpha: number; driftX: number; driftY: number; flowX: number; flowY: number };
+type Star = { x: number; y: number; depth: number; radius: number; phase: number; speed: number; alpha: number; hue: number; driftX: number; driftY: number; flowX: number; flowY: number };
 
 /** High-DPI space particles that pick up a soft directional drift from pointer movement. */
 export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmosProps) {
@@ -18,6 +18,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
     let frame = 0;
     let stars: Star[] = [];
     let tick = 0;
+    let iconScale = 1;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const pointer = { x: -1000, y: -1000, vx: 0, vy: 0 };
     let previousPointer = { x: -1000, y: -1000 };
@@ -27,8 +28,8 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       pointer.x = event.clientX - bounds.left;
       pointer.y = event.clientY - bounds.top;
       if (previousPointer.x >= 0) {
-        pointer.vx = Math.max(-36, Math.min(36, pointer.x - previousPointer.x));
-        pointer.vy = Math.max(-36, Math.min(36, pointer.y - previousPointer.y));
+        pointer.vx = Math.max(-42, Math.min(42, pointer.x - previousPointer.x));
+        pointer.vy = Math.max(-42, Math.min(42, pointer.y - previousPointer.y));
       }
       previousPointer = { x: pointer.x, y: pointer.y };
     };
@@ -51,27 +52,69 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       canvas.style.height = `${height}px`;
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       const count = variant === "constellation"
-        ? Math.min(1900, Math.max(1100, Math.round(width * height / 460)))
+        ? Math.min(3000, Math.max(1600, Math.round(width * height / 270)))
         : Math.min(1450, Math.max(420, Math.round(width * height / 1150)));
       let seed = variant === "constellation" ? 60817 : 96241;
       const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-      const galaxyRadius = Math.min(width * .36, height * .48);
-      const centerX = width * .68;
-      const centerY = height * .49;
+      iconScale = Math.min(width * .24, height * .44);
+      const centerX = width * .70;
+      const centerY = height * .5;
+      const strokes: Array<{ x1: number; y1: number; x2: number; y2: number; radius: number }> = [];
+      const addStroke = (x1: number, y1: number, x2: number, y2: number, radius: number) => strokes.push({ x1, y1, x2, y2, radius });
+      const addRoundedCorner = (cx: number, cy: number, start: number) => {
+        const cornerRadius = .16;
+        let px = cx + Math.cos(start) * cornerRadius;
+        let py = cy + Math.sin(start) * cornerRadius;
+        for (let step = 1; step <= 8; step += 1) {
+          const angle = start + step * Math.PI / 16;
+          const x = cx + Math.cos(angle) * cornerRadius;
+          const y = cy + Math.sin(angle) * cornerRadius;
+          addStroke(px, py, x, y, .045);
+          px = x;
+          py = y;
+        }
+      };
+      // Rounded terminal frame.
+      addStroke(-.56, -.72, .56, -.72, .045);
+      addStroke(.72, -.56, .72, .56, .045);
+      addStroke(.56, .72, -.56, .72, .045);
+      addStroke(-.72, .56, -.72, -.56, .045);
+      addRoundedCorner(.56, -.56, -Math.PI / 2);
+      addRoundedCorner(.56, .56, 0);
+      addRoundedCorner(-.56, .56, Math.PI / 2);
+      addRoundedCorner(-.56, -.56, Math.PI);
+      // Terminal prompt and cursor line.
+      addStroke(-.36, -.34, -.04, -.04, .052);
+      addStroke(-.04, -.04, -.36, .27, .052);
+      addStroke(.10, .31, .43, .31, .052);
+      const strokeWeights = strokes.map((stroke) => Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1));
+      const totalStrokeWeight = strokeWeights.reduce((sum, length) => sum + length, 0);
       stars = Array.from({ length: count }, () => {
         const particle: Star = {
           x: random() * width, y: random() * height,
+          depth: (random() - .5) * .24,
           radius: .35 + random() * 1.05, phase: random() * Math.PI * 2,
           speed: .003 + random() * .012, alpha: .2 + random() * .6,
+          hue: [224, 248, 268, 292, 316][Math.floor(random() * 5)],
           driftX: 0, driftY: 0, flowX: 0, flowY: 0,
         };
-        if (variant === "constellation" && random() > .11) {
-          const arm = Math.floor(random() * 3);
-          const distance = Math.pow(random(), .82) * galaxyRadius;
-          const spread = (random() + random() + random() - 1.5) * (.025 + distance * .00042);
-          const angle = arm * (Math.PI * 2 / 3) + distance / galaxyRadius * 4.7 + spread;
-          particle.x = centerX + Math.cos(angle) * distance;
-          particle.y = centerY + Math.sin(angle) * distance * .64 + (random() - .5) * 8;
+        if (variant === "constellation" && random() > .02) {
+          let choice = random() * totalStrokeWeight;
+          let segmentIndex = 0;
+          while (segmentIndex < strokes.length - 1 && choice > strokeWeights[segmentIndex]) {
+            choice -= strokeWeights[segmentIndex];
+            segmentIndex += 1;
+          }
+          const segment = strokes[segmentIndex];
+          const t = random();
+          const dx = segment.x2 - segment.x1;
+          const dy = segment.y2 - segment.y1;
+          const length = Math.hypot(dx, dy) || 1;
+          const spread = (random() + random() + random() - 1.5) * (segment.radius + .018);
+          const localX = segment.x1 + dx * t - (dy / length) * spread;
+          const localY = segment.y1 + dy * t + (dx / length) * spread;
+          particle.x = centerX + localX * iconScale;
+          particle.y = centerY + localY * iconScale;
           particle.radius = random() > .965 ? 1.5 + random() * 1.4 : .35 + Math.pow(random(), 2) * 1.25;
           particle.alpha = .22 + random() * .73;
         }
@@ -110,13 +153,17 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         let x = star.x;
         let y = star.y;
         if (variant === "constellation") {
-          const rotation = reducedMotion ? 0 : tick * .000045;
+          const pointerTiltX = pointerX >= 0 ? (pointerX / width - .5) * .28 : 0;
+          const pointerTiltY = pointerY >= 0 ? (pointerY / height - .5) * .22 : 0;
+          const idleTurn = reducedMotion ? 0 : Math.sin(tick * .0007) * .035;
+          const angleY = pointerTiltX + idleTurn;
+          const angleX = pointerTiltY;
           const baseX = star.x - centerX;
           const baseY = star.y - centerY;
-          const cosine = Math.cos(rotation);
-          const sine = Math.sin(rotation);
-          x = centerX + baseX * cosine - baseY * sine + star.driftX;
-          y = centerY + baseX * sine + baseY * cosine + star.driftY;
+          const depth = star.depth * iconScale;
+          const perspective = 1 + depth / (iconScale * 4);
+          x = centerX + (baseX * Math.cos(angleY) + depth * Math.sin(angleY)) * perspective + star.driftX;
+          y = centerY + (baseY * Math.cos(angleX) - depth * Math.sin(angleX)) * perspective + star.driftY;
         } else {
           x += star.driftX;
           y += star.driftY;
@@ -127,24 +174,26 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         const nearby = Math.max(0, 1 - distance / (variant === "constellation" ? 250 : 180));
         if (!reducedMotion && nearby > 0) {
           const influence = nearby * nearby;
-          star.flowX = Math.max(-3.5, Math.min(3.5, star.flowX + pointer.vx * influence * .07));
-          star.flowY = Math.max(-3.5, Math.min(3.5, star.flowY + pointer.vy * influence * .07));
+          star.flowX = Math.max(-3.5, Math.min(3.5, star.flowX + pointer.vx * influence * .08));
+          star.flowY = Math.max(-3.5, Math.min(3.5, star.flowY + pointer.vy * influence * .08));
         }
         if (!reducedMotion) {
           star.driftX = Math.max(-44, Math.min(44, star.driftX + star.flowX));
           star.driftY = Math.max(-44, Math.min(44, star.driftY + star.flowY));
-          star.flowX *= .88;
-          star.flowY *= .88;
-          star.driftX *= .994;
-          star.driftY *= .994;
+          star.flowX *= .9;
+          star.flowY *= .9;
+          star.driftX *= .995;
+          star.driftY *= .995;
         }
-        const shimmer = reducedMotion ? 0 : Math.sin(tick * star.speed + star.phase) * .2;
+        const shimmer = reducedMotion ? 0 : Math.sin(tick * star.speed * 1.12 + star.phase) * .2;
         const radius = star.radius + nearby * 1.5;
         context.beginPath();
         context.arc(x, y, radius, 0, Math.PI * 2);
-        context.fillStyle = `rgba(${nearby > .2 ? "205, 224, 255" : "230, 237, 249"}, ${Math.min(1, star.alpha + shimmer + nearby * .45)})`;
+        context.fillStyle = variant === "constellation"
+          ? `hsla(${nearby > .2 ? 205 : star.hue}, 100%, ${nearby > .2 ? 88 : 78}%, ${Math.min(1, star.alpha + shimmer + nearby * .45)})`
+          : `rgba(${nearby > .2 ? "205, 224, 255" : "230, 237, 249"}, ${Math.min(1, star.alpha + shimmer + nearby * .45)})`;
         context.shadowBlur = nearby > .25 || star.radius > 1.55 ? 10 : 0;
-        context.shadowColor = "rgba(183, 206, 247, .9)";
+        context.shadowColor = variant === "constellation" ? `hsla(${star.hue}, 100%, 72%, .9)` : "rgba(183, 206, 247, .9)";
         context.fill();
         context.shadowBlur = 0;
       }

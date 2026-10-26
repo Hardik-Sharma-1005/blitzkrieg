@@ -98,7 +98,7 @@ export function SkillIntelligence() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fbf8f1]">
+    <div className="space-theme min-h-screen bg-[#fbf8f1]">
       <div className="mx-auto max-w-[1180px] px-5 py-7 sm:px-8 sm:py-9">
         <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-[#e8dfd1] bg-gradient-to-br from-[#fff4d7] via-[#fffdf8] to-[#e4f2e9] p-5 sm:p-7">
           <div aria-hidden="true" className="ambient-drift-delayed pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[#b8ade3]/35 blur-3xl" />

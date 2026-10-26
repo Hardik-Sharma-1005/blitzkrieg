@@ -67,7 +67,7 @@ export function CompanyIntelligence() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fbf8f1]">
+    <div className="space-theme min-h-screen bg-[#fbf8f1]">
       <div className="sticky top-[72px] z-20 border-b border-[#e8e0d2] bg-[#fffdf8]/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-4 px-5 py-4 sm:px-8 lg:px-12">
           <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
