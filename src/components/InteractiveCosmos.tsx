@@ -98,7 +98,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
           hue: [224, 248, 268, 292, 316][Math.floor(random() * 5)],
           driftX: 0, driftY: 0, flowX: 0, flowY: 0,
         };
-        if (variant === "constellation" && random() > .02) {
+        if (variant !== "starfield" && random() > .02) {
           let choice = random() * totalStrokeWeight;
           let segmentIndex = 0;
           while (segmentIndex < strokes.length - 1 && choice > strokeWeights[segmentIndex]) {
@@ -140,7 +140,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
 
       const centerX = width * .68;
       const centerY = height * .49;
-      if (variant === "constellation") {
+      if (variant !== "starfield") {
         const core = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(width * .3, height * .42));
         core.addColorStop(0, "rgba(226, 235, 249, .16)");
         core.addColorStop(.12, "rgba(148, 171, 207, .07)");
@@ -152,7 +152,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       for (const star of stars) {
         let x = star.x;
         let y = star.y;
-        if (variant === "constellation") {
+        if (variant !== "starfield") {
           const pointerTiltX = pointerX >= 0 ? (pointerX / width - .5) * .28 : 0;
           const pointerTiltY = pointerY >= 0 ? (pointerY / height - .5) * .22 : 0;
           const idleTurn = reducedMotion ? 0 : Math.sin(tick * .0007) * .035;
@@ -171,7 +171,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         const dx = x - pointerX;
         const dy = y - pointerY;
         const distance = Math.hypot(dx, dy);
-        const nearby = Math.max(0, 1 - distance / (variant === "constellation" ? 250 : 180));
+        const nearby = Math.max(0, 1 - distance / (variant !== "starfield" ? 250 : 180));
         if (!reducedMotion && nearby > 0) {
           const influence = nearby * nearby;
           star.flowX = Math.max(-3.5, Math.min(3.5, star.flowX + pointer.vx * influence * .08));
