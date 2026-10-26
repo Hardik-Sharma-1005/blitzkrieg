@@ -12,10 +12,10 @@ function LayoutContent() {
   const isComparePage = pathname === "/company/compare";
   if (!selectedCompany && !isComparePage) return <Navigate to="/" replace />;
   return (
-    <div className="min-h-screen bg-[#fbf8f1] lg:flex">
+    <div className="min-h-screen bg-[#f8f8f5] lg:flex">
       <AppSidebar />
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e8e0d2] bg-[#fffdf8]/95 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e5e9e5] bg-white/95 px-4 backdrop-blur sm:px-6">
           <button type="button" onClick={() => setMobileOpen(true)} className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
           <div className="min-w-0">
             <p className="text-xs font-medium text-slate-400">JSS University, Noida <span className="mx-1">/</span> Student Career Hub</p>
