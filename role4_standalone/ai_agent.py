@@ -27,6 +27,12 @@ INSTRUCTIONS:
 """
 
     response = call_gemini_api(prompt)
+    if response.startswith("[API Error]"):
+        return (
+            "AI Career Coach is temporarily unavailable. Here is the report's "
+            "built-in guidance instead: "
+            + talent_check_output.get("ai_candidate_agent_advice", "Review your largest skill gaps first.")
+        )
     if response:
         return response
     else:

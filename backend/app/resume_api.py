@@ -48,12 +48,17 @@ async def upload_and_parse_resume(file: UploadFile = File(...)) -> CandidateProf
         with tempfile.TemporaryDirectory(prefix="radix-resume-") as temp_dir:
             temp_path = Path(temp_dir) / f"upload{suffix}"
             temp_path.write_bytes(data)
-            profile = await run_in_threadpool(
-                _pipeline.process_resume,
-                str(temp_path),
-                source_filename=raw_filename,
-                validate_type=True,
-            )
+            # Document parsing is local; keep it off the event loop. The AI request
+            # itself uses the native async client so its deadline can be enforced.
+            parsed = await run_in_threadpool(_pipeline.parser.parse, str(temp_path))
+
+        skill_text = _pipeline.skill_text(parsed)
+        extraction_result = await _pipeline.extractor.extract_skills_async(skill_text)
+        profile = _pipeline.build_profile(
+            parsed,
+            extraction_result,
+            source_filename=raw_filename,
+        )
         return CandidateProfile.model_validate(profile)
     except ValueError as exc:
         if "Document mismatch guardrail" in str(exc):

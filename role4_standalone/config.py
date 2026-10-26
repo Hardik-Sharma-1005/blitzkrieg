@@ -1,5 +1,7 @@
 # config.py
 import os
+import sys
+from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -9,7 +11,6 @@ except ImportError:
         if dotenv_path is None:
             candidates = [
                 os.path.join(os.getcwd(), ".env"),
-                os.path.join(os.getcwd(), "backend", ".env"),
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
                 os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
             ]
@@ -31,67 +32,75 @@ except ImportError:
             return False
 
 from google import genai
-from google.genai import errors
+from google.genai import errors, types
 import httpx
 
-FAST_MODELS = [
-    "gemini-flash-lite-latest",
-    "gemini-3.5-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-3.8-flash",
-]
+_BACKEND_DIR = Path(__file__).resolve().parents[1] / "backend"
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
+try:
+    from app.llm_extractor import get_ai_provider_configs
+except ImportError:
+    get_ai_provider_configs = lambda: []
 
 def get_gemini_key() -> str:
-    candidates = [
-        os.path.join(os.getcwd(), ".env"),
-        os.path.join(os.getcwd(), "backend", ".env"),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
-        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "backend", ".env"),
-        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "role4_standalone", ".env"),
-    ]
-    for p in candidates:
-        if os.path.exists(p):
-            load_dotenv(p)
-            val = os.environ.get("GEMINI_API_KEY", "").strip()
-            if val:
-                return val.strip("'\"")
-
-    return os.environ.get("GEMINI_API_KEY", "").strip().strip("'\"")
+    load_dotenv(Path(__file__).with_name(".env"), override=False)
+    load_dotenv(_BACKEND_DIR / ".env", override=False)
+    return os.environ.get("GEMINI_API_KEY", "").strip()
 
 def call_gemini_api(prompt: str) -> str:
     """
-    Send a prompt to Gemini with ultra-fast sub-2s latency and automatic model fallback.
+    Try Gemini first, then the configured OpenRouter/OpenAI providers.
+    Each provider gets a bounded request with no hidden retries.
     """
     api_key = get_gemini_key()
-    if not api_key:
-        return (
-            "[API Error]: No Gemini API key found. Add GEMINI_API_KEY to your "
-            "environment or a local .env file."
-        )
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
+    failures = []
+    try:
+        if not api_key:
+            failures.append("Gemini key is not configured")
+        elif not model_name:
+            failures.append("Gemini model is not configured")
+        else:
+            http_options = types.HttpOptions(
+                timeout=30_000,
+                retry_options=types.HttpRetryOptions(attempts=1),
+            )
+            with genai.Client(api_key=api_key, http_options=http_options) as client:
+                response = client.models.generate_content(model=model_name, contents=prompt)
+            answer = (response.text or "").strip()
+            if answer:
+                return answer
+            failures.append("Gemini returned an empty response")
+    except errors.APIError as error:
+        failures.append(f"Gemini returned HTTP {error.code}")
+    except (httpx.HTTPError, TimeoutError, OSError) as error:
+        failures.append(f"Gemini connection failed ({type(error).__name__})")
 
-    preferred_model = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest").strip()
-    models_to_try = [preferred_model] + [m for m in FAST_MODELS if m != preferred_model]
-
-    last_error = ""
-    for model_name in models_to_try:
+    for provider in get_ai_provider_configs():
+        name = provider.get("provider", "backup provider")
         try:
-            with genai.Client(api_key=api_key) as client:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
+            headers = {"Authorization": "Bearer " + provider["api_key"]}
+            if name == "openrouter":
+                headers.update({"HTTP-Referer": "http://localhost:5173", "X-Title": "RADIX Talent Match"})
+            with httpx.Client(timeout=httpx.Timeout(30, connect=8)) as client:
+                response = client.post(
+                    provider["base_url"].rstrip("/") + "/chat/completions",
+                    headers=headers,
+                    json={
+                        "model": provider["model"],
+                        "temperature": 0.2,
+                        "max_tokens": 1200,
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
                 )
-            answer = response.text
-            if answer and answer.strip():
+                response.raise_for_status()
+            answer = response.json()["choices"][0]["message"]["content"]
+            if isinstance(answer, str) and answer.strip():
                 return answer.strip()
-        except errors.APIError as error:
-            last_error = f"Gemini request failed ({error.code}): {error.message}"
-            continue
-        except httpx.HTTPError as error:
-            last_error = f"Unable to connect to Gemini: {error}"
-            continue
-        except Exception as error:
-            last_error = f"Gemini error: {error}"
-            continue
+            failures.append(f"{name} returned an empty response")
+        except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError, OSError) as error:
+            status = getattr(getattr(error, "response", None), "status_code", None)
+            failures.append(f"{name} failed" + (f" (HTTP {status})" if status else f" ({type(error).__name__})"))
 
-    return f"[API Error]: {last_error or 'All fast Gemini models busy.'}"
+    return "[API Error]: AI generation failed across configured providers: " + "; ".join(failures)

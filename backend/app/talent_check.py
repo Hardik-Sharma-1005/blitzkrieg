@@ -20,20 +20,19 @@ except ImportError:
     from mock_data import RADIX_CATEGORIES
 
 CATEGORY_WEIGHTS = {
-    "CDG": 1.4, "DSA": 1.4, "SYSD": 1.3, "SWE": 1.2,
+    "COD": 1.4, "DSA": 1.4, "SYSD": 1.3, "SWE": 1.2,
     "OOD": 1.1, "CLOUD": 1.1, "AI": 1.0, "APTI": 1.0,
-    "OS": 0.9, "NETW": 0.9, "COMM": 0.8, "EQ": 0.8
+    "SQL": 1.0, "OS": 0.9, "NETW": 0.9, "COMM": 0.8
 }
 
 SKILL_COMPLEXITY_HOURS = {
     "SYSD": 15, "DSA": 15, "AI": 15,
-    "CDG": 10, "OOD": 10, "CLOUD": 10, "OS": 10, "NETW": 10,
-    "SWE": 5, "APTI": 5, "COMM": 5, "EQ": 5
+    "COD": 10, "OOD": 10, "CLOUD": 10, "OS": 10, "NETW": 10,
+    "SQL": 8, "SWE": 5, "APTI": 5, "COMM": 5
 }
 
 CATEGORY_ALIASES = {
-    "COD": "CDG", "CDG": "CDG",
-    "SQL": "EQ",  "EQ": "EQ",
+    "CDG": "COD", "COD": "COD",
 }
 
 CONFIDENCE_SCORES = {

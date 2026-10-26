@@ -1,8 +1,10 @@
-# mock_data.py
+# Shared RADIX categories and a checked-in snapshot of the connected 118-company directory.
+import json
+from pathlib import Path
 
 RADIX_CATEGORIES = [
-    "CDG", "DSA", "OOD", "APTI", "COMM", "AI",
-    "CLOUD", "EQ", "SWE", "SYSD", "NETW", "OS"
+    "COD", "DSA", "OOD", "APTI", "COMM", "AI",
+    "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS"
 ]
 
 sample_candidate = {
@@ -26,20 +28,16 @@ sample_candidate = {
     ]
 }
 
-company_benchmarks = {
-    "Google": {
-        "CDG": 4.5, "DSA": 4.5, "OOD": 4.0, "APTI": 4.0,
-        "COMM": 3.5, "AI": 3.5, "CLOUD": 3.5, "EQ": 3.5,
-        "SWE": 4.0, "SYSD": 4.5, "NETW": 3.0, "OS": 3.5
-    },
-    "Microsoft": {
-        "CDG": 4.2, "DSA": 4.0, "OOD": 4.2, "APTI": 3.8,
-        "COMM": 4.0, "AI": 3.0, "CLOUD": 4.0, "EQ": 4.0,
-        "SWE": 4.2, "SYSD": 3.8, "NETW": 3.2, "OS": 3.8
-    },
-    "Oracle": {
-        "CDG": 4.0, "DSA": 3.8, "OOD": 4.0, "APTI": 3.5,
-        "COMM": 3.5, "AI": 2.5, "CLOUD": 4.2, "EQ": 3.5,
-        "SWE": 4.0, "SYSD": 3.5, "NETW": 3.5, "OS": 3.5
-    }
-}
+_benchmark_data_path = Path(__file__).resolve().parents[2] / "data" / "radix_company_benchmarks.json"
+_benchmark_data = json.loads(_benchmark_data_path.read_text(encoding="utf-8"))
+company_records = _benchmark_data["companies"]
+company_benchmarks = {record["name"]: record["benchmark"] for record in company_records}
+company_benchmarks_by_id = {record["company_id"]: record for record in company_records}
+company_benchmark_metadata = _benchmark_data
+
+# Keep compatibility with existing standalone demos that reference `sample_candidate`.
+sample_candidate["skills"] = [
+    {**skill, "category_code": "COD" if skill.get("category_code") == "CDG" else skill.get("category_code")}
+    for skill in sample_candidate["skills"]
+    if skill.get("category_code") != "EQ"
+]

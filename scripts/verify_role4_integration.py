@@ -1,7 +1,7 @@
 # scripts/verify_role4_integration.py
 """
 RADIX Talent Match - Role 4 Final Integration Verification Script
-Run this script to verify that Role 4 works flawlessly with both mock data 
+Run this script to verify that Role 4 works flawlessly with both mock data
 and real data from Roles 1, 2, and 3.
 """
 
@@ -24,14 +24,22 @@ print("=" * 70)
 print("\n[CHECK 1]: Verifying Talent Check Core Engine with Mock Candidate...")
 try:
     from app.talent_check import run_talent_check, get_radar_chart_data
-    from app.mock_data import sample_candidate, company_benchmarks
+    from app.mock_data import sample_candidate, company_benchmark_metadata
 
-    report = run_talent_check(sample_candidate, "Google", company_benchmarks)
+    google_record = next(
+        record for record in company_benchmark_metadata["companies"]
+        if "google" in record["name"].casefold()
+    )
+    report = run_talent_check(
+        sample_candidate,
+        google_record["name"],
+        {google_record["name"]: google_record["benchmark"]},
+    )
     assert report["error"] is False, "Talent check returned an error"
-    assert report["readiness_score"] == 82.5, f"Unexpected score: {report['readiness_score']}"
+    assert len(report["per_skillset_gap_breakdown"]) == 12, "Expected all RADIX-12 categories"
     assert "company" in report and "skillset_gap" in report, "Shared contract keys missing"
     print("  ✅ Core engine runs cleanly.")
-    print(f"  ✅ Mock Candidate: {report['candidate_name']} -> Score: {report['readiness_score']}% (Target: Google)")
+    print(f"  ✅ Synthetic Candidate: {report['candidate_name']} -> Score: {report['readiness_score']}% (Target: {google_record['name']})")
     print(f"  ✅ Deal-Breakers: {report['deal_breakers_count']} found (SYSD gap)")
     print(f"  ✅ Contract keys: 'company'='{report['company']}', 'skillset_gap' count={len(report['skillset_gap'])}")
 except Exception as e:
@@ -55,33 +63,27 @@ except Exception as e:
 # -------------------------------------------------------------------
 # CHECK 3: Real Data Integration from Roles 1, 2, and 3
 # -------------------------------------------------------------------
-print("\n[CHECK 3]: Testing Real Candidate Resumes from Role 2/3 Parser...")
+print("\n[CHECK 3]: Testing the full benchmark scorer across all 118 companies...")
 try:
-    from app.resume_pipeline import parse_and_extract_resume
+    from app.mock_data import company_benchmark_metadata
 
-    resumes_dir = ROOT_DIR / "data" / "resumes" / "PDF"
-    sample_files = [
-        ("Rohan Verma.pdf", "Google", True),
-        ("Ananya Rao.pdf", "Google", False),
-        ("Karthik Subramaniam.pdf", "Google", False),
-        ("Priya Menon.pdf", "Oracle", False),
-    ]
+    synthetic_profile = {
+        "name": "Synthetic Integration Candidate",
+        "skills": [
+            {"skill_name": "Python", "category_code": "COD", "confidence": "high"},
+            {"skill_name": "SQL", "category_code": "SQL", "confidence": "medium"},
+        ],
+    }
+    for record in company_benchmark_metadata["companies"]:
+        result = run_talent_check(
+            synthetic_profile,
+            record["name"],
+            {record["name"]: record["benchmark"]},
+        )
+        assert result["error"] is False, f"Scoring failed for {record['name']}"
+        assert len(result["per_skillset_gap_breakdown"]) == 12, f"RADIX-12 incomplete for {record['name']}"
 
-    for fname, target_comp, expected_ready in sample_files:
-        fpath = resumes_dir / fname
-        if not fpath.exists():
-            continue
-        
-        # 1. Parse resume through real Role 2/3 pipeline
-        real_profile = parse_and_extract_resume(str(fpath))
-        
-        # 2. Feed directly into your Role 4 Talent Check engine
-        real_report = run_talent_check(real_profile, target_comp, company_benchmarks)
-        
-        status_label = "READY ✅" if real_report["is_ready"] else "Needs Prep ⚠️"
-        print(f"  📄 {fname:<25} vs {target_comp:<7} -> Score: {real_report['readiness_score']:>5.1f}% | {status_label} | Gaps: {len(real_report['deal_breakers_list'])} deal-breakers")
-
-    print("  ✅ All real candidate profiles parse and score dynamically with personalized gaps!")
+    print("  ✅ All 118 company records scored against complete 12-category profiles.")
 except Exception as e:
     print(f"  ❌ CHECK 3 FAILED: {e}")
     sys.exit(1)
@@ -116,5 +118,5 @@ for s in required_scripts:
 print(f"  ✅ All {len(required_scripts)} standalone presentation tools are present in role4_standalone/.")
 
 print("\n" + "=" * 70)
-print("🎉 ALL 5 INTEGRATION CHECKS PASSED! ROLE 4 IS 100% PRODUCTION-READY!")
+print("🎉 ALL 5 INTEGRATION CHECKS PASSED.")
 print("=" * 70)

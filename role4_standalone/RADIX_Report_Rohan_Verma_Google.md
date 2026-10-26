@@ -1,4 +1,6 @@
 # RADIX Talent Match – Readiness Report
+> **Legacy illustration only:** this report comes from the standalone prototype and uses unverified mock company targets and prototype skill levels. It is not an official Google requirement or a current portal result. The shared API now requires explicit student ratings and labels its benchmarks as demo data.
+
 **Candidate:** Rohan Verma
 **Target Company:** Google
 **Generated on:** 25 October 2026, 06:42 PM
