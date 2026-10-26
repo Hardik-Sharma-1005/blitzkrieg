@@ -1,4 +1,15 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+
+export type ThemeMode = "dark" | "light";
+interface ThemeValue { theme: ThemeMode; setTheme: (value: ThemeMode) => void; }
+const ThemeContext = createContext<ThemeValue | null>(null);
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<ThemeMode>(() => { try { return window.localStorage.getItem("blitzkrieg-theme") === "light" ? "light" : "dark"; } catch { return "dark"; } });
+  useEffect(() => { document.documentElement.dataset.theme = theme; try { window.localStorage.setItem("blitzkrieg-theme", theme); } catch { /* Storage may be unavailable. */ } }, [theme]);
+  const value = useMemo(() => ({ theme, setTheme }), [theme]);
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+export function useTheme() { const value = useContext(ThemeContext); if (!value) throw new Error("useTheme must be used inside ThemeProvider"); return value; }
 
 interface SidebarValue {
   collapsed: boolean;

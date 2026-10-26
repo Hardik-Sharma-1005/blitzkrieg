@@ -1,24 +1,20 @@
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
-import { ArrowLeft, Menu } from "lucide-react";
-import { AppSidebar } from "@/components/layout/AppSidebar";
-import { SidebarProvider, useSidebar } from "@/components/layout/SidebarContext";
+import { ArrowLeft } from "lucide-react";
+import { useTheme } from "@/components/layout/SidebarContext";
 import { useCompany } from "@/lib/companyContext";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
 
 function LayoutContent() {
   const { selectedCompany } = useCompany();
-  const { setMobileOpen } = useSidebar();
+  const { theme } = useTheme();
   const { pathname } = useLocation();
   const isComparePage = pathname === "/company/compare";
   if (!selectedCompany && !isComparePage) return <Navigate to="/" replace />;
   return (
-    <div className="min-h-screen bg-[#fbf8f1] lg:flex">
-      <AppSidebar />
-      <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e8e0d2] bg-[#fffdf8]/95 px-4 backdrop-blur sm:px-6">
-          <button type="button" onClick={() => setMobileOpen(true)} className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open navigation"><Menu className="h-5 w-5" /></button>
+    <div className={`space-theme space-theme-shell min-h-screen bg-[#f8f8f5] ${theme === "light" ? "theme-light" : ""}`}>
+        <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e5e9e5] bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-400">blitzkrieg!</p>
+            <p className="text-xs font-medium text-slate-400">JSS University, Noida <span className="mx-1">/</span> Student Career Hub</p>
             <p className="truncate text-sm font-semibold text-slate-800">{isComparePage ? "Company comparison" : selectedCompany?.companyName}</p>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
@@ -34,11 +30,10 @@ function LayoutContent() {
           </div>
         </header>
         <main className="min-w-0"><Outlet /></main>
-      </div>
     </div>
   );
 }
 
 export function AppLayout() {
-  return <SidebarProvider><LayoutContent /></SidebarProvider>;
+  return <LayoutContent />;
 }
