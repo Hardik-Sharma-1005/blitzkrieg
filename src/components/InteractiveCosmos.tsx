@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
-type InteractiveCosmosProps = { variant: "constellation" | "starfield"; className?: string };
+type InteractiveCosmosProps = { variant: "constellation" | "starfield"; className?: string; tone?: "light" | "dark" };
 type Star = { x: number; y: number; depth: number; radius: number; phase: number; speed: number; alpha: number; hue: number; driftX: number; driftY: number; flowX: number; flowY: number; originX: number; originY: number; introDelay: number };
 
 /** High-DPI space particles that pick up a soft directional drift from pointer movement. */
-export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmosProps) {
+export function InteractiveCosmos({ variant, className = "", tone = "dark" }: InteractiveCosmosProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -21,6 +21,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
     let introStart = 0;
     let iconScale = 1;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const lightBackground = tone === "light";
     const pointer = { x: -1000, y: -1000, vx: 0, vy: 0 };
     let previousPointer = { x: -1000, y: -1000 };
     const hues = [210, 210, 210, 210, 210, 165];
@@ -157,11 +158,55 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       pointer.vx *= .74;
       pointer.vy *= .74;
 
+      let starGradient: CanvasGradient | null = null;
+      if (variant === "starfield") {
+        const backdrop = context.createLinearGradient(0, 0, width, height);
+        if (lightBackground) {
+          backdrop.addColorStop(0, "rgba(72, 92, 193, .12)");
+          backdrop.addColorStop(.52, "rgba(128, 92, 178, .08)");
+          backdrop.addColorStop(1, "rgba(43, 112, 160, .10)");
+          starGradient = context.createLinearGradient(0, height, width, 0);
+          starGradient.addColorStop(0, "#0b29fe");
+          starGradient.addColorStop(.28, "#3569d8");
+          starGradient.addColorStop(.56, "#6353a7");
+          starGradient.addColorStop(.78, "#27345f");
+          starGradient.addColorStop(1, "#17203c");
+        } else {
+          backdrop.addColorStop(0, "rgba(29, 45, 126, .42)");
+          backdrop.addColorStop(.48, "rgba(36, 22, 83, .28)");
+          backdrop.addColorStop(1, "rgba(11, 61, 92, .24)");
+          starGradient = context.createLinearGradient(0, height, width, 0);
+          starGradient.addColorStop(0, "#43dcff");
+          starGradient.addColorStop(.25, "#0b29fe");
+          starGradient.addColorStop(.5, "#9762ff");
+          starGradient.addColorStop(.72, "#f0b9ff");
+          starGradient.addColorStop(1, "#ffffff");
+        }
+        context.fillStyle = backdrop;
+        context.fillRect(0, 0, width, height);
+        const nebula = (x: number, y: number, radius: number, color: string) => {
+          const cloud = context.createRadialGradient(x, y, 0, x, y, radius);
+          cloud.addColorStop(0, color);
+          cloud.addColorStop(1, "rgba(0, 0, 0, 0)");
+          context.fillStyle = cloud;
+          context.fillRect(0, 0, width, height);
+        };
+        if (lightBackground) {
+          nebula(width * .2, height * .3, Math.max(width * .48, height * .6), "rgba(98, 113, 205, .09)");
+          nebula(width * .83, height * .58, Math.max(width * .38, height * .5), "rgba(154, 92, 181, .07)");
+        } else {
+          nebula(width * .18, height * .27, Math.max(width * .48, height * .6), "rgba(49, 76, 202, .20)");
+          nebula(width * .83, height * .6, Math.max(width * .4, height * .52), "rgba(126, 45, 173, .15)");
+        }
+      }
+
       if (variant === "starfield" && pointerX >= 0) {
-        const haze = context.createRadialGradient(pointerX, pointerY, 0, pointerX, pointerY, Math.max(190, width * .28));
-        haze.addColorStop(0, "rgba(135, 158, 195, .11)");
-        haze.addColorStop(1, "rgba(135, 158, 195, 0)");
-        context.fillStyle = haze;
+        const glowRadius = Math.max(154, width * .21);
+        const cursorGlow = context.createRadialGradient(pointerX, pointerY, 0, pointerX, pointerY, glowRadius);
+        cursorGlow.addColorStop(0, lightBackground ? "rgba(11, 41, 254, .085)" : "rgba(11, 41, 254, .22)");
+        cursorGlow.addColorStop(.38, lightBackground ? "rgba(80, 105, 255, .045)" : "rgba(105, 126, 255, .10)");
+        cursorGlow.addColorStop(1, "rgba(11, 41, 254, 0)");
+        context.fillStyle = cursorGlow;
         context.fillRect(0, 0, width, height);
       }
 
@@ -218,10 +263,10 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
           x += star.driftX;
           y += star.driftY;
         }
-        const dx = pointerIsActive ? x - pointerX : 0;
-        const dy = pointerIsActive ? y - pointerY : 0;
-        const distance = pointerIsActive ? Math.hypot(dx, dy) : Infinity;
-        const nearby = Math.max(0, 1 - distance / (variant === "constellation" ? 250 : 180));
+        let dx = pointerIsActive ? x - pointerX : 0;
+        let dy = pointerIsActive ? y - pointerY : 0;
+        let distance = pointerIsActive ? Math.hypot(dx, dy) : Infinity;
+        const nearby = Math.max(0, 1 - distance / (variant === "constellation" ? 250 : 126));
         if (!reducedMotion && nearby > 0) {
           const influence = nearby * nearby;
           star.flowX = Math.max(-3.5, Math.min(3.5, star.flowX + pointer.vx * influence * .08));
@@ -248,11 +293,13 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         } else {
           context.beginPath();
           context.arc(x, y, radius, 0, Math.PI * 2);
-          context.fillStyle = `rgba(${nearby > .2 ? "205, 224, 255" : "230, 237, 249"}, ${alpha})`;
+          context.globalAlpha = alpha;
+          context.fillStyle = nearby > .2 ? (lightBackground ? "#0b29fe" : "#ffffff") : starGradient ?? "#eef2ff";
           context.shadowBlur = star.radius > 1.55 ? 10 : 0;
-          context.shadowColor = "rgba(183, 206, 247, .9)";
+          context.shadowColor = lightBackground ? "rgba(11, 41, 254, .65)" : "rgba(196, 203, 255, .85)";
           context.fill();
           context.shadowBlur = 0;
+          context.globalAlpha = 1;
         }
       }
       for (const batch of particleBatches) {
@@ -294,7 +341,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       parent.removeEventListener("pointerleave", onPointerLeave);
       window.cancelAnimationFrame(frame);
     };
-  }, [variant]);
+  }, [variant, tone]);
 
   return <canvas ref={canvasRef} aria-hidden="true" className={`pointer-events-none absolute inset-0 h-full w-full ${className}`} />;
 }

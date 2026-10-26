@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InteractiveCosmos } from "@/components/InteractiveCosmos";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 type Skill = { skill_name: string; category_code: string; confidence?: "high" | "medium" | "low" };
 type CandidateProfile = { name: string; source_file: string; skills: Skill[]; extraction_mode: "llm_live" | "offline_heuristic" | "offline_heuristic_fallback" };
@@ -176,7 +177,7 @@ export function TalentCheck() {
     <InteractiveCosmos variant="starfield" className="space-page-stars" />
     <header className="border-b border-[#e9e1d5] bg-[#fffdf8]"><div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 sm:px-8">
       <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#216b5d]"><ArrowLeft className="h-4 w-4" /> Back to company directory</Link>
-      <div className="flex items-center gap-2"><img src="/jss-university-logo.png" alt="" className="h-9 w-9 rounded-lg object-contain" /><span className="hidden text-sm font-semibold text-[#26354b] sm:inline">JSS Student Career Hub</span></div>
+      <BrandLogo className="h-auto w-32" />
     </div></header>
     <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
       <div className="max-w-3xl"><p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]"><Sparkles className="h-3.5 w-3.5" /> RADIX TALENT MATCH</p>

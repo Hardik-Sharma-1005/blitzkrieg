@@ -1,5 +1,6 @@
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useTheme } from "@/components/layout/SidebarContext";
 import { useCompany } from "@/lib/companyContext";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
@@ -14,7 +15,7 @@ function LayoutContent() {
     <div className={`space-theme space-theme-shell min-h-screen bg-[#f8f8f5] ${theme === "light" ? "theme-light" : ""}`}>
         <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e5e9e5] bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-400">JSS University, Noida <span className="mx-1">/</span> Student Career Hub</p>
+            <BrandLogo className="mb-1 h-auto w-[118px]" />
             <p className="truncate text-sm font-semibold text-slate-800">{isComparePage ? "Company comparison" : selectedCompany?.companyName}</p>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
