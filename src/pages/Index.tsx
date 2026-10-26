@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Building2, Check, FileText, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Building2, Check, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
 import { CompanyCard } from "@/components/company/CompanyCard";
 import { Button } from "@/components/ui/button";
 import { normalizeCompanySummary } from "@/lib/companyData";
@@ -22,7 +22,7 @@ export function Index() {
     queryFn: fetchCompanyDirectory,
   });
   const companies = useMemo(
-    () => (directoryQuery.data ?? []).map(({ short_json }) => normalizeCompanySummary(short_json)),
+    () => (directoryQuery.data ?? []).map(({ short_json, headquarters_address, logo_url, website_url }) => normalizeCompanySummary(short_json, { headquarters_address, logo_url, website_url })),
     [directoryQuery.data],
   );
   const categories = useMemo(
@@ -80,7 +80,7 @@ export function Index() {
             </div>
           </div>
 
-          <div className="mt-9 max-w-3xl sm:mt-12">
+          <div className="mt-9 w-full sm:mt-12">
             <div className="flex flex-wrap gap-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/65 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#246b5d] shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5 text-[#d29335]" /> Placement intelligence
@@ -95,11 +95,44 @@ export function Index() {
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
               Explore company profiles, skill expectations, and career signals before campus placements.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button onClick={() => navigate("/skill-match")}><GitCompareArrows className="h-4 w-4" /> Match resume to a job</Button>
-              <Button variant="soft" onClick={() => navigate("/jd-analytics")}>Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
-              <Button variant="soft" onClick={() => navigate("/resume-profile")}><FileText className="h-4 w-4" /> Build your resume profile</Button>
-              <Button variant="outline" onClick={() => navigate("/talent-check")}><Sparkles className="h-4 w-4" /> Run Talent Check</Button>
+            <div className="mt-7 grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
+              <button type="button" onClick={() => navigate("/skill-match")} className="group relative flex min-h-[250px] flex-col justify-between overflow-hidden rounded-3xl border border-[#d7e8dc] bg-[#fffdf8] p-4 text-left shadow-[0_8px_24px_rgba(40,77,60,0.07)] transition duration-200 hover:-translate-y-1 hover:border-[#9fcab5] hover:shadow-[0_16px_32px_rgba(40,77,60,0.13)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#246b5d] focus-visible:ring-offset-2 sm:p-5">
+                <span aria-hidden="true" className="grid h-28 w-full place-items-center overflow-hidden rounded-2xl bg-[#e8f3eb] sm:h-32">
+                  <svg viewBox="0 0 200 120" className="h-full w-full" fill="none">
+                    <rect x="25" y="15" width="55" height="86" rx="8" fill="#fffdf8" stroke="#9fcab5" strokeWidth="2"/><path d="M37 34h27M37 44h19M37 60h10M51 60h16" stroke="#9cb8a9" strokeWidth="3" strokeLinecap="round"/><rect x="36" y="70" width="32" height="6" rx="3" fill="#d8ece0"/><rect x="36" y="82" width="24" height="6" rx="3" fill="#d8ece0"/>
+                    <path d="M84 60h28m-8-8 8 8-8 8" stroke="#267462" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><rect x="120" y="28" width="55" height="69" rx="8" fill="#fffdf8" stroke="#d9c28e" strokeWidth="2"/><path d="M136 28v-7h23v7M135 52h25" stroke="#ae8740" strokeWidth="3" strokeLinecap="round"/><path d="m139 72 7 7 13-15" stroke="#267462" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <span className="mt-4 block pr-6"><span className="block font-heading text-lg font-semibold leading-6 text-[#26354b]">Match resume to a job</span><span className="mt-1.5 block text-sm leading-5 text-slate-600">See how your resume fits a specific job description.</span></span>
+                <ArrowUpRight aria-hidden="true" className="absolute bottom-5 right-5 h-5 w-5 text-[#6f9384] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </button>
+              <button type="button" onClick={() => navigate("/jd-analytics")} className="group relative flex min-h-[250px] flex-col justify-between overflow-hidden rounded-3xl border border-[#eadfc8] bg-[#fffdf8] p-4 text-left shadow-[0_8px_24px_rgba(95,73,32,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[#d6c49e] hover:shadow-[0_16px_32px_rgba(95,73,32,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#246b5d] focus-visible:ring-offset-2 sm:p-5">
+                <span aria-hidden="true" className="grid h-28 w-full place-items-center overflow-hidden rounded-2xl bg-[#fbf1dc] sm:h-32">
+                  <svg viewBox="0 0 200 120" className="h-full w-full" fill="none">
+                    <rect x="27" y="16" width="110" height="87" rx="9" fill="#fffdf8" stroke="#d7bd83" strokeWidth="2"/><path d="M27 31h110" stroke="#e8d9b8" strokeWidth="2"/><circle cx="39" cy="24" r="2" fill="#c09343"/><circle cx="47" cy="24" r="2" fill="#d7bd83"/><path d="M42 46h53M42 57h42M42 70h35" stroke="#c9b98f" strokeWidth="4" strokeLinecap="round"/><rect x="42" y="80" width="49" height="8" rx="4" fill="#f3e5c2"/><circle cx="128" cy="72" r="23" fill="#fff8e8" stroke="#b48634" strokeWidth="5"/><path d="m145 89 18 18" stroke="#b48634" strokeWidth="7" strokeLinecap="round"/><path d="m119 72 6 6 12-14" stroke="#267462" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <span className="mt-4 block pr-6"><span className="block font-heading text-lg font-semibold leading-6 text-[#26354b]">Analyze a job description</span><span className="mt-1.5 block text-sm leading-5 text-slate-600">Find the skills and experience a posting asks for.</span></span>
+                <ArrowUpRight aria-hidden="true" className="absolute bottom-5 right-5 h-5 w-5 text-[#a99978] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </button>
+              <button type="button" onClick={() => navigate("/resume-profile")} className="group relative flex min-h-[250px] flex-col justify-between overflow-hidden rounded-3xl border border-[#d7e8dc] bg-[#fffdf8] p-4 text-left shadow-[0_8px_24px_rgba(40,77,60,0.07)] transition duration-200 hover:-translate-y-1 hover:border-[#9fcab5] hover:shadow-[0_16px_32px_rgba(40,77,60,0.13)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#246b5d] focus-visible:ring-offset-2 sm:p-5">
+                <span aria-hidden="true" className="grid h-28 w-full place-items-center overflow-hidden rounded-2xl bg-[#e8f3eb] sm:h-32">
+                  <svg viewBox="0 0 200 120" className="h-full w-full" fill="none">
+                    <rect x="57" y="10" width="86" height="101" rx="9" fill="#fffdf8" stroke="#9fcab5" strokeWidth="2"/><circle cx="83" cy="39" r="14" fill="#cfe7d9"/><path d="M63 70c2-12 10-18 20-18s18 6 20 18" fill="#d9eee1"/><path d="M111 34h20M111 43h16" stroke="#8fb49e" strokeWidth="3" strokeLinecap="round"/><path d="M69 82h62" stroke="#d7e8dc" strokeWidth="2"/><path d="M70 93h22" stroke="#267462" strokeWidth="4" strokeLinecap="round"/><path d="M99 93h31" stroke="#d7e8dc" strokeWidth="5" strokeLinecap="round"/><path d="M70 102h16" stroke="#c89848" strokeWidth="4" strokeLinecap="round"/><path d="M93 102h37" stroke="#d7e8dc" strokeWidth="5" strokeLinecap="round"/>
+                  </svg>
+                </span>
+                <span className="mt-4 block pr-6"><span className="block font-heading text-lg font-semibold leading-6 text-[#26354b]">Create your resume profile</span><span className="mt-1.5 block text-sm leading-5 text-slate-600">Turn your resume into a structured skills profile.</span></span>
+                <ArrowUpRight aria-hidden="true" className="absolute bottom-5 right-5 h-5 w-5 text-[#6f9384] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </button>
+              <button type="button" onClick={() => navigate("/talent-check")} className="group relative flex min-h-[250px] flex-col justify-between overflow-hidden rounded-3xl border border-[#eadfc8] bg-[#fffdf8] p-4 text-left shadow-[0_8px_24px_rgba(95,73,32,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[#d6c49e] hover:shadow-[0_16px_32px_rgba(95,73,32,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#246b5d] focus-visible:ring-offset-2 sm:p-5">
+                <span aria-hidden="true" className="grid h-28 w-full place-items-center overflow-hidden rounded-2xl bg-[#fbf1dc] sm:h-32">
+                  <svg viewBox="0 0 200 120" className="h-full w-full" fill="none">
+                    <path d="M27 103V37l30-17 30 17v66" fill="#fffdf8" stroke="#d7bd83" strokeWidth="2" strokeLinejoin="round"/><path d="M38 48h9v9h-9zM55 48h9v9h-9zM38 65h9v9h-9zM55 65h9v9h-9z" fill="#f1e4c7"/><path d="M49 103V84h16v19M27 103h60" stroke="#b88e47" strokeWidth="3" strokeLinejoin="round"/><path d="M100 93h13M100 76h24M100 59h38" stroke="#d6c49e" strokeWidth="7" strokeLinecap="round"/><path d="M100 93h27" stroke="#267462" strokeWidth="7" strokeLinecap="round"/><circle cx="158" cy="43" r="22" fill="#fffdf8" stroke="#267462" strokeWidth="3"/><circle cx="158" cy="43" r="12" stroke="#9fcab5" strokeWidth="3"/><circle cx="158" cy="43" r="3" fill="#c18a36"/><path d="m158 43 12-11" stroke="#c18a36" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                </span>
+                <span className="mt-4 block pr-6"><span className="block font-heading text-lg font-semibold leading-6 text-[#26354b]">Check skills against a company</span><span className="mt-1.5 block text-sm leading-5 text-slate-600">Compare your profile with one of 118 company benchmarks.</span></span>
+                <ArrowUpRight aria-hidden="true" className="absolute bottom-5 right-5 h-5 w-5 text-[#a99978] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </button>
             </div>
           </div>
 

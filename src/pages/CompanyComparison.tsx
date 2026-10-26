@@ -161,7 +161,7 @@ export function CompanyComparison() {
   const companies = useMemo(() => compareCompanyIds.flatMap((_, index) => {
     const record = records[index]?.data;
     if (!record) return [];
-    const summary = normalizeCompanySummary(record.short_json);
+    const summary = normalizeCompanySummary(record.short_json, record.full_json);
     const profile = normalizeCompanyProfile(record.full_json, record.short_json);
     return [{ summary, profile, skills: normalizeDashboardSkills(record.skill_levels), raw: profile.raw, skillDataWarnings: record.skillDataWarnings }];
   }), [compareCompanyIds, records]);

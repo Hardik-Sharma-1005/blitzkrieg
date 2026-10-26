@@ -5,6 +5,9 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 export interface CompanyDirectoryRecord {
   company_id: number;
   short_json: JsonRecord;
+  headquarters_address?: string;
+  logo_url?: string;
+  website_url?: string;
 }
 
 export interface CompanyRecord extends CompanyDirectoryRecord {
@@ -32,19 +35,25 @@ export async function fetchCompanyDirectory(): Promise<CompanyDirectoryRecord[]>
     return SEED_COMPANIES.map((company) => ({
       company_id: company.company_id,
       short_json: withCompanyId(company.short_json, company.company_id),
+      headquarters_address: asString(company.short_json.headquarters_address) || asString(asRecord(company.full_json).headquarters_address),
+      logo_url: asString(asRecord(company.short_json).logo_url) || asString(asRecord(company.full_json).logo_url),
+      website_url: asString(company.short_json.website_url) || asString(asRecord(company.full_json).website_url),
     }));
   }
 
   const client = requireSupabase();
   const { data, error } = await client
     .from("company_json")
-    .select("company_id, short_json")
+    .select("company_id, short_json, headquarters_address:full_json->>headquarters_address, logo_url:full_json->>logo_url, website_url:full_json->>website_url")
     .order("company_id", { ascending: true });
   throwIfError(error, "Could not load the company directory");
 
   return (data ?? []).map((row) => ({
     company_id: Number(row.company_id),
     short_json: withCompanyId(row.short_json, Number(row.company_id)),
+    headquarters_address: asString(row.headquarters_address),
+    logo_url: asString(row.logo_url),
+    website_url: asString(row.website_url),
   }));
 }
 

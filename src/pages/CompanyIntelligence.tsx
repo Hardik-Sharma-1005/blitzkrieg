@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ExternalLink, Globe2, Sparkles } from "lucide-react";
+import { ArrowRight, ExternalLink, Globe2, Mail, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export function CompanyIntelligence() {
     [companyRecord],
   );
   const sections = useMemo(() => buildIntelligenceSections(profile?.raw), [profile]);
+  const contactEmail = profile ? asString(profile.raw.primary_contact_email) || asString(profile.raw.contact_person_email) : "";
   const [activeIndex, setActiveIndex] = useState(0);
   const sectionElements = useRef<Array<HTMLElement | null>>([]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -78,6 +79,7 @@ export function CompanyIntelligence() {
           <div className="flex w-full gap-2 sm:w-auto">
             {profile.websiteUrl && <Button asChild variant="outline" size="sm"><a href={profile.websiteUrl} target="_blank" rel="noreferrer"><Globe2 className="h-4 w-4" /><span className="hidden sm:inline">Website</span><ExternalLink className="h-3 w-3" /></a></Button>}
             {profile.linkedinUrl && <Button asChild variant="outline" size="sm"><a href={profile.linkedinUrl} target="_blank" rel="noreferrer"><span className="font-bold text-blue-700">in</span><span className="hidden sm:inline">LinkedIn</span><ExternalLink className="h-3 w-3" /></a></Button>}
+            {contactEmail && <Button asChild variant="outline" size="sm"><a href={`mailto:${contactEmail}`}><Mail className="h-4 w-4" /><span className="hidden sm:inline">Email</span></a></Button>}
           </div>
         </div>
       </div>
