@@ -1,0 +1,50 @@
+{
+  "source_type": "jd",
+  "source_file": "Oracle - Application Support Analyst.pdf",
+  "company": "Oracle Financial Services Software Limited",
+  "role": "Application Support Analyst",
+  "skills": [
+    {
+      "skill_name": "SQL",
+      "category_code": "SQL",
+      "evidence": "Comfort with basic SQL — simple SELECT/WHERE queries and an understanding of primary keys",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Linux",
+      "category_code": "OS",
+      "evidence": "Operating systems and Linux fundamentals — basic command-line usage, what a log file is, batch vs. real-time processing",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Networking",
+      "category_code": "NETW",
+      "evidence": "Basic networking knowledge — what an IP address is, client-server architecture fundamentals, and what “latency” means in practice",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Quantitative and Logical Reasoning",
+      "category_code": "APTI",
+      "evidence": "Strong quantitative and logical reasoning — data interpretation from tables, arithmetic, and structured problem-solving",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Communication",
+      "category_code": "COMM",
+      "evidence": "Excellent communication skills — able to explain a technical issue to a non-technical client, stay calm during an escalation, and document what happened clearly",
+      "confidence": "high"
+    },
+    {
+      "skill_name": "Ticketing/Incident System",
+      "category_code": "OTHER",
+      "evidence": "Prior exposure to a ticketing/incident system",
+      "confidence": "medium"
+    },
+    {
+      "skill_name": "Systems Administration",
+      "category_code": "OS",
+      "evidence": "coursework in networking or systems administration",
+      "confidence": "low"
+    }
+  ]
+}
