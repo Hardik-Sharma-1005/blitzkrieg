@@ -17,7 +17,6 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
     let height = 0;
     let frame = 0;
     let stars: Star[] = [];
-    let introLayers: HTMLCanvasElement[] = [];
     let tick = 0;
     let introStart = 0;
     let iconScale = 1;
@@ -97,7 +96,13 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       const strokeWeights = strokes.map((stroke) => Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1));
       const totalStrokeWeight = strokeWeights.reduce((sum, length) => sum + length, 0);
       stars = Array.from({ length: count }, () => {
-        const corner = Math.floor(random() * 4);
+        const entryAngle = random() * Math.PI * 2;
+        const rayX = Math.cos(entryAngle);
+        const rayY = Math.sin(entryAngle);
+        const edgeDistance = Math.min(
+          width / 2 / Math.max(Math.abs(rayX), .001),
+          height / 2 / Math.max(Math.abs(rayY), .001),
+        );
         const particle: Star = {
           x: random() * width, y: random() * height,
           depth: (random() - .5) * .24,
@@ -105,9 +110,9 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
           speed: .003 + random() * .012, alpha: .2 + random() * .6,
           hue: [224, 248, 268, 292, 316][Math.floor(random() * 5)],
           driftX: 0, driftY: 0, flowX: 0, flowY: 0,
-          originX: corner % 2 === 0 ? 0 : width,
-          originY: corner < 2 ? 0 : height,
-          introDelay: random() * 240,
+          originX: width / 2 + rayX * (edgeDistance + 24 + random() * 90),
+          originY: height / 2 + rayY * (edgeDistance + 24 + random() * 90),
+          introDelay: random() * 1100,
         };
         if (variant === "constellation" && random() > .02) {
           let choice = random() * totalStrokeWeight;
@@ -132,40 +137,6 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         return particle;
       });
 
-      introLayers = [];
-      if (variant === "constellation") {
-        introLayers = Array.from({ length: 4 }, () => {
-          const layer = document.createElement("canvas");
-          layer.width = canvas.width;
-          layer.height = canvas.height;
-          return layer;
-        });
-        const introBatches = Array.from({ length: 4 * 5 * 12 }, () => [] as number[]);
-        for (const star of stars) {
-          const corner = (star.originY === 0 ? 0 : 2) + (star.originX === 0 ? 0 : 1);
-          const hueIndex = hues.indexOf(star.hue);
-          const bucket = Math.max(1, Math.min(12, Math.round(star.alpha * 12)));
-          introBatches[(corner * 5 + hueIndex) * 12 + bucket - 1].push(star.x, star.y, star.radius);
-        }
-        for (let corner = 0; corner < 4; corner += 1) {
-          const layerContext = introLayers[corner].getContext("2d");
-          if (!layerContext) continue;
-          layerContext.setTransform(ratio, 0, 0, ratio, 0, 0);
-          for (let hueIndex = 0; hueIndex < 5; hueIndex += 1) {
-            for (let bucket = 1; bucket <= 12; bucket += 1) {
-              const arcs = introBatches[(corner * 5 + hueIndex) * 12 + bucket - 1];
-              if (arcs.length === 0) continue;
-              layerContext.beginPath();
-              for (let index = 0; index < arcs.length; index += 3) {
-                layerContext.moveTo(arcs[index] + arcs[index + 2], arcs[index + 1]);
-                layerContext.arc(arcs[index], arcs[index + 1], arcs[index + 2], 0, Math.PI * 2);
-              }
-              layerContext.fillStyle = `hsla(${hues[hueIndex]}, 100%, 78%, ${bucket / 12})`;
-              layerContext.fill();
-            }
-          }
-        }
-      }
     };
 
     const particleBatches = hues.flatMap((hue, hueIndex) => Array.from({ length: 12 }, (_, index) => ({
@@ -206,22 +177,9 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         context.fillRect(centerX - coreRadius, centerY - coreRadius, coreRadius * 2, coreRadius * 2);
       }
 
-      if (variant === "constellation" && !reducedMotion) {
-        const progress = Math.max(0, Math.min(1, (now - introStart) / 4500));
-        if (progress < 1) {
-          for (let corner = 0; corner < introLayers.length; corner += 1) {
-            const originX = corner % 2 === 0 ? 0 : width;
-            const originY = corner < 2 ? 0 : height;
-            context.save();
-            context.translate(originX * (1 - progress), originY * (1 - progress));
-            context.scale(progress, progress);
-            context.drawImage(introLayers[corner], 0, 0, width, height);
-            context.restore();
-          }
-          frame = window.requestAnimationFrame(draw);
-          return;
-        }
-      }
+      const introProgress = variant === "constellation" && !reducedMotion
+        ? Math.max(0, Math.min(1, (now - introStart) / 7000))
+        : 1;
 
       for (const batch of particleBatches) batch.arcs.length = 0;
       glowStars.length = 0;
@@ -237,12 +195,23 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
         let x = star.x;
         let y = star.y;
         if (variant === "constellation") {
+          // Bring each particle in on its own randomized path. The stars form
+          // the constellation as they arrive; no large shape scales in.
+          const arrival = Math.max(0, Math.min(1, (now - introStart - star.introDelay) / 5900));
+          // Quintic ease-in-out keeps the particles' starts and finishes soft.
+          const easedArrival = arrival < .5
+            ? 16 * arrival ** 5
+            : 1 - Math.pow(-2 * arrival + 2, 5) / 2;
+          x = star.originX + (star.x - star.originX) * easedArrival;
+          y = star.originY + (star.y - star.originY) * easedArrival;
           const baseX = star.x - centerX;
           const baseY = star.y - centerY;
           const depth = star.depth * iconScale;
           const perspective = 1 + depth / (iconScale * 4);
-          x = centerX + (baseX * cosY + depth * sinY) * perspective + star.driftX;
-          y = centerY + (baseY * cosX - depth * sinX) * perspective + star.driftY;
+          const targetX = centerX + (baseX * cosY + depth * sinY) * perspective + star.driftX;
+          const targetY = centerY + (baseY * cosX - depth * sinX) * perspective + star.driftY;
+          x += (targetX - x) * easedArrival;
+          y += (targetY - y) * easedArrival;
           if (!reducedMotion) {
             // Gentle per-star orbital drift keeps the constellation alive even
             // while the pointer is idle, without disturbing its overall shape.

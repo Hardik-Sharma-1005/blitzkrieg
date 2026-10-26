@@ -10,6 +10,7 @@ import { normalizeCompanySummary } from "@/lib/companyData";
 import { fetchCompanyDirectory } from "@/lib/companyRepository";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import { useCompany } from "@/lib/companyContext";
+import { useTheme } from "@/components/layout/SidebarContext";
 
 export function Index() {
   const [query, setQuery] = useState("");
@@ -19,6 +20,7 @@ export function Index() {
   const prefersReducedMotion = useReducedMotion();
   const navigate = useNavigate();
   const { selectCompany, compareCompanyIds, toggleCompareCompany } = useCompany();
+  const { theme } = useTheme();
   const directoryQuery = useQuery({
     queryKey: ["company-directory"],
     queryFn: fetchCompanyDirectory,
@@ -74,7 +76,7 @@ export function Index() {
   });
 
   return (
-    <div className="portal-home min-h-screen overflow-hidden bg-[#f8f8f5] pb-8">
+    <div className={`portal-home min-h-screen overflow-hidden bg-[#f8f8f5] pb-8 ${theme === "light" ? "theme-light" : ""}`}>
       <header onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); const x = (event.clientX - bounds.left) / bounds.width; const y = (event.clientY - bounds.top) / bounds.height; event.currentTarget.style.setProperty("--pointer-x", `${x * 100}%`); event.currentTarget.style.setProperty("--pointer-y", `${y * 100}%`); event.currentTarget.style.setProperty("--parallax-x", `${(0.5 - x) * 12}px`); event.currentTarget.style.setProperty("--parallax-y", `${(0.5 - y) * 9}px`); event.currentTarget.style.setProperty("--tilt-x", `${(x - 0.5) * 1.2}deg`); event.currentTarget.style.setProperty("--tilt-y", `${(0.5 - y) * 1.2}deg`); }} onPointerLeave={(event) => { event.currentTarget.style.setProperty("--parallax-x", "0px"); event.currentTarget.style.setProperty("--parallax-y", "0px"); event.currentTarget.style.setProperty("--tilt-x", "0deg"); event.currentTarget.style.setProperty("--tilt-y", "0deg"); }} className="portal-hero relative isolate overflow-hidden border-b border-white/10 bg-[#071311] text-white">
         <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0" />
         <InteractiveCosmos variant="constellation" />
