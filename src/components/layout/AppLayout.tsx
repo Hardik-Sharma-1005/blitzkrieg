@@ -19,7 +19,7 @@ function LayoutContent() {
             <p className="truncate text-sm font-semibold text-slate-800">{isComparePage ? "Company comparison" : selectedCompany?.companyName}</p>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
-            <Link to="/" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:px-3 sm:text-sm" aria-label="Return to all companies">
+            <Link to="/" className="brand-accent-control inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:px-3 sm:text-sm" aria-label="Return to all companies">
               <ArrowLeft className="h-4 w-4" />
               <span className="sm:hidden">Companies</span>
               <span className="hidden sm:inline">All companies</span>

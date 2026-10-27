@@ -9,7 +9,7 @@ export function BrandLogo({ className = "", markOnly = false }: BrandLogoProps) 
   const { theme } = useTheme();
   return (
     <img
-      src={markOnly ? "/blitzkrieg-bolt.svg" : `/blitzkrieg-wordmark-${theme}.svg`}
+      src={markOnly ? `/blitzkrieg-bolt-${theme}.svg` : `/blitzkrieg-wordmark-${theme}.svg`}
       alt={markOnly ? "blitzkrieg bolt mark" : "blitzkrieg"}
       className={className}
     />
