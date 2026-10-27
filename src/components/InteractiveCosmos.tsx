@@ -59,7 +59,7 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       const count = variant === "constellation"
         ? Math.min(3000, Math.max(1600, Math.round(width * height / 270)))
-        : Math.min(1450, Math.max(420, Math.round(width * height / 1150)));
+        : Math.min(420, Math.max(120, Math.round(width * height / 3600)));
       let seed = variant === "constellation" ? 60817 : 96241;
       const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
       iconScale = Math.min(width * .24, height * .44);
@@ -67,32 +67,15 @@ export function InteractiveCosmos({ variant, className = "" }: InteractiveCosmos
       const centerY = height * .5;
       const strokes: Array<{ x1: number; y1: number; x2: number; y2: number; radius: number }> = [];
       const addStroke = (x1: number, y1: number, x2: number, y2: number, radius: number) => strokes.push({ x1, y1, x2, y2, radius });
-      const addRoundedCorner = (cx: number, cy: number, start: number) => {
-        const cornerRadius = .16;
-        let px = cx + Math.cos(start) * cornerRadius;
-        let py = cy + Math.sin(start) * cornerRadius;
-        for (let step = 1; step <= 8; step += 1) {
-          const angle = start + step * Math.PI / 16;
-          const x = cx + Math.cos(angle) * cornerRadius;
-          const y = cy + Math.sin(angle) * cornerRadius;
-          addStroke(px, py, x, y, .045);
-          px = x;
-          py = y;
-        }
-      };
-      // Rounded terminal frame.
-      addStroke(-.56, -.72, .56, -.72, .045);
-      addStroke(.72, -.56, .72, .56, .045);
-      addStroke(.56, .72, -.56, .72, .045);
-      addStroke(-.72, .56, -.72, -.56, .045);
-      addRoundedCorner(.56, -.56, -Math.PI / 2);
-      addRoundedCorner(.56, .56, 0);
-      addRoundedCorner(-.56, .56, Math.PI / 2);
-      addRoundedCorner(-.56, -.56, Math.PI);
-      // Terminal prompt and cursor line.
-      addStroke(-.36, -.34, -.04, -.04, .052);
-      addStroke(-.04, -.04, -.36, .27, .052);
-      addStroke(.10, .31, .43, .31, .052);
+      // Lightning bolt outline. Stars follow only the contour, with the same
+      // stroke thickness used by the previous terminal mark.
+      addStroke(-.075, -.72, .5, -.72, .045);
+      addStroke(.5, -.72, .2, -.216, .045);
+      addStroke(.2, -.216, .5, -.216, .045);
+      addStroke(.5, -.216, -.4, .72, .045);
+      addStroke(-.4, .72, -.15, .0576, .045);
+      addStroke(-.15, .0576, -.5, .0576, .045);
+      addStroke(-.5, .0576, -.075, -.72, .045);
       const strokeWeights = strokes.map((stroke) => Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1));
       const totalStrokeWeight = strokeWeights.reduce((sum, length) => sum + length, 0);
       stars = Array.from({ length: count }, () => {

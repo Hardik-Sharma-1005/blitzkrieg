@@ -95,12 +95,15 @@ export function Index() {
           </motion.div>
 
           <div className="mt-12 max-w-3xl sm:mt-20">
-            <motion.h1 {...reveal(.5)} className="mt-5 max-w-3xl font-heading text-5xl font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[5.25rem]">
-              Make your next move <span className="text-[#dce5f2]">with clarity.</span>
+            <motion.h1 {...reveal(.5)} aria-label="blitzkrieg" className="mt-5 flex max-w-3xl items-center whitespace-nowrap font-['Poppins',sans-serif] text-[clamp(2.7rem,7.1vw,6.4rem)] font-extrabold leading-none tracking-[-0.01em] text-white">
+              <span>blitzkr</span><span aria-hidden="true" className="relative mx-[0.045em] inline-block h-[0.96em] w-[0.38em] shrink-0 self-center"><span className="absolute left-[63%] top-0 h-[0.16em] w-[0.16em] -translate-x-1/2 bg-[#173cff]" /><svg viewBox="0 0 40 100" className="absolute bottom-0 left-0 top-[0.23em] h-[0.73em] w-full fill-[#173cff]"><path d="M17 0h23L28 35h12L4 100l10-46H0L17 0Z" /></svg></span><span>eg</span>
             </motion.h1>
-            <motion.p {...reveal(.82)} className="mt-5 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
-              Explore company profiles, skill expectations, and career signals before campus placements.
-            </motion.p>
+            <motion.div {...reveal(.82)} className="mt-5 max-w-3xl text-left text-white/65">
+              <p className="text-sm font-semibold tracking-wide sm:text-base">not your average placement platform</p>
+              <p className="mt-10 text-lg leading-8 sm:text-2xl sm:leading-10">
+                Know the companies. Understand the skills. Make your next move with evidence.
+              </p>
+            </motion.div>
             <motion.div {...reveal(1.08)} className="mt-7 flex max-w-3xl flex-wrap items-center gap-2.5">
               <Button onClick={() => navigate("/skill-match")} className="min-h-11 rounded-full bg-[#f1f4f8] px-5 text-[#11151b] shadow-[0_8px_30px_rgba(210,222,240,.12)] hover:bg-white"><GitCompareArrows className="h-4 w-4" /> Match resume to a job <ArrowRight className="h-4 w-4" /></Button>
               <Button variant="outline" onClick={() => navigate("/jd-analytics")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white">Analyze a job description</Button>

@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useTheme } from "@/components/layout/SidebarContext";
 import { useCompany } from "@/lib/companyContext";
 import { isSupabaseConfigured } from "@/lib/supabaseClient";
+import { InteractiveCosmos } from "@/components/InteractiveCosmos";
 
 function LayoutContent() {
   const { selectedCompany } = useCompany();
@@ -12,6 +13,7 @@ function LayoutContent() {
   if (!selectedCompany && !isComparePage) return <Navigate to="/" replace />;
   return (
     <div className={`space-theme space-theme-shell min-h-screen bg-[#f8f8f5] ${theme === "light" ? "theme-light" : ""}`}>
+        <InteractiveCosmos variant="starfield" className="space-page-stars" />
         <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 border-b border-[#e5e9e5] bg-white/95 px-4 backdrop-blur sm:px-6">
           <div className="min-w-0">
             <p className="text-xs font-medium text-slate-400">JSS University, Noida <span className="mx-1">/</span> Student Career Hub</p>
