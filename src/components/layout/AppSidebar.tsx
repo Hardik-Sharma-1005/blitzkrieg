@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useSidebar, useTheme } from "@/components/layout/SidebarContext";
 
 const links = [
+  { to: "/companies", label: "Company Directory", icon: Building2 },
   { to: "/company/intelligence", label: "Company Intelligence", icon: Building2 },
   { to: "/company/skills", label: "Skill Intelligence", icon: GraduationCap },
   { to: "/company/compare", label: "Compare Companies", icon: GitCompareArrows },

@@ -4,11 +4,30 @@ function websiteFavicon(websiteUrl?: string) {
   const value = websiteUrl?.trim();
   if (!value) return "";
   try {
-    const url = new URL(value.includes("://") ? value : `https://${value}`);
-    return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url.origin)}&sz=128`;
+    const url = new URL(value.startsWith("//") ? `https:${value}` : value.includes("://") ? value : `https://${value}`);
+    return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url.origin)}&sz=256`;
   } catch {
     return "";
   }
+}
+
+function officialSiteIcon(websiteUrl?: string) {
+  const value = websiteUrl?.trim();
+  if (!value) return "";
+  try {
+    const url = new URL(value.startsWith("//") ? `https:${value}` : value.includes("://") ? value : `https://${value}`);
+    return new URL("/favicon.ico", url.origin).href;
+  } catch {
+    return "";
+  }
+}
+
+function normalizeLogoUrl(value?: string) {
+  const trimmed = value?.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (!trimmed.includes("://")) return `https://${trimmed}`;
+  return trimmed.replace(/^http:\/\//i, "https://");
 }
 
 export function CompanyLogo({
@@ -22,10 +41,12 @@ export function CompanyLogo({
   websiteUrl?: string;
   size?: "sm" | "md" | "lg";
 }) {
+  const directLogoUrl = normalizeLogoUrl(logoUrl);
+  const siteIconUrl = officialSiteIcon(websiteUrl);
   const faviconUrl = websiteFavicon(websiteUrl);
   const imageCandidates = useMemo(
-    () => [...new Set([logoUrl?.trim(), faviconUrl].filter((url): url is string => Boolean(url)))],
-    [logoUrl, faviconUrl],
+    () => [...new Set([directLogoUrl, siteIconUrl, faviconUrl].filter(Boolean))],
+    [directLogoUrl, siteIconUrl, faviconUrl],
   );
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
   useEffect(() => setFailedUrls([]), [imageCandidates]);

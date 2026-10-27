@@ -75,66 +75,86 @@ body {
 .space-theme {
   position: relative;
   isolation: isolate;
-  color: #e5e8f2;
-  background-color: #080a12 !important;
-  background-image: radial-gradient(ellipse at 78% 0%, rgba(33, 107, 92, .1), transparent 42%), linear-gradient(180deg, #090b14, #070910 58%, #050609) !important;
 }
 .space-theme > .space-page-stars { z-index: -1; opacity: .42; }
-.space-theme-shell .space-theme { background: transparent !important; }
-.space-theme :is(h1, h2, h3, h4, h5, h6) { color: #eef0fa !important; }
-.space-theme [class*="text-[#26354b]"], .space-theme [class*="text-slate-900"], .space-theme [class*="text-slate-800"] { color: #e6e9f3 !important; }
-.space-theme [class*="text-slate-700"], .space-theme [class*="text-slate-600"] { color: #c0c6d4 !important; }
-.space-theme [class*="text-slate-500"], .space-theme [class*="text-slate-400"] { color: #939caf !important; }
-.space-theme [class*="text-[#176d55]"], .space-theme [class*="text-[#246b5d]"], .space-theme [class*="text-[#216b5c]"] { color: #a8d9c8 !important; }
-.space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) { color: #26354b !important; }
-.space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) * { color: #26354b !important; }
-.space-theme a { color: #a8d9c8; }
-.space-theme a:hover { color: #e2f3ec; }
-.space-theme header, .space-theme .sticky {
-  border-color: rgba(173, 181, 205, .14) !important;
-  background-color: rgba(10, 12, 21, .92) !important;
-  color: #e5e8f2;
+.app-shell:not(.theme-light) .space-theme {
+  color: #f5f5f5;
+  background-color: #080808 !important;
+  background-image: none !important;
 }
-.space-theme aside {
+.app-shell:not(.theme-light) .space-theme :is(h1, h2, h3, h4, h5, h6) { color: #f7f7f7 !important; }
+.app-shell:not(.theme-light) .space-theme [class*="text-[#26354b]"],
+.app-shell:not(.theme-light) .space-theme [class*="text-slate-900"],
+.app-shell:not(.theme-light) .space-theme [class*="text-slate-800"],
+.app-shell:not(.theme-light) .space-theme [class*="text-slate-700"] { color: #f0f0f0 !important; }
+.app-shell:not(.theme-light) .space-theme [class*="text-slate-600"],
+.app-shell:not(.theme-light) .space-theme [class*="text-slate-500"],
+.app-shell:not(.theme-light) .space-theme [class*="text-slate-400"] { color: #a5a5a5 !important; }
+.app-shell:not(.theme-light) .space-theme [class*="text-[#176d55]"],
+.app-shell:not(.theme-light) .space-theme [class*="text-[#246b5d]"],
+.app-shell:not(.theme-light) .space-theme [class*="text-[#216b5c]"] { color: var(--brand-accent) !important; }
+.app-shell:not(.theme-light) .space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) { color: #f0f0f0 !important; background-color: #171717 !important; }
+.app-shell:not(.theme-light) .space-theme :is([class*="bg-[#f3f8f1]"], [class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-slate-100"]) * { color: #f0f0f0 !important; }
+.app-shell:not(.theme-light) .space-theme a { color: var(--brand-accent); }
+.app-shell:not(.theme-light) .space-theme a:hover { color: #fff; }
+.app-shell:not(.theme-light) .space-theme header, .app-shell:not(.theme-light) .space-theme .sticky {
   border-color: rgba(173, 181, 205, .14) !important;
-  background-color: rgba(10, 12, 21, .97) !important;
-  color: #d4d8e4;
+  background-color: rgba(8, 8, 8, .96) !important;
+  color: #f5f5f5;
 }
-.space-theme .rounded-2xl.border {
+.app-shell:not(.theme-light) .space-theme aside {
+  border-color: rgba(173, 181, 205, .14) !important;
+  background-color: rgba(8, 8, 8, .97) !important;
+  color: #f5f5f5;
+}
+.app-shell:not(.theme-light) .space-theme .rounded-2xl.border {
   border-color: #303647 !important;
-  background-color: rgba(16, 19, 30, .94) !important;
+  background-color: #111 !important;
   box-shadow: 0 14px 36px rgba(0, 0, 0, .2);
 }
-.space-theme [class*="bg-white"], .space-theme [class*="bg-[#fffdf8]"], .space-theme [class*="bg-[#faf7f0]"] { background-color: #121521 !important; }
-.space-theme [class*="bg-gradient-to"] {
-  background-image: linear-gradient(135deg, rgba(28, 29, 47, .96), rgba(16, 19, 31, .98) 60%, rgba(20, 24, 38, .98)) !important;
+.app-shell:not(.theme-light) .space-theme [class*="bg-white"],
+.app-shell:not(.theme-light) .space-theme [class*="bg-[#fffdf8]"],
+.app-shell:not(.theme-light) .space-theme [class*="bg-[#faf7f0]"],
+.app-shell:not(.theme-light) .space-theme [class*="bg-[#fbf8f1]"] { background-color: #111 !important; }
+.app-shell:not(.theme-light) .space-theme [class*="bg-gradient-to"] { background-color: #111 !important; background-image: none !important; }
+.app-shell:not(.theme-light) .space-theme input:not([type="file"]),
+.app-shell:not(.theme-light) .space-theme select,
+.app-shell:not(.theme-light) .space-theme textarea {
+  border-color: #333 !important;
+  background-color: #101010 !important;
+  color: #f5f5f5 !important;
 }
-.space-theme input:not([type="file"]), .space-theme select, .space-theme textarea {
-  border-color: #343a4c !important;
-  background-color: #11141f !important;
-  color: #edf0f7 !important;
-}
-.space-theme input::placeholder, .space-theme textarea::placeholder { color: #858da0 !important; }
-.space-theme input:focus, .space-theme select:focus, .space-theme textarea:focus { border-color: var(--brand-accent) !important; --tw-ring-color: rgba(217, 156, 197, .24) !important; }
-.space-theme button[class*="bg-[#216b5c]"] {
+.app-shell:not(.theme-light) .space-theme input::placeholder,
+.app-shell:not(.theme-light) .space-theme textarea::placeholder { color: #929292 !important; }
+.app-shell:not(.theme-light) .space-theme input:focus,
+.app-shell:not(.theme-light) .space-theme select:focus,
+.app-shell:not(.theme-light) .space-theme textarea:focus { border-color: var(--brand-accent) !important; --tw-ring-color: rgba(217, 156, 197, .24) !important; }
+.app-shell:not(.theme-light) .space-theme button[class*="bg-[#216b5c]"],
+.app-shell:not(.theme-light) .space-theme button[class*="bg-[#246b5d]"] {
   background: var(--brand-action) !important;
   color: #fff !important;
   box-shadow: 0 8px 24px rgba(154, 90, 130, .24);
 }
-.space-theme button[class*="bg-[#e4f2e9]"], .space-theme button[class*="bg-white"], .space-theme button[class*="border-[#ddd5c8]"] {
-  border-color: rgba(168, 217, 200, .3) !important;
-  background-color: rgba(23, 28, 30, .88) !important;
-  color: #e5e8f2 !important;
+.app-shell:not(.theme-light) .space-theme button[class*="bg-[#e4f2e9]"],
+.app-shell:not(.theme-light) .space-theme button[class*="bg-white"],
+.app-shell:not(.theme-light) .space-theme button[class*="border-[#ddd5c8]"] {
+  border-color: #363636 !important;
+  background-color: #171717 !important;
+  color: #f0f0f0 !important;
 }
-.space-theme button:hover:not(:disabled) { border-color: rgba(217, 156, 197, .52); }
-.space-theme button:focus-visible, .space-theme a:focus-visible { outline-color: var(--brand-accent) !important; }
-.space-theme :is(table, th, td) { border-color: #303647 !important; }
-.space-theme th { color: #d8dced !important; }
-.space-theme .border-b, .space-theme .border-t, .space-theme .border-r, .space-theme .border-l { border-color: rgba(173, 181, 205, .15) !important; }
+.app-shell:not(.theme-light) .space-theme button:hover:not(:disabled) { border-color: rgba(217, 156, 197, .52); }
+.app-shell:not(.theme-light) .space-theme button:focus-visible,
+.app-shell:not(.theme-light) .space-theme a:focus-visible { outline-color: var(--brand-accent) !important; }
+.app-shell:not(.theme-light) .space-theme :is(table, th, td) { border-color: #303030 !important; }
+.app-shell:not(.theme-light) .space-theme th { color: #d8d8d8 !important; }
+.app-shell:not(.theme-light) .space-theme .border-b,
+.app-shell:not(.theme-light) .space-theme .border-t,
+.app-shell:not(.theme-light) .space-theme .border-r,
+.app-shell:not(.theme-light) .space-theme .border-l { border-color: rgba(173, 173, 173, .15) !important; }
 h1, h2, h3, h4, h5, h6 { font-family: "Outfit", sans-serif; }
 button, input, select { font: inherit; }
 .font-heading { font-family: "Outfit", sans-serif; }
-.portal-home main { background: #050609; }
+.portal-home:not(.theme-light) main { background: #050505; }
 .portal-home .portal-cosmos {
   --pointer-x: 50%;
   --pointer-y: 42%;
@@ -408,7 +428,8 @@ button, input, select { font: inherit; }
 
 .portal-home { --brand-accent: #D99CC5; --brand-action: #9A5A82; --brand-accent-hover: #87496E; --home-bg: #050505; --home-surface: #111; --home-ink: #f5f5f5; --home-muted: #a2a2a2; --home-line: #2a2a2a; color: var(--home-ink); background: var(--home-bg); }
 .portal-home.theme-light { --brand-accent: #9A5A82; --brand-action: #9A5A82; --brand-accent-hover: #87496E; --home-bg: #fff; --home-surface: #f6f6f6; --home-ink: #111; --home-muted: #666; --home-line: #e5e5e5; color: var(--home-ink); background: var(--home-bg) !important; }
-.brand-hero { background: var(--home-bg); color: var(--home-ink); }
+.portal-home.theme-light main.brand-directory { color: var(--home-ink); background: var(--home-surface) !important; }
+.brand-hero { background: transparent; color: var(--home-ink); }
 .brand-hero-grid { opacity: .18; background-image: linear-gradient(to right, rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse at center, #000 12%, transparent 78%); }
 .portal-home.theme-light .brand-hero-grid { opacity: .48; background-image: linear-gradient(to right, rgba(0,0,0,.055) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.055) 1px, transparent 1px); }
 .brand-hero a { color: inherit; text-decoration: none; }
@@ -428,7 +449,7 @@ button, input, select { font: inherit; }
 .brand-proofline i { width: 4px; height: 4px; border-radius: 50%; background: var(--brand-accent); }
 .brand-scroll { color: var(--home-muted) !important; text-decoration: none; transition: color .2s ease; }
 .brand-scroll:hover { color: var(--home-ink) !important; }
-.brand-platform-section { color: var(--home-ink); background: var(--home-bg); }
+.brand-platform-section { color: var(--home-ink); background: transparent; }
 .brand-affiliation { border-color: var(--home-line); }
 .brand-eyebrow { color: var(--brand-accent); font-size: .7rem; font-weight: 750; letter-spacing: .16em; line-height: 1.4; text-transform: uppercase; }
 .brand-jss-note { color: var(--home-muted); }
@@ -481,6 +502,47 @@ button, input, select { font: inherit; }
 .app-shell.theme-light .space-theme [class*="bg-[#e8f4eb]"],
 .app-shell.theme-light .space-theme [class*="bg-[#f1ecfa]"],
 .app-shell.theme-light .space-theme [class*="bg-[#e8f5f8]"] { border-color: #e4e4e4 !important; color: #404040 !important; background: #f4f4f4 !important; }
+
+/* Keep legacy skill-status surfaces readable in the monochrome brand themes. */
+.app-shell:not(.theme-light) .space-theme :is([class*="bg-[#e4f2e9]"],[class*="bg-[#f3f8f1]"],[class*="bg-[#eaf4ec]"],[class*="bg-[#faf7f0]"],[class*="bg-[#fffdf8]"],[class*="bg-[#fbf8f1]"],[class*="bg-[#fff9e9]"],[class*="bg-[#fff8f6]"],[class*="bg-[#fcebe5]"],[class*="bg-[#faf1d8]"],[class*="bg-[#f1ece2]"]) { background-color: #151515 !important; color: #dedede !important; }
+.app-shell:not(.theme-light) .space-theme :is([class*="border-[#dbe9dd]"],[class*="border-[#e9e1d5]"],[class*="border-[#ded7ca]"],[class*="border-[#d9d2c5]"],[class*="border-[#f0dfb2]"],[class*="border-[#f0d8d2]"]) { border-color: #303030 !important; }
+.app-shell:not(.theme-light) .space-theme [class*="bg-gradient-to"] { background-color: #111 !important; background-image: none !important; }
+.app-shell:not(.theme-light) .space-theme :is(.ambient-drift,.ambient-drift-delayed) { display: none !important; }
+.app-shell.theme-light .space-theme :is([class*="bg-[#e4f2e9]"],[class*="bg-[#f3f8f1]"],[class*="bg-[#eaf4ec]"],[class*="bg-[#faf7f0]"],[class*="bg-[#fffdf8]"],[class*="bg-[#fbf8f1]"],[class*="bg-[#fff9e9]"],[class*="bg-[#fff8f6]"],[class*="bg-[#fcebe5]"],[class*="bg-[#faf1d8]"],[class*="bg-[#f1ece2]"]) { color: #353535; }
+.app-shell.theme-light .space-theme :is([class*="border-[#dbe9dd]"],[class*="border-[#e9e1d5]"],[class*="border-[#ded7ca]"],[class*="border-[#d9d2c5]"],[class*="border-[#f0dfb2]"],[class*="border-[#f0d8d2]"]) { border-color: #e4e4e4 !important; }
+
+/* Theme boundary: normalize legacy feature colors to the active brand palette. */
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="bg-[#"],
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]) {
+  background-color: #171717 !important;
+  color: #ededed !important;
+  border-color: #303030 !important;
+}
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="bg-[#"],
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]) {
+  background-color: #f4f4f4 !important;
+  color: #262626 !important;
+  border-color: #e2e2e2 !important;
+}
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="text-[#"] { color: #ededed !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-[#"] { color: #262626 !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="border-[#"], [class*="border-red-"], [class*="border-amber-"], [class*="border-green-"], [class*="border-slate-"]) { border-color: #303030 !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="border-[#"], [class*="border-red-"], [class*="border-amber-"], [class*="border-green-"], [class*="border-slate-"]) { border-color: #e2e2e2 !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-red-"], [class*="text-amber-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-purple-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-yellow-"], [class*="text-teal-"], [class*="text-cyan-"], [class*="text-emerald-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-pink-"], [class*="text-lime-"], [class*="text-sky-"], [class*="text-fuchsia-"]) { color: #ededed !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-red-"], [class*="text-amber-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-purple-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-yellow-"], [class*="text-teal-"], [class*="text-cyan-"], [class*="text-emerald-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-pink-"], [class*="text-lime-"], [class*="text-sky-"], [class*="text-fuchsia-"]) { color: #262626 !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-white"] { color: #262626 !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"]) { color: var(--brand-accent) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"]) { color: var(--brand-accent) !important; }
+.app-shell :is(.space-theme, .portal-home) button:is([class*="bg-[#216b5c]"], [class*="bg-[#246b5d]"]) { background: var(--brand-action) !important; color: #fff !important; }
+.app-shell :is(.space-theme, .portal-home) [class*="bg-[#dfe7f2]"] { background: var(--brand-action) !important; color: #fff !important; }
+.app-shell :is(.space-theme, .portal-home) :is([class*="ring-[#"], [class*="ring-sky"]) { --tw-ring-color: var(--brand-accent) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) button:is([class*="bg-[#185546]"], [class*="bg-[#1b5549]"]):not(:disabled) { background: var(--brand-accent-hover) !important; color: #fff !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="bg-gradient-to"]) { background-color: #f4f4f4 !important; background-image: none !important; }
+.app-shell :is(.space-theme, .portal-home) :is(.ambient-drift, .ambient-drift-delayed) { display: none !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-slate-"]) { color: #a3a3a3 !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-slate-"]) { color: #5d5d5d !important; }
+.app-shell.theme-light .brand-primary-button,
+.app-shell.theme-light :is(.space-theme, .portal-home) button:is([class*="bg-[#216b5c]"], [class*="bg-[#246b5d]"], [class*="bg-[#185546]"], [class*="bg-[#1b5549]"]) { color: #fff !important; }
 @media (max-width: 640px) {
   .brand-hero { min-height: max(720px, 100svh); }
   .brand-hero-grid { background-size: 48px 48px; }
@@ -505,3 +567,9 @@ button, input, select { font: inherit; }
   .brand-sidebar-caption[data-collapsed="true"] { max-height: 0; margin-top: 0; opacity: 0; transform: translateY(-3px); }
   .brand-sidebar-toggle.is-collapsed { width: 28px; height: 28px; padding: 6px; }
 }
+
+/* Keep routed-page surfaces transparent so the shared star layer stays behind them. */
+.app-shell:not(.theme-light) .space-theme,
+.app-shell.theme-light .space-theme { background: transparent !important; background-image: none !important; }
+.app-shell .portal-home { background: transparent !important; }
+.app-shell .portal-home main.brand-directory { background: transparent !important; }

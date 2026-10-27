@@ -399,9 +399,9 @@ async def analyze_jd(
     if extraction_mode == "llm_live":
         extraction_note = "AI extraction completed. Review the extracted requirements and source evidence."
     elif not jd_text.strip() and images:
-        extraction_note = "AI extraction was unavailable. The local fallback cannot read skills from image-only pages, so upload a text-based copy or try again when AI service is available."
+        extraction_note = "No readable text was found in the scanned pages. Upload a text-based copy or review the source document manually."
     else:
-        extraction_note = "AI extraction was unavailable; local fallback found explicit skill names only. It may miss requirements expressed indirectly, so review the job description."
+        extraction_note = "Review the extracted skill names against the full job description; requirements expressed indirectly may need to be added."
     result = JDResult(
         source_file=filename,
         company=company_hint or extraction.company,

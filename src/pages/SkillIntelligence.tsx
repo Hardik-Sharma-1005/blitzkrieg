@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ChevronDown, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { getSkillTopics } from "@/data/skillTopics";
@@ -102,9 +104,14 @@ export function SkillIntelligence() {
       <div className="mx-auto max-w-[1180px] px-5 py-7 sm:px-8 sm:py-9">
         <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-[#e8dfd1] bg-gradient-to-br from-[#fff4d7] via-[#fffdf8] to-[#e4f2e9] p-5 sm:p-7">
           <div aria-hidden="true" className="ambient-drift-delayed pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[#b8ade3]/35 blur-3xl" />
-          <div className="relative flex items-center gap-4">
-            <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
-            <div><p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]">Skill intelligence</p><h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-[#26354b] sm:text-3xl">{profile.shortName} Skill Intelligence</h1><p className="mt-1 text-sm text-slate-600">Required skills and target learning levels</p></div>
+          <div className="relative flex flex-wrap items-center justify-between gap-5">
+            <div className="flex min-w-0 items-center gap-4">
+              <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
+              <div><p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]">Skill intelligence</p><h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-[#26354b] sm:text-3xl">{profile.shortName} Skill Intelligence</h1><p className="mt-1 text-sm text-slate-600">Required skills and target learning levels</p></div>
+            </div>
+            <Button asChild className="brand-primary-button min-h-11 whitespace-normal text-left">
+              <Link to={`/talent-check?company_id=${profile.companyId}`}>Compare your resume against this company’s requirements <ArrowRight className="h-4 w-4 shrink-0" /></Link>
+            </Button>
           </div>
         </div>
 

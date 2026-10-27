@@ -71,16 +71,10 @@ function profileValue(raw: JsonRecord, key: string) {
 
 function getComparisonLoadHelp(error: unknown) {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-  if (message.includes("row-level security") || message.includes("permission denied") || message.includes("42501")) {
-    return "Supabase denied access to company_json. Check its SELECT grant and row-level security policy for the public company records you intend to show.";
+  if (message.includes("row-level security") || message.includes("permission denied") || message.includes("42501") || message.includes("schema cache") || message.includes("does not exist") || message.includes("column") || message.includes("fetch failed") || message.includes("network") || message.includes("failed to fetch")) {
+    return "Company profiles couldn’t be loaded. Check your connection and try again.";
   }
-  if (message.includes("schema cache") || message.includes("does not exist") || message.includes("column")) {
-    return "The connected database schema does not match the company_json fields this app reads. Confirm the table and JSON column names in the project configuration.";
-  }
-  if (message.includes("fetch failed") || message.includes("network") || message.includes("failed to fetch")) {
-    return "The configured Supabase URL could not be reached. Check the URL and network connection, then retry.";
-  }
-  return "Check that company_json is readable with the public client and that company_id, short_json, and full_json match the app data contract.";
+  return "We couldn’t load this company comparison. Please try again.";
 }
 
 function StudentTakeaway({ company }: { company: ComparisonCompany }) {

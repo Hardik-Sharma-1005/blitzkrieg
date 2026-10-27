@@ -101,8 +101,8 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
         { data: [], error: null },
         { data: [], error: null },
       ];
-  if (skillSetsResult.error) skillDataWarnings.push("Some skill names are unavailable. Check public SELECT access to skill_set_master.");
-  if (proficienciesResult.error) skillDataWarnings.push("Some proficiency labels are unavailable. Check public SELECT access to proficiency_levels.");
+  if (skillSetsResult.error) skillDataWarnings.push("Some skill names are not available yet.");
+  if (proficienciesResult.error) skillDataWarnings.push("Some proficiency labels are not available yet.");
 
   const topicRowsResult = skillSetIds.length
     ? await client
@@ -112,7 +112,7 @@ export async function fetchCompanyRecord(companyId: number): Promise<CompanyReco
         .order("skill_set_id", { ascending: true })
         .order("level_number", { ascending: true })
     : { data: [], error: null };
-  if (topicRowsResult.error) skillDataWarnings.push("Database skill roadmaps are unavailable; built-in roadmaps remain available where provided.");
+  if (topicRowsResult.error) skillDataWarnings.push("Some learning roadmap details are not available yet.");
 
   const skillNames = new Map(
     (skillSetsResult.data ?? []).map((row) => [Number(row.skill_set_id), asString(row.skill_set_name)]),
