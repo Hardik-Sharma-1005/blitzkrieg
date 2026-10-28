@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Award, ArrowLeft, CheckCircle2, LoaderCircle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -35,6 +35,7 @@ export function CandidateAssessments() {
   const [busy, setBusy] = useState<"generate" | "evaluate" | "">("");
   const [error, setError] = useState("");
   const [historySnapshot, setHistorySnapshot] = useState<AssessmentActivitySnapshot | null>(null);
+  const activeController = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
@@ -68,34 +69,57 @@ export function CandidateAssessments() {
     setQuestion(""); setChallenge(null); setAnswer(""); setResult(null); setError("");
   };
 
+  const cancelAssessment = () => activeController.current?.abort();
+
   const generate = async () => {
     if (!selectedSkill) return;
     setBusy("generate"); setError(""); setAnswer(""); setResult(null); setQuestion(""); setChallenge(null);
+    const controller = new AbortController();
+    activeController.current = controller;
+    const requestSignal = AbortSignal.any([controller.signal, AbortSignal.timeout(120_000)]);
     const body = JSON.stringify({ skill_name: selectedSkill.skill_name, category_code: selectedSkill.category_code, evidence: selectedSkill.evidence });
     try {
       if (isSprint) {
-        const generated = await readJson<SprintChallenge>(await fetch(`${apiBase}/api/profile-assessment/sprint/challenge`, { method: "POST", headers: { "Content-Type": "application/json" }, body, signal: AbortSignal.timeout(60_000) }));
+        let response = await fetch(`${apiBase}/api/profile-assessment/sprint/challenge`, { method: "POST", headers: { "Content-Type": "application/json" }, body, signal: requestSignal });
+        if (response.status === 404) {
+          const legacyBody = JSON.stringify({ report: { target_company: "Your target role", per_skillset_gap_breakdown: [{ category: selectedSkill.skill_name, gap: 1 }] } });
+          response = await fetch(`${apiBase}/api/skill-sprint/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: legacyBody, signal: requestSignal });
+        }
+        const generatedResponse = await readJson<{ challenge?: SprintChallenge } & SprintChallenge>(response);
+        const generated = { ...(generatedResponse.challenge ?? generatedResponse), skill_name: selectedSkill.skill_name, category: selectedSkill.category_code };
         setChallenge(generated);
         recordRecentActivity({ feature: "assessment", title: selectedSkill.skill_name, action: `Generated a Skill Proof Sprint challenge for ${selectedSkill.skill_name}`, path: "/candidate-assessments?kind=skill_proof_sprint" }, { kind: "candidate-assessment", assessmentKind: "skill_proof_sprint", skill: selectedSkill, challenge: generated });
       } else {
-        const generated = await readJson<{ question: string; generation_status?: string }>(await fetch(`${apiBase}/api/profile-assessment/interview/question`, { method: "POST", headers: { "Content-Type": "application/json" }, body, signal: AbortSignal.timeout(60_000) }));
+        let response = await fetch(`${apiBase}/api/profile-assessment/interview/question`, { method: "POST", headers: { "Content-Type": "application/json" }, body, signal: requestSignal });
+        if (response.status === 404) {
+          const legacyBody = JSON.stringify({ report: { target_company: "Your target role", per_skillset_gap_breakdown: [{ category: selectedSkill.skill_name, gap: 1 }] } });
+          response = await fetch(`${apiBase}/api/interview-practice/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: legacyBody, signal: requestSignal });
+        }
+        const generatedResponse = await readJson<{ question?: string; questions?: string[]; generation_status?: string }>(response);
+        const generated = { question: generatedResponse.question ?? generatedResponse.questions?.[0] ?? "", generation_status: generatedResponse.generation_status };
+        if (!generated.question) throw new Error("The assessment service did not return a question. Please try again.");
         setQuestion(generated.question);
         recordRecentActivity({ feature: "assessment", title: selectedSkill.skill_name, action: `Generated a Mock Interview question for ${selectedSkill.skill_name}`, path: "/candidate-assessments?kind=mock_interview" }, { kind: "candidate-assessment", assessmentKind: "mock_interview", skill: selectedSkill, question: generated.question });
       }
-    } catch (cause) { setError(cause instanceof Error && cause.name === "TimeoutError" ? "Question generation took too long. Please try again." : cause instanceof Error ? cause.message : "Could not generate an assessment."); }
-    finally { setBusy(""); }
+    } catch (cause) { setError(cause instanceof Error && cause.name === "TimeoutError" ? "Assessment generation took longer than 2 minutes. Please try again." : controller.signal.aborted ? "Assessment generation cancelled. You can try again when ready." : cause instanceof Error ? cause.message : "Could not generate an assessment."); }
+    finally { if (activeController.current === controller) activeController.current = null; setBusy(""); }
   };
 
   const submit = async () => {
     if (!selectedSkill || !answer.trim()) return;
     setBusy("evaluate"); setError(""); setResult(null);
+    const controller = new AbortController();
+    activeController.current = controller;
+    const requestSignal = AbortSignal.any([controller.signal, AbortSignal.timeout(120_000)]);
     try {
       let scored: AssessmentResult;
       if (isSprint && challenge) {
-        const response = await readJson<{ result: AssessmentResult }>(await fetch(`${apiBase}/api/skill-sprint/evaluate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ challenge, solution: answer }), signal: AbortSignal.timeout(60_000) }));
+        const response = await readJson<{ result: AssessmentResult }>(await fetch(`${apiBase}/api/skill-sprint/evaluate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ challenge, solution: answer }), signal: requestSignal }));
         scored = response.result;
       } else {
-        scored = await readJson<AssessmentResult>(await fetch(`${apiBase}/api/profile-assessment/interview/evaluate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skill_name: selectedSkill.skill_name, question, answer }), signal: AbortSignal.timeout(60_000) }));
+        let response = await fetch(`${apiBase}/api/profile-assessment/interview/evaluate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skill_name: selectedSkill.skill_name, question, answer }), signal: requestSignal });
+        if (response.status === 404) response = await fetch(`${apiBase}/api/interview-practice/evaluate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skill_name: selectedSkill.skill_name, question, answer }), signal: requestSignal });
+        scored = await readJson<AssessmentResult>(response);
       }
       setResult(scored);
       const assessmentKind: AssessmentKind = isSprint ? "skill_proof_sprint" : "mock_interview";
@@ -106,8 +130,8 @@ export function CandidateAssessments() {
         awardBadge(selectedSkill, type, evidence);
         toast.success(existingBadge ? `${selectedSkill.skill_name} badge updated with additional assessment evidence.` : `${selectedSkill.skill_name} badge added to your profile!`);
       }
-    } catch (cause) { setError(cause instanceof Error && cause.name === "TimeoutError" ? "Assessment took too long. Please try again." : cause instanceof Error ? cause.message : "Could not score this answer."); }
-    finally { setBusy(""); }
+    } catch (cause) { setError(cause instanceof Error && cause.name === "TimeoutError" ? "Assessment scoring took longer than 2 minutes. Your answer is still here; please retry." : controller.signal.aborted ? "Assessment scoring cancelled. Your answer is still here; you can submit again when ready." : cause instanceof Error ? cause.message : "Could not score this answer."); }
+    finally { if (activeController.current === controller) activeController.current = null; setBusy(""); }
   };
 
   if (!profile && !historySnapshot) return <main className="mx-auto max-w-3xl px-5 py-12 sm:px-8"><Card className="p-8 text-center"><Sparkles className="mx-auto h-8 w-8 text-[#246b5d]" /><h1 className="mt-4 font-heading text-2xl font-semibold text-[#26354b]">Create your profile first</h1><p className="mt-2 text-sm leading-6 text-slate-600">Assessments use skills from your resume to recommend practice topics and add earned badges.</p><Button asChild className="mt-5"><Link to="/resume-profile">Parse a resume</Link></Button></Card></main>;
@@ -121,6 +145,7 @@ export function CandidateAssessments() {
     </div>
     {historySnapshot && <p role="status" className="rounded-xl border border-[#dbe9dd] bg-[#f3f8f1] px-4 py-3 text-sm text-slate-700">You’re viewing a saved assessment activity. Start a new assessment from your current profile to practice again.</p>}
     <Card className="space-y-5 p-5 sm:p-7">
+      {busy && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e9e1d5] bg-[#faf7f0] px-4 py-3 text-sm text-slate-700"><span role="status">{busy === "generate" ? "Generating your assessment. This can take around a minute." : "Scoring your response. This can take around a minute."}</span><Button type="button" variant="outline" onClick={cancelAssessment} className="min-h-9">Cancel</Button></div>}
       <label className="block text-sm font-semibold text-slate-800">Choose a skill <select value={selectedSkill?.skill_name ?? ""} disabled={Boolean(historySnapshot)} onChange={(event) => { setSelectedSkillName(event.target.value); setQuestion(""); setChallenge(null); setResult(null); setAnswer(""); }} className="mt-2 min-h-11 w-full rounded-xl border border-[#d9d2c5] bg-white px-3 font-normal focus:border-[#246b5d] focus:outline-none">{historySnapshot && selectedSkill ? <option value={selectedSkill.skill_name}>{selectedSkill.skill_name} · {categoryNames[selectedSkill.category_code] ?? selectedSkill.category_code}</option> : recommendedSkills.map((skill, index) => <option key={`${skill.skill_name}-${index}`} value={skill.skill_name}>{skill.skill_name} · {categoryNames[skill.category_code] ?? skill.category_code}{index === 0 ? " · recommended" : ""}</option>)}</select></label>
       {!recommendedSkills.length && <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-slate-700">No skills were extracted from this resume, so there is nothing to assess yet. Apply another resume to refresh the profile.</p>}
       {selectedSkill && <div className="rounded-xl bg-[#faf7f0] p-4"><div className="flex items-center gap-2"><Badge variant="outline">Recommended from your resume</Badge>{existingBadge && <Badge className="bg-[#246b5d] text-white">Badge earned</Badge>}</div><p className="mt-2 text-sm leading-6 text-slate-700">{selectedSkill.evidence}</p></div>}

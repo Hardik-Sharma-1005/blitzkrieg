@@ -104,10 +104,10 @@ export function JobReadiness() {
     finally { setBusy(false); }
   };
 
-  if (!profile) return <main className="mx-auto max-w-3xl px-5 py-12 sm:px-8"><Card className="p-8 text-center"><Target className="mx-auto h-8 w-8 text-[#246b5d]" /><h1 className="mt-4 font-heading text-2xl font-semibold text-[#26354b]">Build your profile first</h1><p className="mt-2 text-sm leading-6 text-slate-600">Readiness results compare a job or company against your resume evidence.</p><Button asChild className="mt-5"><Link to="/resume-profile">Parse a resume</Link></Button></Card></main>;
+  if (!profile) return <main className="space-theme mx-auto max-w-3xl px-5 py-12 sm:px-8"><Card className="p-8 text-center"><Target className="mx-auto h-8 w-8 text-[#246b5d]" /><h1 className="mt-4 font-heading text-2xl font-semibold text-[#26354b]">Build your profile first</h1><p className="mt-2 text-sm leading-6 text-slate-600">Readiness results compare a job or company against your resume evidence.</p><Button asChild className="mt-5"><Link to="/resume-profile">Parse a resume</Link></Button></Card></main>;
 
   const benchmarkRows = benchmarkReport?.per_skillset_gap_breakdown ?? benchmarkReport?.skillset_gap ?? [];
-  return <main className="mx-auto max-w-5xl space-y-6 px-5 py-8 sm:px-8 sm:py-10">
+  return <main className="space-theme mx-auto max-w-5xl space-y-6 px-5 py-8 sm:px-8 sm:py-10">
     <Link to="/check-where-you-stand" className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-[#216b5c]"><ArrowLeft className="h-4 w-4" /> Back to checklist</Link>
     {historyActivity && <p role="status" className="rounded-xl border border-[#dbe9dd] bg-[#f3f8f1] px-4 py-3 text-sm text-slate-700">You’re viewing a saved readiness result. Start a new check from your current profile to update it.</p>}
     <header><p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]"><Target className="h-3.5 w-3.5" /> Optional job check</p><h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-[#26354b]">Check where you stand</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Compare evidence from your resume with a specific job or an available company benchmark. This is a guidance snapshot, not a hiring decision.</p></header>

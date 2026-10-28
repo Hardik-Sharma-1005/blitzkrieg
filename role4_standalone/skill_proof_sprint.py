@@ -84,7 +84,9 @@ CANDIDATE SOLUTION: "{solution[:12000]}"
         return {
             "is_passed": False,
             "score_pct": 0,
+            "criteria": {},
             "feedback": "AI evaluation is temporarily unavailable. Your submission was received but was not scored or marked as passed. Please retry when the AI service is available.",
+            "verified_skill_badge": "",
             "evaluation_status": "unavailable",
         }
     try:
@@ -110,6 +112,8 @@ CANDIDATE SOLUTION: "{solution[:12000]}"
     return {
         "is_passed": False,
         "score_pct": 0,
+        "criteria": {},
         "feedback": "The AI response could not be validated. Your submission was not scored or marked as passed; please retry.",
+        "verified_skill_badge": "",
         "evaluation_status": "unavailable",
     }

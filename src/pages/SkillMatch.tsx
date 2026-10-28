@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -37,9 +37,9 @@ async function readPayload<T>(response: Response): Promise<T> {
   return payload as T;
 }
 
-function UploadStep({ title, subtitle, file, busy, onChoose, onAnalyze, parsedLabel, parsedCount, disabled }: {
+function UploadStep({ title, subtitle, file, busy, elapsedSeconds, onChoose, onAnalyze, onCancel, parsedLabel, parsedCount, disabled }: {
   title: string; subtitle: string; file: File | null; busy: boolean; onChoose: (event: ChangeEvent<HTMLInputElement>) => void;
-  onAnalyze: () => void; parsedLabel?: string; parsedCount?: number; disabled?: boolean;
+  elapsedSeconds: number; onAnalyze: () => void; onCancel: () => void; parsedLabel?: string; parsedCount?: number; disabled?: boolean;
 }) {
   return <Card className="p-5 sm:p-6">
     <div className="flex items-start gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e4f2e9] text-[#246b5d]"><FileText className="h-4 w-4" /></span><div><h2 className="font-heading text-lg font-semibold text-[#26354b]">{title}</h2><p className="mt-1 text-sm leading-5 text-slate-500">{subtitle}</p></div></div>
@@ -49,6 +49,7 @@ function UploadStep({ title, subtitle, file, busy, onChoose, onAnalyze, parsedLa
     </label>
     {parsedLabel && <p className="mt-3 rounded-lg bg-[#f3f8f1] px-3 py-2 text-sm text-[#246b5d]"><CheckCircle2 className="mr-1.5 inline h-4 w-4" />{parsedLabel}{typeof parsedCount === "number" ? ` · ${parsedCount} skills found` : ""}</p>}
     <Button type="button" onClick={onAnalyze} disabled={!file || busy || disabled} className="mt-4 min-h-11 w-full">{busy ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Reading document…</> : parsedLabel ? "Analyze again" : "Analyze document"}</Button>
+    {busy && <div className="mt-3 rounded-xl border border-[#e9e1d5] bg-white/70 p-3 text-center dark:border-slate-700 dark:bg-slate-900/70"><p role="status" className="text-xs leading-5 text-slate-600 dark:text-slate-300">Document processing can take around 30 seconds. {elapsedSeconds}s elapsed.</p><Button type="button" variant="outline" onClick={onCancel} className="mt-2 min-h-9">Cancel processing</Button></div>}
   </Card>;
 }
 
@@ -77,7 +78,35 @@ export function SkillMatch() {
   const [job, setJob] = useState<JobDescription | null>(null);
   const [report, setReport] = useState<MatchReport | null>(null);
   const [busy, setBusy] = useState<"resume" | "jd" | "match" | "">("");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [error, setError] = useState("");
+  const activeController = useRef<AbortController | null>(null);
+  const cancelRequested = useRef(false);
+
+  useEffect(() => {
+    if (!busy) return;
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => window.clearInterval(timer);
+  }, [busy]);
+
+  const cancelProcessing = () => {
+    if (!activeController.current) return;
+    cancelRequested.current = true;
+    activeController.current.abort();
+  };
+
+  const beginRequest = () => {
+    const controller = new AbortController();
+    activeController.current = controller;
+    cancelRequested.current = false;
+    setElapsedSeconds(0);
+    return controller;
+  };
+
+  const finishRequest = (controller: AbortController) => {
+    if (activeController.current === controller) activeController.current = null;
+  };
 
   useEffect(() => {
     const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
@@ -104,38 +133,48 @@ export function SkillMatch() {
   const analyzeResume = async () => {
     if (!resumeFile || busy) return;
     setBusy("resume"); setError(""); setReport(null);
+    const controller = beginRequest();
+    let timedOut = false;
+    const timeoutId = window.setTimeout(() => { timedOut = true; controller.abort(); }, 120_000);
     try {
       const body = new FormData(); body.set("file", resumeFile);
-      const response = await fetch(`${apiBase}/api/parse-resume`, { method: "POST", body, signal: AbortSignal.timeout(120_000) });
+      const response = await fetch(`${apiBase}/api/parse-resume`, { method: "POST", body, signal: controller.signal });
       const parsed = await readPayload<ResumeProfile>(response);
       if (!parsed.name || !Array.isArray(parsed.skills)) throw new Error("The resume service returned an unexpected profile.");
       setResume(parsed);
       recordRecentActivity({ feature: "resume", title: formatActivityFilename(parsed.source_file || resumeFile.name), action: "Parsed resume for job matching", path: "/skill-match" }, { kind: "skill-match", resume: parsed });
     } catch (cause) {
-      setError(cause instanceof Error && cause.name === "TimeoutError" ? "Resume analysis did not finish within 2 minutes. Please retry." : cause instanceof Error ? cause.message : "We could not read this resume.");
-    } finally { setBusy(""); }
+      setError(controller.signal.aborted ? timedOut ? "Resume analysis stopped after 2 minutes. Your file is still selected; please retry." : cancelRequested.current ? "Processing cancelled. Your file is still selected; you can retry when ready." : "Resume analysis was interrupted. Please retry." : cause instanceof Error ? cause.message : "We could not read this resume.");
+    } finally { window.clearTimeout(timeoutId); finishRequest(controller); setBusy(""); }
   };
 
   const analyzeJob = async () => {
     if (!jdFile || busy) return;
     setBusy("jd"); setError(""); setReport(null);
+    const controller = beginRequest();
+    let timedOut = false;
+    const timeoutId = window.setTimeout(() => { timedOut = true; controller.abort(); }, 120_000);
     try {
       const body = new FormData(); body.set("file", jdFile);
-      const parsed = await readPayload<JobDescription>(await fetch(`${apiBase}/api/analyze`, { method: "POST", body, signal: AbortSignal.timeout(120_000) }));
+      const parsed = await readPayload<JobDescription>(await fetch(`${apiBase}/api/analyze`, { method: "POST", body, signal: controller.signal }));
       if (!Array.isArray(parsed.skills)) throw new Error("The JD service returned an unexpected result.");
       setJob(parsed);
       recordRecentActivity({ feature: "job-description", title: formatActivityFilename(parsed.source_file || jdFile.name), action: `Parsed job description for matching${parsed.role ? ` · ${parsed.role}` : ""}`, path: "/skill-match" }, { kind: "skill-match", job: parsed });
     } catch (cause) {
-      setError(cause instanceof Error && cause.name === "TimeoutError" ? "Job description analysis did not finish within 2 minutes. Please retry." : cause instanceof Error ? cause.message : "We could not read this job description.");
-    } finally { setBusy(""); }
+      setError(controller.signal.aborted ? timedOut ? "Job description analysis stopped after 2 minutes. Your file is still selected; please retry." : cancelRequested.current ? "Processing cancelled. Your file is still selected; you can retry when ready." : "Job description analysis was interrupted. Please retry." : cause instanceof Error ? cause.message : "We could not read this job description.");
+    } finally { window.clearTimeout(timeoutId); finishRequest(controller); setBusy(""); }
   };
 
   const compare = async () => {
     if (!resume || !job || busy) return;
     setBusy("match"); setError(""); setReport(null);
+    const controller = beginRequest();
+    let timedOut = false;
+    const timeoutId = window.setTimeout(() => { timedOut = true; controller.abort(); }, 30_000);
     try {
       const response = await fetch(`${apiBase}/api/skill-match`, {
         method: "POST", headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           candidate_profile: { source_type: resume.source_type, source_file: resume.source_file, name: resume.name, skills: resume.skills },
           job_description: { source_type: job.source_type, source_file: job.source_file, company: job.company, role: job.role, skills: job.skills, extraction_mode: job.extraction_mode, extraction_note: job.extraction_note },
@@ -146,8 +185,8 @@ export function SkillMatch() {
       setReport(payload.report);
       recordRecentActivity({ feature: "job-match", title: `${payload.report.role || "Job match"}${payload.report.company ? ` · ${payload.report.company}` : ""}`, action: `Matched ${payload.report.resume_source_file} to ${payload.report.job_source_file}`, path: "/skill-match" }, { kind: "skill-match", resume, job, report: payload.report });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "We could not compare the documents.");
-    } finally { setBusy(""); }
+      setError(controller.signal.aborted ? timedOut ? "The comparison did not finish within 30 seconds. Please retry." : cancelRequested.current ? "Comparison cancelled. Your parsed documents are still ready to compare again." : "Comparison was interrupted. Please retry." : cause instanceof Error ? cause.message : "We could not compare the documents.");
+    } finally { window.clearTimeout(timeoutId); finishRequest(controller); setBusy(""); }
   };
 
   const startOver = () => { setResumeFile(null); setJdFile(null); setResume(null); setJob(null); setReport(null); setError(""); };
@@ -157,11 +196,11 @@ export function SkillMatch() {
     <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
       <div className="max-w-3xl"><p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]"><Sparkles className="h-3.5 w-3.5" /> RESUME-TO-JOB MATCHING</p><h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-[#26354b] sm:text-4xl">See how your resume lines up with a job.</h1><p className="mt-3 text-base leading-7 text-slate-600">Upload your resume and a job description. We’ll extract both with AI, then show the job requirements supported by evidence in your resume.</p></div>
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
-        <UploadStep title="1. Your resume" subtitle="We’ll build an evidence-backed skill profile from your PDF or DOCX." file={resumeFile} busy={busy === "resume"} onChoose={(event) => selectFile(event, "resume")} onAnalyze={() => void analyzeResume()} parsedLabel={resume ? `${resume.name} · ${resume.source_file}` : undefined} parsedCount={resume?.skills.length} disabled={busy !== "" && busy !== "resume"} />
-        <UploadStep title="2. The job description" subtitle={job ? job.extraction_mode === "llm_live" ? job.extraction_note : "Review the extracted requirements against the original job description." : "We’ll extract the skills and expectations stated in this role."} file={jdFile} busy={busy === "jd"} onChoose={(event) => selectFile(event, "jd")} onAnalyze={() => void analyzeJob()} parsedLabel={job ? `${job.role || "Job description"}${job.company ? ` · ${job.company}` : ""}` : undefined} parsedCount={job?.skills.length} disabled={busy !== "" && busy !== "jd"} />
+        <UploadStep title="1. Your resume" subtitle="We’ll build an evidence-backed skill profile from your PDF or DOCX." file={resumeFile} busy={busy === "resume"} elapsedSeconds={elapsedSeconds} onChoose={(event) => selectFile(event, "resume")} onAnalyze={() => void analyzeResume()} onCancel={cancelProcessing} parsedLabel={resume ? `${resume.name} · ${resume.source_file}` : undefined} parsedCount={resume?.skills.length} disabled={busy !== "" && busy !== "resume"} />
+        <UploadStep title="2. The job description" subtitle={job ? job.extraction_mode === "llm_live" ? job.extraction_note : "Review the extracted requirements against the original job description." : "We’ll extract the skills and expectations stated in this role."} file={jdFile} busy={busy === "jd"} elapsedSeconds={elapsedSeconds} onChoose={(event) => selectFile(event, "jd")} onAnalyze={() => void analyzeJob()} onCancel={cancelProcessing} parsedLabel={job ? `${job.role || "Job description"}${job.company ? ` · ${job.company}` : ""}` : undefined} parsedCount={job?.skills.length} disabled={busy !== "" && busy !== "jd"} />
       </div>
       {error && <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{error}</div>}
-      <div className="mt-5 flex flex-wrap gap-3"><Button type="button" onClick={() => void compare()} disabled={!resume || !job || busy !== ""} className="min-h-11">{busy === "match" ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Comparing skills…</> : <><Sparkles className="h-4 w-4" /> Compare my resume with this job</>}</Button><Button type="button" variant="outline" onClick={startOver} disabled={busy !== ""}>Start over</Button><Link to="/talent-check" className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-[#246b5d] hover:underline">Compare against a company benchmark instead</Link></div>
+      <div className="mt-5 flex flex-wrap gap-3"><Button type="button" onClick={() => void compare()} disabled={!resume || !job || busy !== ""} className="min-h-11">{busy === "match" ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Comparing skills…</> : <><Sparkles className="h-4 w-4" /> Compare my resume with this job</>}</Button>{busy === "match" && <Button type="button" variant="outline" onClick={cancelProcessing} className="min-h-11">Cancel comparison</Button>}<Button type="button" variant="outline" onClick={startOver} disabled={busy !== ""}>Start over</Button><Link to="/talent-check" className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-[#246b5d] hover:underline">Compare against a company benchmark instead</Link></div>
       {report && <div className="mt-8 space-y-5">
         <Card className="overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e9e1d5] p-5 sm:p-6"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]">Resume-to-job comparison</p><h2 className="mt-1 font-heading text-xl font-semibold text-[#26354b]">{report.role || "Job match"}{report.company ? ` · ${report.company}` : ""}</h2><p className="mt-1 text-sm text-slate-500">{report.candidate_name} · {report.resume_source_file} · {report.job_source_file}</p></div><div className="min-w-32 rounded-2xl bg-[#e4f2e9] px-5 py-3 text-center"><p className="text-3xl font-bold text-[#246b5d]">{report.match_score}%</p><p className="text-xs font-medium text-[#246b5d]">confirmed coverage</p></div></div>
           <div className="grid gap-3 p-5 sm:grid-cols-3 sm:p-6"><div className="rounded-xl bg-[#f3f8f1] p-4"><p className="text-2xl font-bold text-[#246b5d]">{report.matched_count}</p><p className="text-sm text-slate-600">Supported by resume evidence</p></div><div className="rounded-xl bg-[#fff9e9] p-4"><p className="text-2xl font-bold text-[#8a641e]">{report.possible_count}</p><p className="text-sm text-slate-600">Possible wording matches</p></div><div className="rounded-xl bg-[#fff8f6] p-4"><p className="text-2xl font-bold text-[#a44c37]">{report.missing_count}</p><p className="text-sm text-slate-600">Not found in parsed resume</p></div></div>
