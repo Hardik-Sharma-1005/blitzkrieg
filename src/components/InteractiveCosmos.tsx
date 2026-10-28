@@ -5,6 +5,7 @@ type InteractiveCosmosProps = {
   className?: string;
   tone?: "light" | "dark";
   particlesOnly?: boolean;
+  introBolt?: boolean;
 };
 
 type Star = {
@@ -22,21 +23,46 @@ type Star = {
   flowY: number;
   originX: number;
   originY: number;
+  ambientX: number;
+  ambientY: number;
+  boltMember: boolean;
+  introRadius: number;
   introDelay: number;
 };
 
 const LIGHT_STAR_PALETTE = ["#246b5d", "#1d584c", "#273e57", "#395270", "#9b742a"];
 const DARK_STAR_PALETTE = ["#67e8f9", "#bae6fd", "#e0e7ff", "#f5d0fe", "#ffffff"];
+let landingBoltIntroClaimed = false;
 
 /** High-DPI space particles that pick up a soft directional drift from pointer movement. */
-export function InteractiveCosmos({ variant, className = "", tone = "dark", particlesOnly = false }: InteractiveCosmosProps) {
+export function InteractiveCosmos({ variant, className = "", tone = "dark", particlesOnly = false, introBolt = false }: InteractiveCosmosProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const initialToneRef = useRef(tone);
+  const boltIntroStartRef = useRef<number | null>(null);
+  const boltIntroCancelledRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const parent = canvas?.parentElement;
     const context = canvas?.getContext("2d", { alpha: true });
     if (!canvas || !parent || !context) return;
+
+    if (introBolt && boltIntroStartRef.current === null) {
+      if (!landingBoltIntroClaimed && initialToneRef.current === "dark") {
+        boltIntroStartRef.current = performance.now();
+        landingBoltIntroClaimed = true;
+      } else {
+        boltIntroStartRef.current = -1;
+        landingBoltIntroClaimed = true;
+      }
+    }
+    if (introBolt && tone === "light" && (boltIntroStartRef.current ?? -1) > 0) {
+      boltIntroCancelledRef.current = true;
+    }
+    const runBoltIntro = introBolt
+      && tone === "dark"
+      && !boltIntroCancelledRef.current
+      && (boltIntroStartRef.current ?? -1) > 0;
 
     let width = 0;
     let height = 0;
@@ -45,6 +71,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
     let tick = 0;
     let introStart = 0;
     let iconScale = 1;
+    let boltStart = 0;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const lightBackground = tone === "light";
     const pointer = { x: -1000, y: -1000, vx: 0, vy: 0 };
@@ -163,8 +190,40 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           driftX: 0, driftY: 0, flowX: 0, flowY: 0,
           originX: width / 2 + rayX * (edgeDistance + 24 + random() * 90),
           originY: height / 2 + rayY * (edgeDistance + 24 + random() * 90),
+          ambientX: 0,
+          ambientY: 0,
+          boltMember: false,
+          introRadius: 0,
           introDelay: random() * 1100,
         };
+        particle.ambientX = particle.x;
+        particle.ambientY = particle.y;
+        if (runBoltIntro && variant === "starfield" && random() < .9) {
+          particle.boltMember = true;
+          // Sample the bolt's recognizable lightning silhouette, leaving its center open.
+          const outline = [
+            [-.19, -.5], [.19, -.5], [.07, -.08], [.34, -.08], [-.22, .5], [-.09, .15], [-.34, .15],
+          ];
+          const lengths = outline.map((point, index) => Math.hypot(point[0] - outline[(index + 1) % outline.length][0], point[1] - outline[(index + 1) % outline.length][1]));
+          let edge = random() * lengths.reduce((sum, value) => sum + value, 0);
+          let edgeIndex = 0;
+          while (edgeIndex < lengths.length - 1 && edge > lengths[edgeIndex]) edge -= lengths[edgeIndex++];
+          const a = outline[edgeIndex];
+          const b = outline[(edgeIndex + 1) % outline.length];
+          const t = edge / lengths[edgeIndex];
+          const heroHeight = Math.min(window.innerHeight, height);
+          const scale = Math.min(width * .45, heroHeight * .84);
+          const segmentLength = lengths[edgeIndex] || 1;
+          const spread = (random() + random() - 1) * .014;
+          const localX = a[0] + (b[0] - a[0]) * t - ((b[1] - a[1]) / segmentLength) * spread;
+          const localY = a[1] + (b[1] - a[1]) * t + ((b[0] - a[0]) / segmentLength) * spread;
+          const boltX = width * .5 + localX * scale;
+          const boltY = heroHeight * .50 + localY * scale;
+          particle.x = boltX;
+          particle.y = boltY;
+          particle.introDelay = random() * 1500;
+          particle.introRadius = .7 + random() * 1.8;
+        }
         if (variant === "constellation" && random() > .02) {
           let choice = random() * totalStrokeWeight;
           let segmentIndex = 0;
@@ -200,6 +259,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
 
     const draw = (now = performance.now()) => {
       if (!introStart) introStart = now;
+      if (!boltStart && runBoltIntro) boltStart = boltIntroStartRef.current ?? now;
       tick += reducedMotion ? 0 : 1;
       context.clearRect(0, 0, width, height);
       const pointerX = pointer.x;
@@ -290,8 +350,41 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
 
       for (let starIndex = 0; starIndex < stars.length; starIndex++) {
         const star = stars[starIndex];
-        let x = star.x;
-        let y = star.y;
+        let x = introBolt && variant === "starfield" ? star.ambientX : star.x;
+        let y = introBolt && variant === "starfield" ? star.ambientY : star.y;
+        let introX = star.x;
+        let introY = star.y;
+        let introAlpha = 0;
+        if (runBoltIntro && variant === "starfield" && !reducedMotion && star.boltMember) {
+          const elapsed = now - boltStart;
+          const arrive = 3000;
+          const hold = 2500;
+          const motionElapsed = elapsed - star.introDelay;
+          if (motionElapsed < arrive) {
+            const progress = Math.max(0, Math.min(1, motionElapsed / arrive));
+            const eased = progress * progress * (3 - 2 * progress);
+            const dx = star.x - star.originX;
+            const dy = star.y - star.originY;
+            const length = Math.hypot(dx, dy) || 1;
+            const bend = Math.sin(progress * Math.PI) * Math.sin(star.phase) * Math.min(64, length * .045);
+            introX = star.originX + dx * eased - (dy / length) * bend;
+            introY = star.originY + dy * eased + (dx / length) * bend;
+            introAlpha = progress < .12 ? progress / .12 : 1;
+          } else if (motionElapsed < arrive + hold) {
+            const orbit = tick * .045 + star.phase;
+            introX += Math.cos(orbit) * 3.2;
+            introY += Math.sin(orbit) * 5.4;
+            introAlpha = .82 + .18 * (.5 + .5 * Math.sin(orbit * 1.7));
+          } else {
+            const progress = Math.min(1, (motionElapsed - arrive - hold) / 1100);
+            const eased = progress * progress * (3 - 2 * progress);
+            const angle = star.phase;
+            const distance = Math.max(width, window.innerHeight) * .8;
+            introX = star.x + Math.cos(angle) * distance * eased;
+            introY = star.y + Math.sin(angle) * distance * eased;
+            introAlpha = 1 - eased;
+          }
+        }
         if (variant === "constellation") {
           const arrival = reducedMotion ? 1 : Math.max(0, Math.min(1, (now - introStart - star.introDelay) / 5900));
           const easedArrival = arrival < .5
@@ -366,6 +459,17 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           context.fill();
           context.shadowBlur = 0;
           context.globalAlpha = 1;
+          if (runBoltIntro && star.boltMember && introAlpha > .005) {
+            context.beginPath();
+            context.arc(introX, introY, star.introRadius, 0, Math.PI * 2);
+            context.globalAlpha = introAlpha;
+            context.fillStyle = lightBackground ? "#bd5b9b" : "#f0a8ff";
+            context.shadowBlur = 10;
+            context.shadowColor = lightBackground ? "rgba(189, 91, 155, .9)" : "rgba(224, 115, 255, .95)";
+            context.fill();
+            context.shadowBlur = 0;
+            context.globalAlpha = 1;
+          }
         }
       }
 
@@ -413,7 +517,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
       window.removeEventListener("resize", resize);
       window.cancelAnimationFrame(frame);
     };
-  }, [variant, tone, particlesOnly]);
+  }, [variant, tone, particlesOnly, introBolt]);
 
   return (
     <canvas

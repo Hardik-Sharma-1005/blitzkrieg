@@ -24,7 +24,7 @@ export function Index() {
 
   return (
     <div className={`portal-home relative isolate min-h-screen ${theme === "light" ? "theme-light" : ""}`}>
-      <InteractiveCosmos variant="starfield" tone={theme} className="z-0" />
+      <InteractiveCosmos variant="starfield" tone={theme} introBolt className="z-0" />
       <header className="brand-hero relative z-10 isolate flex min-h-[min(900px,100svh)] flex-col overflow-hidden px-5 pb-8 pt-7 text-center sm:px-8 sm:pt-9">
         <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-end">
           <nav className="hidden items-center gap-7 text-sm font-medium md:flex" aria-label="Quick links">
