@@ -455,9 +455,9 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
             context.beginPath();
             context.arc(introX, introY, star.introRadius, 0, Math.PI * 2);
             context.globalAlpha = introAlpha;
-            context.fillStyle = lightBackground ? "#bd5b9b" : "#f0a8ff";
+            context.fillStyle = lightBackground ? "#B58DAA" : "#f0a8ff";
             context.shadowBlur = 10;
-            context.shadowColor = lightBackground ? "rgba(189, 91, 155, .9)" : "rgba(224, 115, 255, .95)";
+            context.shadowColor = lightBackground ? "rgba(181, 141, 170, .65)" : "rgba(224, 115, 255, .95)";
             context.fill();
             context.shadowBlur = 0;
             context.globalAlpha = 1;
