@@ -1,210 +1,120 @@
-import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Building2, Check, FileText, GitCompareArrows, Search, Sparkles, X } from "lucide-react";
-import { CompanyCard } from "@/components/company/CompanyCard";
+import { ArrowDown, ArrowRight, Building2, FileText, GitCompareArrows, Sparkles } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { InteractiveCosmos } from "@/components/InteractiveCosmos";
-import { InteractiveTerminalMark } from "@/components/InteractiveTerminalMark";
 import { Button } from "@/components/ui/button";
-import { normalizeCompanySummary } from "@/lib/companyData";
-import { fetchCompanyDirectory } from "@/lib/companyRepository";
-import { isSupabaseConfigured } from "@/lib/supabaseClient";
-import { useCompany } from "@/lib/companyContext";
 import { useTheme } from "@/components/layout/SidebarContext";
 
+const pathways = [
+  { number: "01", label: "Read the market", title: "Company intelligence", copy: "Explore company profiles, compare employers, and understand the skills they value.", icon: Building2, route: "/companies" },
+  { number: "02", label: "Find your fit", title: "Resume ↔ role matching", copy: "See confirmed, possible, and missing skills against a job description—with evidence.", icon: GitCompareArrows, route: "/skill-match" },
+  { number: "03", label: "Build what’s next", title: "Talent Check", copy: "Compare your profile with a 12-skill RADIX benchmark, then practise the gaps.", icon: Sparkles, route: "/talent-check" },
+];
+
 export function Index() {
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState<"name-asc" | "name-desc" | "location">("name-asc");
   const prefersReducedMotion = useReducedMotion();
   const navigate = useNavigate();
-  const { selectCompany, compareCompanyIds, toggleCompareCompany } = useCompany();
   const { theme } = useTheme();
-  const directoryQuery = useQuery({
-    queryKey: ["company-directory"],
-    queryFn: fetchCompanyDirectory,
-  });
-  const companies = useMemo(
-    () => (directoryQuery.data ?? []).map(({ short_json }) => normalizeCompanySummary(short_json)),
-    [directoryQuery.data],
-  );
-  const categories = useMemo(
-    () => [...new Set(companies.map((company) => company.category).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
-    [companies],
-  );
-  const compareCompanies = useMemo(
-    () => compareCompanyIds.map((id) => companies.find((company) => company.companyId === id)).filter((company): company is (typeof companies)[number] => Boolean(company)),
-    [companies, compareCompanyIds],
-  );
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedQuery(query.trim().toLowerCase()), 200);
-    return () => window.clearTimeout(timer);
-  }, [query]);
-
-  const visibleCompanies = useMemo(() => companies
-    .filter((summary) => {
-      const haystack = [summary.name, summary.shortName, summary.category, summary.headquarters].join(" ").toLowerCase();
-      const matchesSearch = haystack.includes(debouncedQuery);
-      const matchesCategory = categoryFilter === "all" || summary.category === categoryFilter;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      if (sortOrder === "name-desc") return b.name.localeCompare(a.name);
-      if (sortOrder === "location") {
-        const byLocation = a.headquarters.localeCompare(b.headquarters);
-        return byLocation || a.name.localeCompare(b.name);
-      }
-      return a.name.localeCompare(b.name);
-    }), [companies, debouncedQuery, categoryFilter, sortOrder]);
-
-  const clearFilters = () => {
-    setQuery("");
-    setCategoryFilter("all");
-    setSortOrder("name-asc");
-  };
-
-  const chooseCompany = (company: (typeof companies)[number]) => {
-    selectCompany(company);
-    navigate("/company/intelligence");
-  };
   const reveal = (delay: number) => ({
-    initial: { opacity: 0, y: prefersReducedMotion ? 0 : 14 },
+    initial: { opacity: 0, y: prefersReducedMotion ? 0 : 12 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: prefersReducedMotion ? 0 : .9, delay: prefersReducedMotion ? 0 : delay, ease: "easeOut" as const },
+    transition: { duration: prefersReducedMotion ? 0 : .6, delay: prefersReducedMotion ? 0 : delay, ease: "easeOut" as const },
   });
 
   return (
-    <div className={`portal-home min-h-screen overflow-hidden bg-[#050609] ${theme === "light" ? "theme-light" : ""}`}>
-      <header onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); const x = (event.clientX - bounds.left) / bounds.width; const y = (event.clientY - bounds.top) / bounds.height; event.currentTarget.style.setProperty("--pointer-x", `${x * 100}%`); event.currentTarget.style.setProperty("--pointer-y", `${y * 100}%`); event.currentTarget.style.setProperty("--parallax-x", `${(0.5 - x) * 12}px`); event.currentTarget.style.setProperty("--parallax-y", `${(0.5 - y) * 9}px`); event.currentTarget.style.setProperty("--tilt-x", `${(x - 0.5) * 1.2}deg`); event.currentTarget.style.setProperty("--tilt-y", `${(0.5 - y) * 1.2}deg`); }} onPointerLeave={(event) => { event.currentTarget.style.setProperty("--parallax-x", "0px"); event.currentTarget.style.setProperty("--parallax-y", "0px"); event.currentTarget.style.setProperty("--tilt-x", "0deg"); event.currentTarget.style.setProperty("--tilt-y", "0deg"); }} className="portal-hero relative isolate overflow-hidden border-b border-white/10 bg-[#071311] text-white">
-        <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0" />
-        {theme === "dark" ? <InteractiveCosmos variant="constellation" /> : <InteractiveTerminalMark />}
-        <div className="relative z-10 mx-auto max-w-[1440px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16 sm:pt-9 lg:px-12 lg:pb-20">
-          <motion.div {...reveal(.05)} className="flex items-center gap-3">
-            <img src="/jss-university-logo.png" alt="JSS University, Noida" className="h-11 w-11 rounded-xl bg-white object-contain p-1 shadow-sm" />
-            <div>
-              <p className="font-heading text-sm font-semibold text-white">JSS University, Noida</p>
-              <p className="text-xs text-white/55">Student Career Hub</p>
-            </div>
+    <div className={`portal-home relative isolate min-h-screen ${theme === "light" ? "theme-light" : ""}`}>
+      <InteractiveCosmos variant="starfield" tone={theme} className="z-0" />
+      <header className="brand-hero relative z-10 isolate flex min-h-[min(900px,100svh)] flex-col overflow-hidden px-5 pb-8 pt-7 text-center sm:px-8 sm:pt-9">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-end">
+          <nav className="hidden items-center gap-7 text-sm font-medium md:flex" aria-label="Quick links">
+            <a href="#platform">How it works</a>
+            <button type="button" onClick={() => navigate("/companies")}>Company directory</button>
+            <button type="button" onClick={() => navigate("/resume-profile")} className="brand-nav-cta">Build your profile <ArrowRight className="h-4 w-4" /></button>
+          </nav>
+          <button type="button" onClick={() => navigate("/companies")} className="brand-nav-cta md:hidden">Company directory <ArrowRight className="h-4 w-4" /></button>
+        </div>
+
+        <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center pb-8 pt-6 sm:pt-0">
+          <motion.div {...reveal(.05)} className="brand-lockup">
+            <h1 className="sr-only">blitzkrieg</h1>
+            <BrandLogo className="brand-wordmark mx-auto h-auto w-[min(82vw,570px)]" />
+            <p
+              className="brand-tagline mt-5 text-sm font-semibold tracking-[.035em] sm:mt-6 sm:text-base"
+              style={{ color: theme === "light" ? "#823863" : "#D99CC5" }}
+            >
+              not your average placement platform
+            </p>
           </motion.div>
-
-          <motion.div {...reveal(.12)} className="absolute right-5 top-20 rounded-full border border-white/20 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold text-white/65 backdrop-blur sm:right-8 sm:top-9 lg:right-12">
-            {isSupabaseConfigured ? "Supabase configured" : "Demo dataset · 2 fictional profiles"}
+          <motion.p {...reveal(.18)} className="brand-hero-copy mx-auto mt-8 max-w-2xl text-base leading-7 sm:mt-9 sm:text-lg sm:leading-8">
+            Know the companies. Understand the skills. Make your next move with evidence.
+          </motion.p>
+          <motion.div {...reveal(.28)} className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <Button
+              onClick={() => navigate("/companies")}
+              style={{
+                backgroundColor: theme === "light" ? "#9A5A82" : "#D99CC5",
+                color: theme === "light" ? "#ffffff" : "#0b0e17",
+                boxShadow: "none",
+              }}
+              className="brand-primary-button min-h-12 rounded-full px-5"
+            >
+              Explore company intelligence <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/talent-check")} className="brand-secondary-button min-h-12 rounded-full px-5">
+              Try Talent Check <Sparkles className="h-4 w-4" />
+            </Button>
           </motion.div>
-
-          <div className="mt-12 max-w-3xl sm:mt-20">
-            <motion.h1 {...reveal(.5)} aria-label="blitzkrieg" className="mt-5 flex max-w-3xl items-center whitespace-nowrap font-['Poppins',sans-serif] text-[clamp(2.7rem,7.1vw,6.4rem)] font-extrabold leading-none tracking-[-0.01em] text-white">
-              <span>blitzkr</span><span aria-hidden="true" className="relative mx-[0.045em] inline-block h-[0.96em] w-[0.38em] shrink-0 self-center"><span className="absolute left-[63%] top-0 h-[0.16em] w-[0.16em] -translate-x-1/2 bg-[#173cff]" /><svg viewBox="0 0 40 100" className="absolute bottom-0 left-0 top-[0.23em] h-[0.73em] w-full fill-[#173cff]"><path d="M17 0h23L28 35h12L4 100l10-46H0L17 0Z" /></svg></span><span>eg</span>
-            </motion.h1>
-            <motion.div {...reveal(.82)} className="mt-5 max-w-3xl text-left text-white/65">
-              <p className="text-sm font-semibold tracking-wide sm:text-base">not your average placement platform</p>
-              <p className="mt-10 text-lg leading-8 sm:text-2xl sm:leading-10">
-                Know the companies. Understand the skills. Make your next move with evidence.
-              </p>
-            </motion.div>
-            <motion.div {...reveal(1.08)} className="mt-7 flex max-w-3xl flex-wrap items-center gap-2.5">
-              <Button onClick={() => navigate("/skill-match")} className="min-h-11 rounded-full bg-[#f1f4f8] px-5 text-[#11151b] shadow-[0_8px_30px_rgba(210,222,240,.12)] hover:bg-white"><GitCompareArrows className="h-4 w-4" /> Match resume to a job <ArrowRight className="h-4 w-4" /></Button>
-              <Button variant="outline" onClick={() => navigate("/jd-analytics")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white">Analyze a job description</Button>
-              <Button variant="outline" onClick={() => navigate("/resume-profile")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white"><FileText className="h-4 w-4" /> Resume profile</Button>
-              <Button variant="outline" onClick={() => navigate("/talent-check")} className="min-h-11 rounded-full border-white/20 bg-white/[0.06] px-4 text-white hover:bg-white/15 hover:text-white"><Sparkles className="h-4 w-4" /> Talent Check</Button>
-            </motion.div>
-          </div>
-
-          <motion.div {...reveal(1.36)} className="mt-10 grid max-w-5xl gap-3 sm:grid-cols-[minmax(0,1fr)_220px_190px]">
-            <div className="relative">
-              <label htmlFor="company-search" className="sr-only">Search by company, industry, or location</label>
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#aab4c2]" />
-              <input id="company-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search companies, industries, or locations" className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.08] pl-12 pr-12 text-sm text-white shadow-lg outline-none placeholder:text-white/40 focus:border-white/50 focus:ring-4 focus:ring-white/10" />
-              {query && <button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X className="h-4 w-4" /></button>}
-            </div>
-            <label className="sr-only" htmlFor="category-filter">Filter by industry</label>
-            <select id="category-filter" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="h-12 w-full rounded-xl border border-white/15 bg-[#151a22] px-3 text-sm text-white shadow-sm outline-none focus:border-white/50 focus:ring-4 focus:ring-white/10">
-              <option value="all">All industries</option>
-              {categories.map((category) => <option key={category} value={category}>{category}</option>)}
-            </select>
-            <label className="sr-only" htmlFor="company-sort">Sort companies</label>
-            <select id="company-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)} className="h-12 w-full rounded-xl border border-white/15 bg-[#151a22] px-3 text-sm text-white shadow-sm outline-none focus:border-white/50 focus:ring-4 focus:ring-white/10">
-              <option value="name-asc">Name: A to Z</option>
-              <option value="name-desc">Name: Z to A</option>
-              <option value="location">Location</option>
-            </select>
+          <motion.div {...reveal(.4)} className="brand-proofline mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs sm:mt-12 sm:text-sm">
+            <span><strong>118</strong> company profiles</span><i aria-hidden="true" /><span><strong>12 skills</strong> in the RADIX benchmark</span><i aria-hidden="true" /><span>Evidence-led matching</span>
           </motion.div>
         </div>
+        <a href="#platform" className="brand-scroll relative z-10 mx-auto inline-flex items-center gap-2 py-3 text-xs font-semibold uppercase tracking-[.16em]" aria-label="Scroll to discover the platform">
+          Scroll to discover <ArrowDown className="h-3.5 w-3.5" />
+        </a>
       </header>
 
-      <main onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); event.currentTarget.style.setProperty("--pointer-y", `${((event.clientY - bounds.top) / bounds.height) * 100}%`); }} className="portal-cosmos relative isolate overflow-hidden bg-[#070d17] px-5 py-8 sm:px-8 sm:py-10 lg:px-12">
-        {theme === "dark" && <InteractiveCosmos variant="starfield" />}
-        <div className="relative z-10 mx-auto max-w-[1440px]">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#b5c0d0]">Start exploring</p>
-            <h2 className="mt-1 font-heading text-2xl font-semibold text-[#26354b] sm:text-3xl">Company directory</h2>
-            <p className="mt-1 text-sm text-slate-500">Compare up to three companies as you build your shortlist.</p>
-          </div>
-          <span className="rounded-full border border-[#e9e1d5] bg-[#fffdf8] px-3.5 py-2 text-sm font-medium text-slate-600 shadow-sm" role="status" aria-live="polite">
-            {directoryQuery.isPending
-              ? "Loading companies…"
-              : visibleCompanies.length === companies.length
-                ? `${companies.length} ${companies.length === 1 ? "company" : "companies"}`
-                : `${visibleCompanies.length} of ${companies.length} companies`}
-          </span>
-        </div>
-
-        {directoryQuery.isPending ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }).map((_, index) => <div key={index} className="h-[278px] animate-pulse rounded-2xl border border-[#29313b] bg-[#10151d] p-5"><div className="h-12 w-12 rounded-xl bg-[#202630]" /><div className="mt-5 h-4 w-2/3 rounded bg-[#202630]" /><div className="mt-3 h-3 w-1/3 rounded bg-[#202630]" /><div className="mt-7 space-y-3"><div className="h-3 w-3/4 rounded bg-[#202630]" /><div className="h-3 w-2/3 rounded bg-[#202630]" /><div className="h-3 w-1/2 rounded bg-[#202630]" /></div></div>)}</div>
-        ) : directoryQuery.isError ? (
-          <div className="mx-auto flex max-w-lg flex-col items-center py-20 text-center">
-            <h3 className="font-heading text-xl font-semibold text-slate-900">Couldn’t load companies</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">Please try again in a moment.</p>
-            <Button variant="soft" className="mt-5" onClick={() => void directoryQuery.refetch()}>Try again <ArrowRight className="h-4 w-4" /></Button>
-          </div>
-        ) : companies.length === 0 ? (
-          <div className="mx-auto flex max-w-lg flex-col items-center py-20 text-center">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#202630] text-[#b9c4d4]"><Building2 className="h-6 w-6" /></span>
-            <h3 className="mt-5 font-heading text-xl font-semibold text-slate-900">No company profiles available</h3>
-            <p className="mt-2 text-sm text-slate-500">Company profiles will appear here when they are available.</p>
-          </div>
-        ) : visibleCompanies.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleCompanies.map((summary) => <CompanyCard key={summary.companyId} company={summary} onOpen={() => chooseCompany(summary)} isCompared={compareCompanyIds.includes(summary.companyId)} onToggleCompare={() => toggleCompareCompany(summary)} compareLimitReached={compareCompanyIds.length >= 3} />)}
-          </div>
-        ) : (
-          <div className="mx-auto flex max-w-lg flex-col items-center py-20 text-center">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#202630] text-[#b9c4d4]"><Building2 className="h-6 w-6" /></span>
-            <h3 className="mt-5 font-heading text-xl font-semibold text-slate-900">No matching companies</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">Try a different search or industry, or clear the filters.</p>
-            <Button variant="soft" className="mt-5" onClick={clearFilters}>Clear filters <ArrowRight className="h-4 w-4" /></Button>
-          </div>
-        )}
-        <div className={`mt-8 border-t border-[#242a34] pt-5 text-center text-xs text-slate-400 ${compareCompanies.length ? "pb-28 sm:pb-20" : ""}`}>JSS University, Noida · Student Career Hub</div>
-        </div>
-      </main>
-
-      <AnimatePresence>
-        {compareCompanies.length > 0 && (
-          <motion.aside initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 24 }} transition={{ duration: 0.24, ease: "easeOut" }} className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-5xl rounded-2xl border border-[#343d4a] bg-[#11161e]/95 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.48)] backdrop-blur-xl sm:inset-x-6 sm:bottom-5 sm:p-4" aria-label="Company comparison selection">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#e5eaf2]"><GitCompareArrows className="h-4 w-4 text-[#bdc9da]" /> Comparison shortlist <span className="rounded-full bg-[#27303c] px-2 py-0.5 text-xs text-[#e1e7f0]">{compareCompanies.length}/3</span></div>
-                <div className="mt-2 flex max-w-full gap-2 overflow-x-auto scrollbar-none">
-                  {compareCompanies.map((company) => <span key={company.companyId} className="inline-flex max-w-[200px] shrink-0 items-center gap-1.5 rounded-full border border-[#343d4a] bg-[#1a202a] px-2.5 py-1 text-xs font-medium text-[#d4dbe6]">
-                    <Check className="h-3 w-3 text-[#348c6d]" /><span className="truncate">{company.name}</span>
-                    <button type="button" onClick={() => toggleCompareCompany(company)} aria-label={`Remove ${company.name} from comparison`} className="rounded-full p-0.5 text-slate-400 hover:bg-[#f3eee5] hover:text-slate-700"><X className="h-3 w-3" /></button>
-                  </span>)}
-                </div>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <span className="hidden text-xs text-slate-500 sm:block">{compareCompanies.length < 2 ? "Select one more company" : "Ready when you are"}</span>
-                <Button disabled={compareCompanies.length < 2} onClick={() => navigate("/company/compare")} className="min-h-10 flex-1 sm:flex-none">
-                  Compare <span className="hidden sm:inline">companies</span><ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
+      <section id="platform" className="brand-platform-section relative z-10 px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
+        <div className="mx-auto max-w-[1240px]">
+          <div className="brand-affiliation mb-12 flex flex-wrap items-center justify-between gap-6 border-b pb-7 sm:mb-16">
+            <div>
+              <p className="brand-eyebrow">Built for one campus community</p>
+              <h2 className="mt-3 max-w-2xl font-heading text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-5xl">Career decisions, with a clearer signal.</h2>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+            <div className="brand-jss-note flex items-center gap-3 text-sm font-semibold">
+              <img src="/jss-university-logo.png" alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1" />
+              <span>Exclusive to<br />JSS University, Noida</span>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {pathways.map(({ number, label, title, copy, icon: Icon, route }, index) => (
+              <motion.button key={number} type="button" onClick={() => navigate(route)} className="brand-pathway-card group text-left" {...reveal(index * .08)}>
+                <div className="flex items-start justify-between"><span className="brand-pathway-number">{number}</span><Icon className="brand-pathway-icon h-5 w-5" aria-hidden="true" /></div>
+                <p className="brand-eyebrow mt-10">{label}</p>
+                <h3 className="mt-2 font-heading text-2xl font-semibold tracking-[-.03em]">{title}</h3>
+                <p className="brand-pathway-copy mt-3 text-sm leading-6">{copy}</p>
+                <span className="brand-pathway-link mt-7 inline-flex items-center gap-2 text-sm font-semibold">Explore <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
+              </motion.button>
+            ))}
+          </div>
+
+          <div className="brand-workflow-band mt-12 grid gap-8 rounded-3xl p-6 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="brand-eyebrow">A practical path forward</p>
+              <h3 className="mt-3 max-w-2xl font-heading text-2xl font-semibold leading-tight tracking-[-.035em] sm:text-3xl">From “what do they want?” to “what should I do next?”</h3>
+              <p className="brand-workflow-copy mt-3 max-w-2xl text-sm leading-6">Build a resume profile, compare it with real role requirements, then use company skill benchmarks to focus your practice.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => navigate("/companies")} className="brand-band-button rounded-full">Browse companies <Building2 className="h-4 w-4" /></Button>
+              <Button variant="outline" onClick={() => navigate("/resume-profile")} className="brand-band-button rounded-full">Build a resume profile <FileText className="h-4 w-4" /></Button>
+              <Button variant="outline" onClick={() => navigate("/jd-analytics")} className="brand-band-button rounded-full">Analyze a job description <ArrowRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
     </div>
   );
 }

@@ -14,7 +14,6 @@ import {
   Megaphone,
   Newspaper,
   PackageCheck,
-  Phone,
   ShieldCheck,
   Sparkles,
   Star,
@@ -58,7 +57,6 @@ const schema: Array<{ title: string; icon: LucideIcon; fields: Array<[string, st
   { title: "Brand & Reputation", icon: Award, fields: [["brand_value", "Brand value"], ["brand_sentiment_score", "Brand sentiment"], ["awards_recognitions", "Awards and recognition"], ["event_participation", "Events and industry presence"]] },
   { title: "Compensation & Benefits", icon: Star, fields: [["fixed_vs_variable_pay", "Fixed and variable pay"], ["bonus_predictability", "Bonus predictability"], ["esops_incentives", "Equity incentives"], ["family_health_insurance", "Family health insurance"], ["relocation_support", "Relocation support"], ["lifestyle_benefits", "Lifestyle benefits"], ["leave_policy", "Leave policy"]] },
   { title: "Digital Presence & Ratings", icon: Megaphone, fields: [["website_url", "Website"], ["linkedin_url", "LinkedIn"], ["twitter_handle", "X / Twitter"], ["facebook_url", "Facebook"], ["instagram_url", "Instagram"], ["website_quality", "Website quality"], ["website_rating", "Website rating"], ["website_traffic_rank", "Website traffic rank"], ["social_media_followers", "Social followers"], ["glassdoor_rating", "Glassdoor rating"], ["indeed_rating", "Indeed rating"], ["google_rating", "Google rating"]] },
-  { title: "Contact Information", icon: Phone, fields: [["primary_contact_email", "General contact email"], ["primary_phone_number", "Main phone"], ["contact_person_name", "Contact person"], ["contact_person_title", "Contact title"], ["contact_person_email", "Contact email"], ["contact_person_phone", "Contact phone"]] },
 ];
 
 export function buildIntelligenceSections(profile?: JsonRecord): IntelligenceSection[] {

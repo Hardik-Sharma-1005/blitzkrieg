@@ -70,18 +70,19 @@ export function scoreToDifficulty(score: number): "EXPERT" | "ADVANCED" | "PRO" 
   return "BEGINNER";
 }
 
-export function normalizeCompanySummary(shortJson: unknown): CompanySummary {
+export function normalizeCompanySummary(shortJson: unknown, fullJson?: unknown): CompanySummary {
   const raw = asRecord(shortJson);
+  const profile = asRecord(fullJson);
   return {
     companyId: Number(raw.company_id ?? 0),
     name: asString(raw.name) || "Company",
     shortName: asString(raw.short_name) || asString(raw.name) || "Company",
-    logoUrl: asString(raw.logo_url),
+    logoUrl: asString(raw.logo_url) || asString(profile.logo_url),
     category: asString(raw.category),
-    headquarters: asString(raw.headquarters_address),
+    headquarters: asString(raw.headquarters_address) || asString(profile.headquarters_address) || asString(fullJson),
     employeeSize: asString(raw.employee_size),
     growthRate: asString(raw.yoy_growth_rate),
-    websiteUrl: asString(raw.website_url),
+    websiteUrl: asString(raw.website_url) || asString(profile.website_url),
     raw,
   };
 }

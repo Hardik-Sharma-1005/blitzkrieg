@@ -1,6 +1,6 @@
-# JSS University, Noida — Student Career Hub
+# blitzkrieg!
 
-A student-facing placement research portal with company intelligence, skill roadmaps, company comparison, job-description analytics, and resume parsing.
+An exclusive career and placement intelligence platform for students, recruiters, and the placement team at JSS University, Noida. It brings together company intelligence, skill roadmaps, company comparison, job-description analytics, resume parsing, and Talent Check.
 
 ## Run the local demo
 

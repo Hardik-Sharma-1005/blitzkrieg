@@ -4,8 +4,12 @@ export type ThemeMode = "dark" | "light";
 interface ThemeValue { theme: ThemeMode; setTheme: (value: ThemeMode) => void; }
 const ThemeContext = createContext<ThemeValue | null>(null);
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>(() => { try { return window.localStorage.getItem("jss-portal-theme") === "light" ? "light" : "dark"; } catch { return "dark"; } });
-  useEffect(() => { document.documentElement.dataset.theme = theme; try { window.localStorage.setItem("jss-portal-theme", theme); } catch { /* Storage may be unavailable. */ } }, [theme]);
+  const [theme, setTheme] = useState<ThemeMode>(() => { try { return window.localStorage.getItem("blitzkrieg-theme") === "light" ? "light" : "dark"; } catch { return "dark"; } });
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    try { window.localStorage.setItem("blitzkrieg-theme", theme); } catch { /* Storage may be unavailable. */ }
+  }, [theme]);
   const value = useMemo(() => ({ theme, setTheme }), [theme]);
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

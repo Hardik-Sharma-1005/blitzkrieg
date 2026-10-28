@@ -54,7 +54,7 @@ def call_gemini_api(prompt: str) -> str:
     Each provider gets a bounded request with no hidden retries.
     """
     api_key = get_gemini_key()
-    model_name = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
+    model_name = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip()
     failures = []
     try:
         if not api_key:

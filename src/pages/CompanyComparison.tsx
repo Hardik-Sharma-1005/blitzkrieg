@@ -71,16 +71,10 @@ function profileValue(raw: JsonRecord, key: string) {
 
 function getComparisonLoadHelp(error: unknown) {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-  if (message.includes("row-level security") || message.includes("permission denied") || message.includes("42501")) {
-    return "Supabase denied access to company_json. Check its SELECT grant and row-level security policy for the public company records you intend to show.";
+  if (message.includes("row-level security") || message.includes("permission denied") || message.includes("42501") || message.includes("schema cache") || message.includes("does not exist") || message.includes("column") || message.includes("fetch failed") || message.includes("network") || message.includes("failed to fetch")) {
+    return "Company profiles couldn’t be loaded. Check your connection and try again.";
   }
-  if (message.includes("schema cache") || message.includes("does not exist") || message.includes("column")) {
-    return "The connected database schema does not match the company_json fields this app reads. Confirm the table and JSON column names in the project configuration.";
-  }
-  if (message.includes("fetch failed") || message.includes("network") || message.includes("failed to fetch")) {
-    return "The configured Supabase URL could not be reached. Check the URL and network connection, then retry.";
-  }
-  return "Check that company_json is readable with the public client and that company_id, short_json, and full_json match the app data contract.";
+  return "We couldn’t load this company comparison. Please try again.";
 }
 
 function StudentTakeaway({ company }: { company: ComparisonCompany }) {
@@ -161,7 +155,7 @@ export function CompanyComparison() {
   const companies = useMemo(() => compareCompanyIds.flatMap((_, index) => {
     const record = records[index]?.data;
     if (!record) return [];
-    const summary = normalizeCompanySummary(record.short_json);
+    const summary = normalizeCompanySummary(record.short_json, record.full_json);
     const profile = normalizeCompanyProfile(record.full_json, record.short_json);
     return [{ summary, profile, skills: normalizeDashboardSkills(record.skill_levels), raw: profile.raw, skillDataWarnings: record.skillDataWarnings }];
   }), [compareCompanyIds, records]);
@@ -177,7 +171,9 @@ export function CompanyComparison() {
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e4f2e9] text-[#246b5d]"><GitCompareArrows className="h-6 w-6" /></span>
         <h1 className="mt-5 font-heading text-2xl font-semibold text-[#26354b]">Choose at least two companies</h1>
         <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Add companies from the directory cards. Your shortlist stays on this device while you explore.</p>
-        <Button asChild className="mt-6"><Link to="/">Back to the directory <ArrowRight className="h-4 w-4" /></Link></Button>
+        <Button asChild variant="outline" className="brand-compare-return-btn mt-6 rounded-xl border border-[#e5dcd1] bg-white text-[#9A5A82] hover:bg-[#faf2f7] hover:border-[#9A5A82] hover:text-[#87496E] dark:border-slate-800 dark:bg-black dark:text-[#D99CC5] dark:hover:bg-[#111] dark:hover:border-[#D99CC5] dark:hover:text-[#e4b2d4]">
+          <Link to="/companies">Back to the directory <ArrowRight className="h-4 w-4" /></Link>
+        </Button>
       </Card>
     </main>;
   }
@@ -200,7 +196,9 @@ export function CompanyComparison() {
           <RefreshCw className="h-4 w-4" /> Try again
         </Button>}
         <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>
-        <Button asChild variant="outline"><Link to="/">Back to directory</Link></Button>
+        <Button asChild variant="outline" className="brand-compare-return-btn border border-[#e5dcd1] bg-white text-[#9A5A82] hover:bg-[#faf2f7] hover:border-[#9A5A82] hover:text-[#87496E] dark:border-slate-800 dark:bg-black dark:text-[#D99CC5] dark:hover:bg-[#111] dark:hover:border-[#D99CC5] dark:hover:text-[#e4b2d4]">
+          <Link to="/companies">Back to directory</Link>
+        </Button>
       </div>
     </Card>
   </main>;
@@ -216,7 +214,7 @@ export function CompanyComparison() {
             <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">Compare the available company and skill data. Sample profiles are labeled, and missing details stay visible.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline"><Link to="/"><ArrowLeft className="h-4 w-4" /> Add companies</Link></Button>
+            <Button asChild variant="outline"><Link to="/companies"><ArrowLeft className="h-4 w-4" /> Add companies</Link></Button>
             <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>
           </div>
         </div>

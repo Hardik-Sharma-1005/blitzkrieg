@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ChevronDown, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { getSkillTopics } from "@/data/skillTopics";
@@ -88,7 +90,15 @@ export function SkillIntelligence() {
     try { localStorage.removeItem(SKILL_RATINGS_KEY); } catch { /* State still resets for this visit. */ }
     setSkillRatings({});
   };
-  if (companyQuery.isPending) return <div className="mx-auto max-w-xl p-10 text-center text-sm text-slate-500">Loading skill intelligence…</div>;
+  if (companyQuery.isPending) return (
+    <div className="mx-auto flex min-h-[60vh] max-w-xl items-center justify-center p-6">
+      <div className="relative z-10 flex flex-col items-center gap-3 rounded-2xl border border-[#e9e1d5] bg-white/95 p-8 text-center shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#246b5d] border-t-transparent" />
+        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Loading skill intelligence…</p>
+        <p className="text-xs text-slate-500">Mapping 10-level proficiency roadmaps and Bloom levels…</p>
+      </div>
+    </div>
+  );
   if (companyQuery.isError || !company || !profile) return (
     <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
       <h2 className="font-heading text-xl font-semibold text-slate-900">Couldn’t load this company’s skills</h2>
@@ -98,13 +108,18 @@ export function SkillIntelligence() {
   );
 
   return (
-    <div className="space-theme min-h-screen bg-[#fbf8f1]">
+    <div className="space-theme min-h-screen bg-transparent">
       <div className="mx-auto max-w-[1180px] px-5 py-7 sm:px-8 sm:py-9">
         <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-[#e8dfd1] bg-gradient-to-br from-[#fff4d7] via-[#fffdf8] to-[#e4f2e9] p-5 sm:p-7">
           <div aria-hidden="true" className="ambient-drift-delayed pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[#b8ade3]/35 blur-3xl" />
-          <div className="relative flex items-center gap-4">
-            <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
-            <div><p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]">Skill intelligence</p><h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-[#26354b] sm:text-3xl">{profile.shortName} Skill Intelligence</h1><p className="mt-1 text-sm text-slate-600">Required skills and target learning levels</p></div>
+          <div className="relative flex flex-wrap items-center justify-between gap-5">
+            <div className="flex min-w-0 items-center gap-4">
+              <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
+              <div><p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]">Skill intelligence</p><h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight text-[#26354b] sm:text-3xl">{profile.shortName} Skill Intelligence</h1><p className="mt-1 text-sm text-slate-600">Required skills and target learning levels</p></div>
+            </div>
+            <Button asChild className="brand-primary-button min-h-11 whitespace-normal text-left">
+              <Link to={`/talent-check?company_id=${profile.companyId}`}>Compare your resume against this company’s requirements <ArrowRight className="h-4 w-4 shrink-0" /></Link>
+            </Button>
           </div>
         </div>
 
