@@ -37,9 +37,7 @@ let landingBoltIntroClaimed = false;
 /** High-DPI space particles that pick up a soft directional drift from pointer movement. */
 export function InteractiveCosmos({ variant, className = "", tone = "dark", particlesOnly = false, introBolt = false }: InteractiveCosmosProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const initialToneRef = useRef(tone);
   const boltIntroStartRef = useRef<number | null>(null);
-  const boltIntroCancelledRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,7 +46,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
     if (!canvas || !parent || !context) return;
 
     if (introBolt && boltIntroStartRef.current === null) {
-      if (!landingBoltIntroClaimed && initialToneRef.current === "dark") {
+      if (!landingBoltIntroClaimed) {
         boltIntroStartRef.current = performance.now();
         landingBoltIntroClaimed = true;
       } else {
@@ -56,13 +54,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
         landingBoltIntroClaimed = true;
       }
     }
-    if (introBolt && tone === "light" && (boltIntroStartRef.current ?? -1) > 0) {
-      boltIntroCancelledRef.current = true;
-    }
-    const runBoltIntro = introBolt
-      && tone === "dark"
-      && !boltIntroCancelledRef.current
-      && (boltIntroStartRef.current ?? -1) > 0;
+    const runBoltIntro = introBolt && (boltIntroStartRef.current ?? -1) > 0;
 
     let width = 0;
     let height = 0;
@@ -202,7 +194,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           particle.boltMember = true;
           // Sample the bolt's recognizable lightning silhouette, leaving its center open.
           const outline = [
-            [-.19, -.5], [.19, -.5], [.07, -.08], [.34, -.08], [-.22, .5], [-.09, .15], [-.34, .15],
+            [-.145, -.5], [.145, -.5], [.053, -.08], [.222, -.08], [-.144, .5], [-.059, .15], [-.222, .15],
           ];
           const lengths = outline.map((point, index) => Math.hypot(point[0] - outline[(index + 1) % outline.length][0], point[1] - outline[(index + 1) % outline.length][1]));
           let edge = random() * lengths.reduce((sum, value) => sum + value, 0);
@@ -221,7 +213,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           const boltY = heroHeight * .50 + localY * scale;
           particle.x = boltX;
           particle.y = boltY;
-          particle.introDelay = random() * 1500;
+          particle.introDelay = random() * 500;
           particle.introRadius = .7 + random() * 1.8;
         }
         if (variant === "constellation" && random() > .02) {
@@ -357,8 +349,8 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
         let introAlpha = 0;
         if (runBoltIntro && variant === "starfield" && !reducedMotion && star.boltMember) {
           const elapsed = now - boltStart;
-          const arrive = 3000;
-          const hold = 2500;
+          const arrive = 2000;
+          const hold = 1500;
           const motionElapsed = elapsed - star.introDelay;
           if (motionElapsed < arrive) {
             const progress = Math.max(0, Math.min(1, motionElapsed / arrive));
