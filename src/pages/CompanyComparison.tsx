@@ -171,7 +171,9 @@ export function CompanyComparison() {
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e4f2e9] text-[#246b5d]"><GitCompareArrows className="h-6 w-6" /></span>
         <h1 className="mt-5 font-heading text-2xl font-semibold text-[#26354b]">Choose at least two companies</h1>
         <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Add companies from the directory cards. Your shortlist stays on this device while you explore.</p>
-        <Button asChild className="mt-6"><Link to="/">Back to the directory <ArrowRight className="h-4 w-4" /></Link></Button>
+        <Button asChild variant="outline" className="brand-compare-return-btn mt-6 rounded-xl border border-[#e5dcd1] bg-white text-[#9A5A82] hover:bg-[#faf2f7] hover:border-[#9A5A82] hover:text-[#87496E] dark:border-slate-800 dark:bg-black dark:text-[#D99CC5] dark:hover:bg-[#111] dark:hover:border-[#D99CC5] dark:hover:text-[#e4b2d4]">
+          <Link to="/companies">Back to the directory <ArrowRight className="h-4 w-4" /></Link>
+        </Button>
       </Card>
     </main>;
   }
@@ -194,7 +196,9 @@ export function CompanyComparison() {
           <RefreshCw className="h-4 w-4" /> Try again
         </Button>}
         <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>
-        <Button asChild variant="outline"><Link to="/">Back to directory</Link></Button>
+        <Button asChild variant="outline" className="brand-compare-return-btn border border-[#e5dcd1] bg-white text-[#9A5A82] hover:bg-[#faf2f7] hover:border-[#9A5A82] hover:text-[#87496E] dark:border-slate-800 dark:bg-black dark:text-[#D99CC5] dark:hover:bg-[#111] dark:hover:border-[#D99CC5] dark:hover:text-[#e4b2d4]">
+          <Link to="/companies">Back to directory</Link>
+        </Button>
       </div>
     </Card>
   </main>;
@@ -210,7 +214,7 @@ export function CompanyComparison() {
             <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">Compare the available company and skill data. Sample profiles are labeled, and missing details stay visible.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline"><Link to="/"><ArrowLeft className="h-4 w-4" /> Add companies</Link></Button>
+            <Button asChild variant="outline"><Link to="/companies"><ArrowLeft className="h-4 w-4" /> Add companies</Link></Button>
             <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>
           </div>
         </div>

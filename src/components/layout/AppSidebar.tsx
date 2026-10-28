@@ -28,7 +28,7 @@ export function AppSidebar({ homeOverlay = false }: { homeOverlay?: boolean }) {
               <BrandLogo className="brand-sidebar-wordmark" />
               <BrandLogo markOnly className="brand-sidebar-bolt" />
             </span>
-            <span className="brand-sidebar-caption mt-1 block text-[10px] tracking-wide text-slate-500" data-collapsed={collapsed}>career intelligence</span>
+            <span className="brand-sidebar-caption mt-1 block text-xs font-semibold tracking-[0.04em] text-[#9A5A82] dark:text-[#D99CC5]" data-collapsed={collapsed}>Career Intelligence</span>
           </button>
           <button type="button" className="rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><X className="h-4 w-4" /></button>
           <button type="button" className={`brand-sidebar-toggle hidden rounded-md p-2 text-slate-500 hover:bg-slate-100 lg:block ${collapsed ? "is-collapsed" : ""}`} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} onClick={() => setCollapsed(!collapsed)}>
@@ -48,7 +48,7 @@ export function AppSidebar({ homeOverlay = false }: { homeOverlay?: boolean }) {
           <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} title={collapsed ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : undefined} className={`mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-white/70 hover:text-slate-900 ${collapsed ? "lg:justify-center lg:px-2" : ""}`}>
             {theme === "dark" ? <Sun className="h-[18px] w-[18px] shrink-0" /> : <Moon className="h-[18px] w-[18px] shrink-0" />}<span className={collapsed ? "lg:hidden" : ""}>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
           </button>
-          <button type="button" onClick={() => navigate("/")} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-white/70 hover:text-slate-900 ${collapsed ? "lg:justify-center lg:px-2" : ""}`} title={collapsed ? "All Companies" : undefined}>
+          <button type="button" onClick={() => navigate("/companies")} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-white/70 hover:text-slate-900 ${collapsed ? "lg:justify-center lg:px-2" : ""}`} title={collapsed ? "All Companies" : undefined}>
             <ArrowLeft className="h-[18px] w-[18px] shrink-0" /><span className={collapsed ? "lg:hidden" : ""}>All Companies</span>
           </button>
         </div>

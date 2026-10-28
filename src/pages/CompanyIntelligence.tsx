@@ -12,8 +12,17 @@ import { normalizeCompanyProfile } from "@/lib/companyData";
 import { asString } from "@/lib/companyData";
 import { useCompany } from "@/lib/companyContext";
 
+const CATEGORY_GROUPS = [
+  { id: "all", label: "All 21 Sections", indices: null },
+  { id: "org", label: "🏛️ Organization", indices: [0, 1, 2, 4] },
+  { id: "market", label: "💰 Financials & Market", indices: [3, 7, 8, 9, 13] },
+  { id: "tech", label: "💻 Tech, ESG & Risk", indices: [5, 6, 10, 11, 14] },
+  { id: "career", label: "📈 Career & Workplace", indices: [12, 15, 16, 17, 18, 19, 20] },
+];
+
 export function CompanyIntelligence() {
   const { selectedCompany } = useCompany();
+  const [activeCategory, setActiveCategory] = useState("all");
   const companyQuery = useQuery({
     queryKey: ["company-record", selectedCompany?.companyId],
     queryFn: () => fetchCompanyRecord(selectedCompany!.companyId),
@@ -57,7 +66,15 @@ export function CompanyIntelligence() {
     scrollTimerRef.current = window.setTimeout(() => { isScrollingRef.current = false; }, 900);
   }, []);
 
-  if (companyQuery.isPending) return <div className="mx-auto max-w-xl p-10 text-center text-sm text-slate-500">Loading company profile…</div>;
+  if (companyQuery.isPending) return (
+    <div className="mx-auto flex min-h-[60vh] max-w-xl items-center justify-center p-6">
+      <div className="relative z-10 flex flex-col items-center gap-3 rounded-2xl border border-[#e9e1d5] bg-white/95 p-8 text-center shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#246b5d] border-t-transparent" />
+        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Loading company profile…</p>
+        <p className="text-xs text-slate-500">Retrieving signals and 21 intelligence sections…</p>
+      </div>
+    </div>
+  );
   if (companyQuery.isError || !companyRecord || !profile) return (
     <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
       <h2 className="font-heading text-xl font-semibold text-slate-900">Couldn’t load this company</h2>
@@ -67,7 +84,7 @@ export function CompanyIntelligence() {
   );
 
   return (
-    <div className="space-theme min-h-screen bg-[#fbf8f1]">
+    <div className="space-theme min-h-screen bg-transparent">
       <div className="sticky top-[72px] z-20 border-b border-[#e8e0d2] bg-[#fffdf8]/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-4 px-5 py-4 sm:px-8 lg:px-12">
           <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />
@@ -82,9 +99,48 @@ export function CompanyIntelligence() {
         </div>
       </div>
 
-      <div className="sticky top-[147px] z-10 border-b border-[#e8e0d2] bg-[#fffdf8]">
-        <nav className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-5 py-2.5 scrollbar-none sm:px-8 lg:px-12" aria-label="Company profile sections">
-          {sections.map((section, index) => <button key={section.id} ref={(element) => { tabRefs.current[index] = element; }} type="button" onClick={() => scrollToSection(index)} className={`shrink-0 rounded-xl px-3 py-2 text-xs font-medium transition-colors ${activeIndex === index ? "bg-[#e4f2e9] text-[#246b5d]" : "text-slate-500 hover:bg-[#f7f3eb] hover:text-slate-800"}`}>{section.title}</button>)}
+      <div className="sticky top-[147px] z-10 border-b border-[#e8e0d2] bg-[#fffdf8] shadow-xs">
+        <div className="border-b border-[#f0e9dc] bg-[#faf7f0]/70 px-5 py-1.5 sm:px-8 lg:px-12">
+          <div className="mx-auto flex max-w-[1440px] items-center gap-1.5 overflow-x-auto scrollbar-none">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-2 shrink-0 hidden sm:inline">Clusters:</span>
+            {CATEGORY_GROUPS.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                onClick={() => setActiveCategory(group.id)}
+                className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                  activeCategory === group.id
+                    ? "bg-[#246b5d] text-white shadow-xs"
+                    : "text-slate-600 hover:bg-[#ede7da] hover:text-slate-900"
+                }`}
+              >
+                {group.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <nav className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-5 py-2 scrollbar-none sm:px-8 lg:px-12" aria-label="Company profile sections">
+          {sections.map((section, index) => {
+            const currentGroup = CATEGORY_GROUPS.find((g) => g.id === activeCategory);
+            const isVisible = !currentGroup?.indices || currentGroup.indices.includes(index);
+            if (!isVisible) return null;
+            return (
+              <button
+                key={section.id}
+                ref={(element) => { tabRefs.current[index] = element; }}
+                type="button"
+                onClick={() => scrollToSection(index)}
+                className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors ${
+                  activeIndex === index
+                    ? "bg-[#e4f2e9] text-[#246b5d] font-semibold"
+                    : "text-slate-500 hover:bg-[#f7f3eb] hover:text-slate-800"
+                }`}
+              >
+                {section.title}
+              </button>
+            );
+          })}
         </nav>
       </div>
 

@@ -75,11 +75,11 @@ body {
 .space-theme {
   position: relative;
   isolation: isolate;
+  background: transparent !important;
 }
-.space-theme > .space-page-stars { z-index: -1; opacity: .42; }
 .app-shell:not(.theme-light) .space-theme {
   color: #f5f5f5;
-  background-color: #080808 !important;
+  background-color: transparent !important;
   background-image: none !important;
 }
 .app-shell:not(.theme-light) .space-theme :is(h1, h2, h3, h4, h5, h6) { color: #f7f7f7 !important; }
@@ -129,11 +129,55 @@ body {
 .app-shell:not(.theme-light) .space-theme input:focus,
 .app-shell:not(.theme-light) .space-theme select:focus,
 .app-shell:not(.theme-light) .space-theme textarea:focus { border-color: var(--brand-accent) !important; --tw-ring-color: rgba(217, 156, 197, .24) !important; }
-.app-shell:not(.theme-light) .space-theme button[class*="bg-[#216b5c]"],
-.app-shell:not(.theme-light) .space-theme button[class*="bg-[#246b5d]"] {
-  background: var(--brand-action) !important;
-  color: #fff !important;
-  box-shadow: 0 8px 24px rgba(154, 90, 130, .24);
+/* Primary action buttons in space-theme (Talent Check, Workspace tabs, etc.) - Solid Pink, No Emerald */
+:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#216b5c]"],
+:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#246b5d]"],
+.dark .space-theme :is(button, a)[class*="bg-[#216b5c]"],
+.dark .space-theme :is(button, a)[class*="bg-[#246b5d]"],
+.app-shell:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#216b5c]"],
+.app-shell:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#246b5d]"] {
+  background: #D99CC5 !important;
+  background-color: #D99CC5 !important;
+  color: #0b0e17 !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#216b5c]"]:hover,
+:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#246b5d]"]:hover,
+.dark .space-theme :is(button, a)[class*="bg-[#216b5c]"]:hover,
+.dark .space-theme :is(button, a)[class*="bg-[#246b5d]"]:hover,
+.app-shell:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#216b5c]"]:hover,
+.app-shell:not(.theme-light) .space-theme :is(button, a)[class*="bg-[#246b5d]"]:hover {
+  background: #e6b2d5 !important;
+  background-color: #e6b2d5 !important;
+  color: #0b0e17 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.theme-light .space-theme :is(button, a)[class*="bg-[#216b5c]"],
+.theme-light .space-theme :is(button, a)[class*="bg-[#246b5d]"],
+.app-shell.theme-light .space-theme :is(button, a)[class*="bg-[#216b5c]"],
+.app-shell.theme-light .space-theme :is(button, a)[class*="bg-[#246b5d]"] {
+  background: #9A5A82 !important;
+  background-color: #9A5A82 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.theme-light .space-theme :is(button, a)[class*="bg-[#216b5c]"]:hover,
+.theme-light .space-theme :is(button, a)[class*="bg-[#246b5d]"]:hover,
+.app-shell.theme-light .space-theme :is(button, a)[class*="bg-[#216b5c]"]:hover,
+.app-shell.theme-light .space-theme :is(button, a)[class*="bg-[#246b5d]"]:hover {
+  background: #87496E !important;
+  background-color: #87496E !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 .app-shell:not(.theme-light) .space-theme button[class*="bg-[#e4f2e9]"],
 .app-shell:not(.theme-light) .space-theme button[class*="bg-white"],
@@ -187,8 +231,10 @@ button, input, select { font: inherit; }
 .portal-cosmos article > div > div:first-child > div > span.rounded-full.border { border-color: #424b58; background: #222a35; color: #d4dbe6; }
 .portal-cosmos .text-slate-900 { color: #e8edf5; }
 .portal-home .company-card, .portal-home article > div { transition: border-color .25s ease, box-shadow .25s ease; }
-.portal-home article > div { border-color: #29313b; background: #10151d; box-shadow: 0 12px 34px rgba(0, 0, 0, .24); }
-.portal-home article:hover > div { border-color: #495465; box-shadow: 0 18px 45px rgba(0, 0, 0, .4); }
+.portal-home:not(.theme-light) article > div { border-color: #29313b; background: #10151d; box-shadow: 0 12px 34px rgba(0, 0, 0, .24); }
+.portal-home:not(.theme-light) article:hover > div { border-color: #D99CC5; box-shadow: 0 18px 45px rgba(0, 0, 0, .4); }
+.portal-home.theme-light article > div { border-color: #e5dcd1; background: #ffffff; box-shadow: 0 10px 30px rgba(0, 0, 0, .05); }
+.portal-home.theme-light article:hover > div { border-color: #9A5A82; box-shadow: 0 16px 36px rgba(154, 90, 130, .14); }
 .portal-home button { transition-property: transform, box-shadow, background-color, color, border-color; transition-duration: 140ms; transition-timing-function: cubic-bezier(.2,.8,.2,1); }
 .portal-home button:hover:not(:disabled) { transform: translateY(-1px); }
 .portal-home button:active:not(:disabled) { transform: translateY(0) scale(.965); transition-duration: 75ms; }
@@ -266,7 +312,7 @@ button, input, select { font: inherit; }
 .app-shell.theme-light .app-route-content { color: #26354b; }
 .app-shell.theme-light .space-theme {
   color: #26354b !important;
-  background: #f7f8f5 !important;
+  background: transparent !important;
   background-image: none !important;
 }
 .app-shell.theme-light .space-theme :is(h1,h2,h3,h4,h5,h6) { color: #26354b !important; }
@@ -300,10 +346,20 @@ button, input, select { font: inherit; }
 .app-shell.theme-light .space-theme .border-l { border-color: #e0e5df !important; }
 .app-shell.theme-light .space-theme th { color: #364943 !important; }
 .app-shell.theme-light .space-theme button[class*="bg-[#216b5c]"],
-.app-shell.theme-light .space-theme button[class*="bg-[#246b5d]"] { background: #216b5c !important; color: #fff !important; }
-.app-shell.theme-light .space-theme .space-page-stars { display: none !important; }
+.app-shell.theme-light .space-theme button[class*="bg-[#246b5d]"] { background: #9A5A82 !important; color: #fff !important; }
 
-.portal-home.theme-light { background: #f7f8f5 !important; color: #26354b; }
+/* Keep buttons solid and elevated so stars drift behind them and never shine through button text */
+button,
+[role="button"],
+.brand-primary-button,
+.brand-secondary-button,
+.brand-nav-cta {
+  position: relative;
+  z-index: 10;
+}
+.brand-primary-button { background-color: #9A5A82; color: #fff; }
+
+.portal-home.theme-light { background: transparent !important; color: #26354b; }
 .portal-home.theme-light .portal-hero { background: #f7f8f5; color: #26354b; }
 .portal-home.theme-light .portal-hero::before {
   background: radial-gradient(ellipse at 72% 38%, rgba(52,129,105,.12), transparent 43%), linear-gradient(135deg,#f8faf8,#edf2ee);
@@ -311,7 +367,7 @@ button, input, select { font: inherit; }
 .portal-home.theme-light .portal-hero::after { background: linear-gradient(to bottom,transparent,#f7f8f5); }
 .portal-home.theme-light .hero-glow { background: radial-gradient(600px circle at var(--pointer-x) var(--pointer-y),rgba(33,107,92,.08),transparent 68%); }
 .portal-home.theme-light .portal-hero h1,
-.portal-home.theme-light .portal-hero p { color: #26354b !important; }
+.portal-home.theme-light .portal-hero p:not(.brand-tagline) { color: #26354b !important; }
 .portal-home.theme-light .portal-hero h1 span { color: #216b5c; }
 .portal-home.theme-light .portal-hero [class*="text-white"] { color: #52615d !important; }
 .portal-home.theme-light .portal-hero .border-white\/20 { border-color: #dce3de; }
@@ -369,9 +425,9 @@ button, input, select { font: inherit; }
 .app-shell.theme-light > aside nav a:hover,
 .app-shell.theme-light > aside > div button:hover { background: #f5f5f5; color: #111; }
 .app-shell.theme-light > aside > div { border-color: #e4e4e4 !important; }
-.app-shell [class*="text-[#176d55]"], .app-shell [class*="text-[#216b5c]"], .app-shell [class*="text-[#246b5d]"], .app-shell [class*="text-[#287d68]"] { color: var(--brand-accent) !important; }
-.app-shell [class*="bg-[#216b5c]"], .app-shell [class*="bg-[#246b5d]"] { background-color: var(--brand-action) !important; color: #fff !important; }
-.app-shell [class*="border-[#216b5c]"], .app-shell [class*="border-[#246b5d]"] { border-color: var(--brand-accent) !important; }
+.portal-home [class*="text-[#176d55]"], .portal-home [class*="text-[#216b5c]"], .portal-home [class*="text-[#246b5d]"], .portal-home [class*="text-[#287d68]"] { color: var(--brand-accent) !important; }
+.portal-home [class*="bg-[#216b5c]"], .portal-home [class*="bg-[#246b5d]"] { background-color: var(--brand-action) !important; color: #fff !important; }
+.portal-home [class*="border-[#216b5c]"], .portal-home [class*="border-[#246b5d]"] { border-color: var(--brand-accent) !important; }
 .app-shell :is(button,a,input,select,textarea):focus-visible { outline-color: var(--brand-accent) !important; }
 .app-shell:not(.theme-light) .space-theme {
   color: #f5f5f5 !important;
@@ -430,20 +486,164 @@ button, input, select { font: inherit; }
 .portal-home.theme-light { --brand-accent: #9A5A82; --brand-action: #9A5A82; --brand-accent-hover: #87496E; --home-bg: #fff; --home-surface: #f6f6f6; --home-ink: #111; --home-muted: #666; --home-line: #e5e5e5; color: var(--home-ink); background: var(--home-bg) !important; }
 .portal-home.theme-light main.brand-directory { color: var(--home-ink); background: var(--home-surface) !important; }
 .brand-hero { background: transparent; color: var(--home-ink); }
-.brand-hero-grid { opacity: .18; background-image: linear-gradient(to right, rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.07) 1px, transparent 1px); background-size: 72px 72px; mask-image: radial-gradient(ellipse at center, #000 12%, transparent 78%); }
-.portal-home.theme-light .brand-hero-grid { opacity: .48; background-image: linear-gradient(to right, rgba(0,0,0,.055) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.055) 1px, transparent 1px); }
+.brand-hero-grid { display: none !important; }
 .brand-hero a { color: inherit; text-decoration: none; }
 .brand-hero nav a { color: var(--home-muted); transition: color .18s ease; }
 .brand-hero nav a:hover { color: var(--home-ink); }
-.brand-nav-cta { display: inline-flex; align-items: center; gap: .55rem; border: 1px solid var(--home-line); border-radius: 999px; padding: .7rem 1rem; color: var(--home-ink); font-size: .82rem; font-weight: 650; transition: border-color .18s ease, color .18s ease, background .18s ease; }
-.brand-nav-cta:hover { border-color: var(--brand-accent); color: var(--brand-accent); }
+.brand-hero nav button:not(.brand-nav-cta) {
+  background: transparent;
+  border: none;
+  color: var(--home-ink);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity .18s ease;
+}
+.brand-hero nav button:not(.brand-nav-cta):hover {
+  opacity: .85;
+}
+.brand-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  border-radius: 999px;
+  padding: .65rem 1.15rem;
+  font-size: .82rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: border-color .18s ease, color .18s ease, background-color .18s ease, transform .18s ease;
+}
+/* Dark mode: sleek translucent dark pill matching reference photo */
+:not(.theme-light) .brand-nav-cta,
+.portal-home:not(.theme-light) .brand-nav-cta,
+.dark .brand-nav-cta {
+  background-color: rgba(14, 18, 28, 0.88) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+:not(.theme-light) .brand-nav-cta:hover,
+.portal-home:not(.theme-light) .brand-nav-cta:hover,
+.dark .brand-nav-cta:hover {
+  background-color: rgba(26, 34, 52, 0.95) !important;
+  border-color: rgba(217, 156, 197, 0.75) !important;
+  color: #ffffff !important;
+}
+
+/* Light mode: clean crisp solid pill with clear contrast */
+.theme-light .brand-nav-cta,
+.portal-home.theme-light .brand-nav-cta {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #dce3de !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+.theme-light .brand-nav-cta:hover,
+.portal-home.theme-light .brand-nav-cta:hover {
+  background-color: #f7f9f8 !important;
+  border-color: rgba(154, 90, 130, 0.75) !important;
+  color: #173f35 !important;
+}
 .brand-wordmark { object-fit: contain; }
-.brand-tagline { color: var(--home-muted); }
+.brand-tagline,
+.brand-hero .brand-tagline,
+.portal-home .brand-tagline {
+  color: var(--brand-accent) !important;
+  font-weight: 600 !important;
+}
+.portal-home.theme-light .brand-tagline,
+.theme-light .brand-tagline {
+  color: #823863 !important;
+}
+.portal-home:not(.theme-light) .brand-tagline,
+:not(.theme-light) .brand-hero .brand-tagline,
+.dark .brand-tagline {
+  color: #D99CC5 !important;
+}
 .brand-hero-copy { color: var(--home-muted); }
-.brand-primary-button { background: var(--brand-action) !important; color: white !important; box-shadow: 0 8px 30px rgba(154,90,130,.22); }
-.brand-primary-button:hover { background: var(--brand-accent-hover) !important; transform: translateY(-1px); }
-.brand-secondary-button { border-color: var(--home-line) !important; background: transparent !important; color: var(--home-ink) !important; }
-.brand-secondary-button:hover { border-color: var(--brand-accent) !important; color: var(--brand-accent) !important; }
+/* "Explore company intelligence" primary button */
+.brand-primary-button {
+  background: var(--brand-action) !important;
+  color: white !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Dark mode: flat brand pink surface, no glow, no elevation */
+:not(.theme-light) .brand-hero .brand-primary-button,
+.portal-home:not(.theme-light) .brand-primary-button,
+.dark .brand-hero .brand-primary-button,
+.dark .brand-primary-button {
+  background: #D99CC5 !important;
+  background-color: #D99CC5 !important;
+  color: #0b0e17 !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  border: none !important;
+  transform: none !important;
+}
+:not(.theme-light) .brand-hero .brand-primary-button:hover,
+.portal-home:not(.theme-light) .brand-primary-button:hover,
+.dark .brand-hero .brand-primary-button:hover,
+.dark .brand-primary-button:hover {
+  background: #e6b2d5 !important;
+  background-color: #e6b2d5 !important;
+  color: #05070c !important;
+  box-shadow: none !important;
+  border: none !important;
+  transform: none !important;
+}
+
+/* Light mode: maintains existing rich pink surface with white text, no glow, no elevation */
+.theme-light .brand-primary-button,
+.portal-home.theme-light .brand-primary-button {
+  background: var(--brand-action) !important;
+  background-color: var(--brand-action) !important;
+  color: white !important;
+  box-shadow: none !important;
+  border: none !important;
+  transform: none !important;
+}
+.theme-light .brand-primary-button:hover,
+.portal-home.theme-light .brand-primary-button:hover {
+  background: var(--brand-accent-hover) !important;
+  background-color: var(--brand-accent-hover) !important;
+  color: white !important;
+  box-shadow: none !important;
+  border: none !important;
+  transform: none !important;
+}
+/* Theme-aware secondary action button */
+:not(.theme-light) .brand-secondary-button,
+.portal-home:not(.theme-light) .brand-secondary-button,
+.dark .brand-secondary-button {
+  background-color: rgba(14, 18, 28, 0.88) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+:not(.theme-light) .brand-secondary-button:hover,
+.portal-home:not(.theme-light) .brand-secondary-button:hover,
+.dark .brand-secondary-button:hover {
+  border-color: var(--brand-accent) !important;
+  color: var(--brand-accent) !important;
+  background-color: rgba(26, 34, 52, 0.95) !important;
+}
+.theme-light .brand-secondary-button,
+.portal-home.theme-light .brand-secondary-button {
+  background-color: #fffdf8 !important;
+  color: #1e293b !important;
+  border: 1px solid #ddd5c8 !important;
+}
+.theme-light .brand-secondary-button:hover,
+.portal-home.theme-light .brand-secondary-button:hover {
+  border-color: var(--brand-action) !important;
+  color: var(--brand-action) !important;
+  background-color: #f5f2eb !important;
+}
 .brand-proofline { color: var(--home-muted); }
 .brand-proofline strong { color: var(--home-ink); font-weight: 700; }
 .brand-proofline i { width: 4px; height: 4px; border-radius: 50%; background: var(--brand-accent); }
@@ -461,6 +661,42 @@ button, input, select { font: inherit; }
 .brand-workflow-band { border: 1px solid var(--home-line); background: var(--home-surface); }
 .brand-band-button { border-color: var(--home-line) !important; color: var(--home-ink) !important; background: transparent !important; }
 .brand-band-button:hover { border-color: var(--brand-accent) !important; color: var(--brand-accent) !important; }
+
+/* Subtle pink border on hover for all buttons across the application (except sidebar and bottom bar) */
+button:not(aside *, .brand-sidebar *, footer *, .brand-footer *, .brand-hero nav button:not(.brand-nav-cta)):not([class*="border"]):not([class*="outline"]),
+[role="button"]:not(aside *, .brand-sidebar *, footer *, .brand-footer *):not([class*="border"]):not([class*="outline"]) {
+  border: 1px solid transparent;
+}
+
+:not(.theme-light) button:not(aside *, .brand-sidebar *, footer *, .brand-footer *, .brand-hero nav button:not(.brand-nav-cta)):hover,
+:not(.theme-light) [role="button"]:not(aside *, .brand-sidebar *, footer *, .brand-footer *):hover,
+.dark button:not(aside *, .brand-sidebar *, footer *, .brand-footer *, .brand-hero nav button:not(.brand-nav-cta)):hover,
+.dark [role="button"]:not(aside *, .brand-sidebar *, footer *, .brand-footer *):hover,
+.portal-home:not(.theme-light) button:not(aside *, .brand-sidebar *, footer *, .brand-footer *, .brand-hero nav button:not(.brand-nav-cta)):hover {
+  border-color: rgba(217, 156, 197, 0.75) !important;
+}
+
+.theme-light button:not(aside *, .brand-sidebar *, footer *, .brand-footer *, .brand-hero nav button:not(.brand-nav-cta)):hover,
+.theme-light [role="button"]:not(aside *, .brand-sidebar *, footer *, .brand-footer *):hover,
+.portal-home.theme-light button:not(aside *, .brand-sidebar *, footer *, .brand-footer *, .brand-hero nav button:not(.brand-nav-cta)):hover {
+  border-color: rgba(154, 90, 130, 0.75) !important;
+}
+
+/* Explicit exclusion safeguard for sidebar and bottom bar buttons */
+aside button:hover,
+aside [role="button"]:hover,
+aside a:hover,
+.brand-sidebar button:hover,
+.brand-sidebar [role="button"]:hover,
+.brand-sidebar a:hover,
+footer button:hover,
+footer [role="button"]:hover,
+footer a:hover,
+.brand-footer button:hover,
+.brand-footer [role="button"]:hover,
+.brand-footer a:hover {
+  border-color: inherit;
+}
 .brand-directory { color: var(--home-ink); background: var(--home-surface); }
 .brand-directory-copy { color: var(--home-muted); }
 .brand-count-pill { display: inline-flex; align-items: center; min-height: 2.5rem; border: 1px solid var(--home-line); border-radius: 999px; padding: .25rem .9rem; color: var(--home-muted); font-size: .8rem; font-weight: 600; }
@@ -476,8 +712,22 @@ button, input, select { font: inherit; }
 .brand-compare-bar { border-color: var(--home-line); color: var(--home-ink); background: color-mix(in srgb, var(--home-bg) 94%, transparent); }
 .brand-compare-count { color: #fff; background: var(--brand-action); }
 .brand-compare-chip { border-color: var(--home-line); color: var(--home-ink); background: var(--home-surface); }
-.portal-home article > div { border-color: var(--home-line) !important; background: var(--home-bg) !important; box-shadow: 0 8px 28px rgba(0,0,0,.08) !important; }
-.portal-home article:hover > div { border-color: var(--brand-accent) !important; }
+.portal-home article > div {
+  border-color: var(--home-line) !important;
+  background: var(--home-bg) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,.08) !important;
+  transition: border-color .22s ease, box-shadow .22s ease !important;
+}
+:not(.theme-light) .portal-home article:hover > div,
+.dark .portal-home article:hover > div {
+  border-color: rgba(217, 156, 197, 0.75) !important;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(217, 156, 197, 0.25) !important;
+}
+.portal-home.theme-light article:hover > div,
+.theme-light .portal-home article:hover > div {
+  border-color: rgba(154, 90, 130, 0.75) !important;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(154, 90, 130, 0.25) !important;
+}
 .portal-home:not(.theme-light) article [class*="text-[#26354b]"],
 .portal-home:not(.theme-light) article [class*="text-[#25334a]"],
 .portal-home:not(.theme-light) article [class*="text-[#354b54]"] { color: #f4f4f4 !important; }
@@ -490,6 +740,140 @@ button, input, select { font: inherit; }
 .portal-home article [class*="bg-[#e8f5f8]"] { border-color: var(--home-line) !important; color: var(--home-muted) !important; background: var(--home-surface) !important; }
 .portal-home article [class*="bg-[#dfe7f2]"] { background: var(--brand-action) !important; color: #fff !important; }
 .portal-home article [class*="text-[#cbd7e8]"] { color: var(--home-muted) !important; }
+
+/* Company Directory Compare Button: distinct, high-contrast styling in light and dark mode */
+.company-compare-btn {
+  transition: all 0.2s ease;
+}
+.app-shell.theme-light .company-compare-btn:not([aria-pressed="true"]),
+.theme-light .company-compare-btn:not([aria-pressed="true"]) {
+  background-color: #faf2f7 !important;
+  color: #9A5A82 !important;
+  border: 1px solid #ebd8e6 !important;
+}
+.app-shell.theme-light .company-compare-btn:not([aria-pressed="true"]):hover,
+.theme-light .company-compare-btn:not([aria-pressed="true"]):hover {
+  background-color: #f3e5ef !important;
+  border-color: #9A5A82 !important;
+  color: #87496E !important;
+}
+.app-shell.theme-light .company-compare-btn:not([aria-pressed="true"]) span,
+.theme-light .company-compare-btn:not([aria-pressed="true"]) span {
+  color: #9A5A82 !important;
+}
+.app-shell.theme-light .company-compare-btn:not([aria-pressed="true"]) span:first-child,
+.theme-light .company-compare-btn:not([aria-pressed="true"]) span:first-child {
+  background-color: #f0dceb !important;
+  color: #9A5A82 !important;
+}
+.app-shell.theme-light .company-compare-btn[aria-pressed="true"],
+.theme-light .company-compare-btn[aria-pressed="true"] {
+  background-color: #9A5A82 !important;
+  color: #ffffff !important;
+  border-color: #9A5A82 !important;
+}
+.app-shell.theme-light .company-compare-btn[aria-pressed="true"] *,
+.theme-light .company-compare-btn[aria-pressed="true"] * {
+  color: #ffffff !important;
+}
+
+.app-shell:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]),
+:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]) {
+  background-color: #1a202c !important;
+  color: #D99CC5 !important;
+  border: 1px solid #2f3847 !important;
+}
+.app-shell:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]):hover,
+:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]):hover {
+  background-color: #242c3d !important;
+  border-color: #D99CC5 !important;
+  color: #e4b2d4 !important;
+}
+.app-shell:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]) span,
+:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]) span {
+  color: #D99CC5 !important;
+}
+.app-shell:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]) span:first-child,
+:not(.theme-light) .company-compare-btn:not([aria-pressed="true"]) span:first-child {
+  background-color: #342330 !important;
+  color: #D99CC5 !important;
+}
+.app-shell:not(.theme-light) .company-compare-btn[aria-pressed="true"],
+:not(.theme-light) .company-compare-btn[aria-pressed="true"] {
+  background-color: #D99CC5 !important;
+  color: #0b0e17 !important;
+  border-color: #D99CC5 !important;
+}
+.app-shell:not(.theme-light) .company-compare-btn[aria-pressed="true"] *,
+:not(.theme-light) .company-compare-btn[aria-pressed="true"] * {
+  color: #0b0e17 !important;
+}
+
+/* View profile button in light and dark mode */
+.app-shell.theme-light .company-view-profile-btn,
+.theme-light .company-view-profile-btn {
+  color: #334155 !important;
+}
+.app-shell.theme-light .company-view-profile-btn:hover,
+.theme-light .company-view-profile-btn:hover {
+  background-color: #faf2f7 !important;
+  color: #9A5A82 !important;
+}
+.app-shell:not(.theme-light) .company-view-profile-btn,
+:not(.theme-light) .company-view-profile-btn {
+  color: #cbd7e8 !important;
+}
+.app-shell:not(.theme-light) .company-view-profile-btn:hover,
+:not(.theme-light) .company-view-profile-btn:hover {
+  background-color: #202630 !important;
+  color: #ffffff !important;
+}
+
+/* Company comparison return button: Black in dark mode, White in light mode, Pink text in both */
+.brand-compare-return-btn {
+  transition: all 0.2s ease !important;
+}
+.app-shell.theme-light .brand-compare-return-btn,
+.theme-light .brand-compare-return-btn {
+  background-color: #ffffff !important;
+  color: #9A5A82 !important;
+  border: 1px solid #e5dcd1 !important;
+}
+.app-shell.theme-light .brand-compare-return-btn:hover,
+.theme-light .brand-compare-return-btn:hover {
+  background-color: #faf2f7 !important;
+  border-color: #9A5A82 !important;
+  color: #87496E !important;
+}
+.app-shell.theme-light .brand-compare-return-btn *,
+.theme-light .brand-compare-return-btn * {
+  color: #9A5A82 !important;
+}
+.app-shell.theme-light .brand-compare-return-btn:hover *,
+.theme-light .brand-compare-return-btn:hover * {
+  color: #87496E !important;
+}
+
+.app-shell:not(.theme-light) .brand-compare-return-btn,
+:not(.theme-light) .brand-compare-return-btn {
+  background-color: #050505 !important;
+  color: #D99CC5 !important;
+  border: 1px solid #29313b !important;
+}
+.app-shell:not(.theme-light) .brand-compare-return-btn:hover,
+:not(.theme-light) .brand-compare-return-btn:hover {
+  background-color: #121212 !important;
+  border-color: #D99CC5 !important;
+  color: #e4b2d4 !important;
+}
+.app-shell:not(.theme-light) .brand-compare-return-btn *,
+:not(.theme-light) .brand-compare-return-btn * {
+  color: #D99CC5 !important;
+}
+.app-shell:not(.theme-light) .brand-compare-return-btn:hover *,
+:not(.theme-light) .brand-compare-return-btn:hover * {
+  color: #e4b2d4 !important;
+}
 .app-shell button[class*="bg-[#216b5c]"]:hover,
 .app-shell button[class*="bg-[#246b5d]"]:hover { background: var(--brand-accent-hover) !important; }
 .app-shell.theme-light .space-theme button[class*="bg-[#216b5c]"],
@@ -512,28 +896,28 @@ button, input, select { font: inherit; }
 .app-shell.theme-light .space-theme :is([class*="border-[#dbe9dd]"],[class*="border-[#e9e1d5]"],[class*="border-[#ded7ca]"],[class*="border-[#d9d2c5]"],[class*="border-[#f0dfb2]"],[class*="border-[#f0d8d2]"]) { border-color: #e4e4e4 !important; }
 
 /* Theme boundary: normalize legacy feature colors to the active brand palette. */
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="bg-[#"],
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]) {
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="bg-[#"]:not(button):not([class*="bg-[#246b5d]"]):not([class*="bg-[#216b5c]"]):not([class*="bg-[#1b5549]"]):not([class*="bg-[#185546]"]):not(.brand-primary-button),
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]):not(button):not(.brand-primary-button) {
   background-color: #171717 !important;
   color: #ededed !important;
   border-color: #303030 !important;
 }
-.app-shell.theme-light :is(.space-theme, .portal-home) [class*="bg-[#"],
-.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]) {
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="bg-[#"]:not(button):not([class*="bg-[#246b5d]"]):not([class*="bg-[#216b5c]"]):not([class*="bg-[#1b5549]"]):not([class*="bg-[#185546]"]):not(.brand-primary-button),
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]):not(button):not(.brand-primary-button) {
   background-color: #f4f4f4 !important;
   color: #262626 !important;
   border-color: #e2e2e2 !important;
 }
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="text-[#"] { color: #ededed !important; }
-.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-[#"] { color: #262626 !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="text-[#"]:not([class*="text-[#9A5A82]"]):not([class*="text-[#D99CC5]"]):not(.company-compare-btn):not(.company-compare-btn *):not(.brand-compare-return-btn):not(.brand-compare-return-btn *) { color: #ededed !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-[#"]:not([class*="text-[#9A5A82]"]):not([class*="text-[#D99CC5]"]):not(.company-compare-btn):not(.company-compare-btn *):not(.brand-compare-return-btn):not(.brand-compare-return-btn *) { color: #262626 !important; }
 .app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="border-[#"], [class*="border-red-"], [class*="border-amber-"], [class*="border-green-"], [class*="border-slate-"]) { border-color: #303030 !important; }
 .app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="border-[#"], [class*="border-red-"], [class*="border-amber-"], [class*="border-green-"], [class*="border-slate-"]) { border-color: #e2e2e2 !important; }
 .app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-red-"], [class*="text-amber-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-purple-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-yellow-"], [class*="text-teal-"], [class*="text-cyan-"], [class*="text-emerald-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-pink-"], [class*="text-lime-"], [class*="text-sky-"], [class*="text-fuchsia-"]) { color: #ededed !important; }
 .app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-red-"], [class*="text-amber-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-purple-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-yellow-"], [class*="text-teal-"], [class*="text-cyan-"], [class*="text-emerald-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-pink-"], [class*="text-lime-"], [class*="text-sky-"], [class*="text-fuchsia-"]) { color: #262626 !important; }
-.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-white"] { color: #262626 !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-white"]:not(.company-compare-btn[aria-pressed="true"]):not(.company-compare-btn[aria-pressed="true"] *):not(.brand-primary-button):not(button[class*="bg-[#246b5d]"]):not(button[class*="bg-[#216b5c]"]):not(button[class*="bg-[#185546]"]):not(button[class*="bg-[#1b5549]"]) { color: #262626 !important; }
 .app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"]) { color: var(--brand-accent) !important; }
 .app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"]) { color: var(--brand-accent) !important; }
-.app-shell :is(.space-theme, .portal-home) button:is([class*="bg-[#216b5c]"], [class*="bg-[#246b5d]"]) { background: var(--brand-action) !important; color: #fff !important; }
+.portal-home button:is([class*="bg-[#216b5c]"], [class*="bg-[#246b5d]"]):not(.brand-primary-button) { background: var(--brand-action) !important; color: #fff !important; }
 .app-shell :is(.space-theme, .portal-home) [class*="bg-[#dfe7f2]"] { background: var(--brand-action) !important; color: #fff !important; }
 .app-shell :is(.space-theme, .portal-home) :is([class*="ring-[#"], [class*="ring-sky"]) { --tw-ring-color: var(--brand-accent) !important; }
 .app-shell.theme-light :is(.space-theme, .portal-home) button:is([class*="bg-[#185546]"], [class*="bg-[#1b5549]"]):not(:disabled) { background: var(--brand-accent-hover) !important; color: #fff !important; }
@@ -545,7 +929,6 @@ button, input, select { font: inherit; }
 .app-shell.theme-light :is(.space-theme, .portal-home) button:is([class*="bg-[#216b5c]"], [class*="bg-[#246b5d]"], [class*="bg-[#185546]"], [class*="bg-[#1b5549]"]) { color: #fff !important; }
 @media (max-width: 640px) {
   .brand-hero { min-height: max(720px, 100svh); }
-  .brand-hero-grid { background-size: 48px 48px; }
   .brand-pathway-card { min-height: auto; }
 }
 
@@ -553,11 +936,23 @@ button, input, select { font: inherit; }
 .brand-sidebar-header { gap: .5rem; }
 .brand-sidebar-header[data-collapsed="true"] { gap: 0; }
 .brand-sidebar-home { transition: flex-basis .28s cubic-bezier(.22,1,.36,1), width .28s cubic-bezier(.22,1,.36,1); }
-.brand-sidebar-logo { position: relative; display: flex; width: 100%; height: 44px; flex: 0 0 auto; align-items: center; justify-content: center; overflow: hidden; transition: width .28s cubic-bezier(.22,1,.36,1), height .28s cubic-bezier(.22,1,.36,1); }
+.brand-sidebar-logo { position: relative; display: flex; width: 100%; height: 36px; flex: 0 0 auto; align-items: center; justify-content: flex-start; overflow: hidden; transition: width .28s cubic-bezier(.22,1,.36,1), height .28s cubic-bezier(.22,1,.36,1); }
 .brand-sidebar-wordmark, .brand-sidebar-bolt { position: absolute; display: block; object-fit: contain; transition: opacity .2s ease, transform .28s cubic-bezier(.22,1,.36,1); }
-.brand-sidebar-wordmark { inset: 0; width: 100%; height: 100%; opacity: 1; transform: scale(1); }
+.brand-sidebar-wordmark { inset: 0; width: 100%; height: 100%; object-position: left center; opacity: 1; transform: scale(1); }
 .brand-sidebar-bolt { width: 30px; height: 30px; opacity: 0; transform: scale(.58); transition-delay: 0s; }
-.brand-sidebar-caption { max-height: 16px; overflow: hidden; opacity: 1; transform: translateY(0); transition: max-height .2s ease, margin .2s ease, opacity .16s ease, transform .2s ease; }
+.brand-sidebar-caption {
+  color: var(--brand-accent) !important;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  max-height: 20px;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height .2s ease, margin .2s ease, opacity .16s ease, transform .2s ease;
+}
 .brand-sidebar-toggle { flex: 0 0 auto; }
 @media (min-width: 1024px) {
   .brand-sidebar-logo[data-collapsed="true"] { width: 24px; height: 30px; }

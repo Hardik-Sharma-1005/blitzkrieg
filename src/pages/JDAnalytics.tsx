@@ -101,10 +101,10 @@ export function JDAnalytics() {
 
 
   return (
-    <div className="space-theme min-h-screen bg-[#fbf8f1]">
+    <div className="space-theme min-h-screen bg-transparent">
       <header className="border-b border-[#e9e1d5] bg-[#fffdf8]">
         <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 sm:px-8">
-          <Link to="/companies" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#216b5c]"><ArrowLeft className="h-4 w-4" /> Back to company directory</Link>
+          <Link to="/companies" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#216b5c]"><ArrowLeft className="h-4 w-4" /> Company Directory</Link>
           <BrandLogo className="h-auto w-32" />
         </div>
       </header>

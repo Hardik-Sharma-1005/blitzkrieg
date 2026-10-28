@@ -138,8 +138,8 @@ export function SkillMatch() {
 
   const startOver = () => { setResumeFile(null); setJdFile(null); setResume(null); setJob(null); setReport(null); setError(""); };
 
-  return <div className="space-theme min-h-screen bg-[#fbf8f1]">
-    <header className="border-b border-[#e9e1d5] bg-[#fffdf8]"><div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 sm:px-8"><Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#216b5c]"><ArrowLeft className="h-4 w-4" /> Back to blitzkrieg!</Link><BrandLogo className="h-auto w-32" /></div></header>
+  return <div className="space-theme min-h-screen bg-transparent">
+    <header className="border-b border-[#e9e1d5] bg-[#fffdf8]"><div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 sm:px-8"><Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#216b5c]"><ArrowLeft className="h-4 w-4" /> Back to blitzkrieg</Link><BrandLogo className="h-auto w-32" /></div></header>
     <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
       <div className="max-w-3xl"><p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#246b5d]"><Sparkles className="h-3.5 w-3.5" /> RESUME-TO-JOB MATCHING</p><h1 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-[#26354b] sm:text-4xl">See how your resume lines up with a job.</h1><p className="mt-3 text-base leading-7 text-slate-600">Upload your resume and a job description. We’ll extract both with AI, then show the job requirements supported by evidence in your resume.</p></div>
       <div className="mt-8 grid gap-5 lg:grid-cols-2">

@@ -56,7 +56,7 @@ export function CompanyDirectory() {
   const chooseCompany = (company: (typeof companies)[number]) => { selectCompany(company); navigate("/company/intelligence"); };
 
   return (
-    <div className={`portal-home min-h-screen ${theme === "light" ? "theme-light" : ""}`}>
+    <div className={`portal-home min-h-screen bg-transparent ${theme === "light" ? "theme-light" : ""}`}>
       <header className="brand-directory-top px-5 py-6 sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-4">
           <Link to="/" className="brand-nav-cta"><ArrowLeft className="h-4 w-4" /> Back to home</Link>
@@ -107,12 +107,6 @@ export function CompanyDirectory() {
           ) : (
             <div className="brand-empty-state"><span className="brand-empty-icon"><Building2 className="h-6 w-6" /></span><h2>No matching companies</h2><p>Try a different search or industry, or clear the filters.</p><Button variant="soft" className="mt-5" onClick={clearFilters}>Clear filters <ArrowRight className="h-4 w-4" /></Button></div>
           )}
-
-          <div className={`brand-footer mt-12 border-t pt-6 text-center text-xs ${compareCompanies.length ? "pb-28 sm:pb-20" : ""}`}>
-            <BrandLogo className="mx-auto h-auto w-36 opacity-70" />
-            <p className="mt-3">An exclusive career platform for JSS University, Noida</p>
-            <p className="mt-2">Company benchmarks are preparation signals, not hiring decisions.</p>
-          </div>
         </div>
       </main>
 

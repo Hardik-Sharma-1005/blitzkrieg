@@ -26,7 +26,6 @@ export function Index() {
     <div className={`portal-home relative isolate min-h-screen ${theme === "light" ? "theme-light" : ""}`}>
       <InteractiveCosmos variant="starfield" tone={theme} className="z-0" />
       <header className="brand-hero relative z-10 isolate flex min-h-[min(900px,100svh)] flex-col overflow-hidden px-5 pb-8 pt-7 text-center sm:px-8 sm:pt-9">
-        <div aria-hidden="true" className="brand-hero-grid pointer-events-none absolute inset-0" />
         <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-end">
           <nav className="hidden items-center gap-7 text-sm font-medium md:flex" aria-label="Quick links">
             <a href="#platform">How it works</a>
@@ -38,15 +37,28 @@ export function Index() {
 
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center pb-8 pt-6 sm:pt-0">
           <motion.div {...reveal(.05)} className="brand-lockup">
-            <h1 className="sr-only">blitzkrieg!</h1>
+            <h1 className="sr-only">blitzkrieg</h1>
             <BrandLogo className="brand-wordmark mx-auto h-auto w-[min(82vw,570px)]" />
-            <p className="brand-tagline mt-5 text-sm font-medium tracking-[.035em] sm:mt-6 sm:text-base">not your average placement platform</p>
+            <p
+              className="brand-tagline mt-5 text-sm font-semibold tracking-[.035em] sm:mt-6 sm:text-base"
+              style={{ color: theme === "light" ? "#823863" : "#D99CC5" }}
+            >
+              not your average placement platform
+            </p>
           </motion.div>
           <motion.p {...reveal(.18)} className="brand-hero-copy mx-auto mt-8 max-w-2xl text-base leading-7 sm:mt-9 sm:text-lg sm:leading-8">
             Know the companies. Understand the skills. Make your next move with evidence.
           </motion.p>
           <motion.div {...reveal(.28)} className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <Button onClick={() => navigate("/companies")} className="brand-primary-button min-h-12 rounded-full px-5">
+            <Button
+              onClick={() => navigate("/companies")}
+              style={{
+                backgroundColor: theme === "light" ? "#9A5A82" : "#D99CC5",
+                color: theme === "light" ? "#ffffff" : "#0b0e17",
+                boxShadow: "none",
+              }}
+              className="brand-primary-button min-h-12 rounded-full px-5"
+            >
               Explore company intelligence <ArrowRight className="h-4 w-4" />
             </Button>
             <Button variant="outline" onClick={() => navigate("/talent-check")} className="brand-secondary-button min-h-12 rounded-full px-5">

@@ -1,7 +1,32 @@
 import { useEffect, useRef } from "react";
 
-type InteractiveCosmosProps = { variant: "constellation" | "starfield"; className?: string; tone?: "light" | "dark"; particlesOnly?: boolean };
-type Star = { x: number; y: number; depth: number; radius: number; phase: number; speed: number; alpha: number; hue: number; driftX: number; driftY: number; flowX: number; flowY: number; originX: number; originY: number; introDelay: number };
+type InteractiveCosmosProps = {
+  variant: "constellation" | "starfield";
+  className?: string;
+  tone?: "light" | "dark";
+  particlesOnly?: boolean;
+};
+
+type Star = {
+  x: number;
+  y: number;
+  depth: number;
+  radius: number;
+  phase: number;
+  speed: number;
+  alpha: number;
+  hue: number;
+  driftX: number;
+  driftY: number;
+  flowX: number;
+  flowY: number;
+  originX: number;
+  originY: number;
+  introDelay: number;
+};
+
+const LIGHT_STAR_PALETTE = ["#246b5d", "#1d584c", "#273e57", "#395270", "#9b742a"];
+const DARK_STAR_PALETTE = ["#67e8f9", "#bae6fd", "#e0e7ff", "#f5d0fe", "#ffffff"];
 
 /** High-DPI space particles that pick up a soft directional drift from pointer movement. */
 export function InteractiveCosmos({ variant, className = "", tone = "dark", particlesOnly = false }: InteractiveCosmosProps) {
@@ -27,40 +52,49 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
     const hues = [210, 210, 210, 210, 210, 165];
 
     const onPointerMove = (event: PointerEvent) => {
-      const bounds = parent.getBoundingClientRect();
+      const bounds = canvas.getBoundingClientRect();
       pointer.x = event.clientX - bounds.left;
       pointer.y = event.clientY - bounds.top;
       if (previousPointer.x >= 0) {
-        pointer.vx = Math.max(-42, Math.min(42, pointer.x - previousPointer.x));
-        pointer.vy = Math.max(-42, Math.min(42, pointer.y - previousPointer.y));
+        pointer.vx = Math.max(-28, Math.min(28, pointer.x - previousPointer.x));
+        pointer.vy = Math.max(-28, Math.min(28, pointer.y - previousPointer.y));
       }
       previousPointer = { x: pointer.x, y: pointer.y };
     };
+
     const onPointerLeave = () => {
       previousPointer = { x: -1000, y: -1000 };
       pointer.x = -1000;
       pointer.y = -1000;
     };
-    parent.addEventListener("pointermove", onPointerMove, { passive: true });
-    parent.addEventListener("pointerleave", onPointerLeave, { passive: true });
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.addEventListener("pointerleave", onPointerLeave, { passive: true });
 
     const resize = () => {
-      const bounds = parent.getBoundingClientRect();
-      width = Math.max(1, bounds.width);
-      height = Math.max(1, bounds.height);
-      // Keep the CSS size and particle count unchanged while limiting the
-      // backing canvas work per frame on high-DPI screens.
+      const isFixed = window.getComputedStyle(canvas).position === "fixed";
+      if (isFixed) {
+        width = Math.max(1, window.innerWidth);
+        height = Math.max(1, window.innerHeight);
+      } else {
+        const bounds = parent.getBoundingClientRect();
+        width = Math.max(1, bounds.width);
+        height = Math.max(1, bounds.height);
+      }
+
       const ratio = variant === "constellation"
         ? Math.min(window.devicePixelRatio || 1, 1.25)
-        : Math.min(window.devicePixelRatio || 1, 2);
+        : Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
+
       const count = variant === "constellation"
-        ? Math.min(620, Math.max(280, Math.round(width * height / 1500)))
-        : Math.min(360, Math.max(120, Math.round(width * height / 3000)));
+        ? Math.min(950, Math.max(450, Math.round(width * height / 950)))
+        : Math.min(750, Math.max(300, Math.round(width * height / 1400)));
+
       let seed = variant === "constellation" ? 60817 : 96241;
       const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
       iconScale = Math.min(width * .24, height * .44);
@@ -81,6 +115,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           py = y;
         }
       };
+
       // Rounded terminal frame.
       addStroke(-.56, -.72, .56, -.72, .045);
       addStroke(.72, -.56, .72, .56, .045);
@@ -90,12 +125,14 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
       addRoundedCorner(.56, .56, 0);
       addRoundedCorner(-.56, .56, Math.PI / 2);
       addRoundedCorner(-.56, -.56, Math.PI);
+
       // Terminal prompt and cursor line.
       addStroke(-.36, -.34, -.04, -.04, .052);
       addStroke(-.04, -.04, -.36, .27, .052);
       addStroke(.10, .31, .43, .31, .052);
       const strokeWeights = strokes.map((stroke) => Math.hypot(stroke.x2 - stroke.x1, stroke.y2 - stroke.y1));
       const totalStrokeWeight = strokeWeights.reduce((sum, length) => sum + length, 0);
+
       stars = Array.from({ length: count }, () => {
         const entryAngle = random() * Math.PI * 2;
         const rayX = Math.cos(entryAngle);
@@ -104,10 +141,23 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           width / 2 / Math.max(Math.abs(rayX), .001),
           height / 2 / Math.max(Math.abs(rayY), .001),
         );
+        const sizeRoll = random();
+        let starRadius: number;
+        if (sizeRoll > 0.965) {
+          // ~3.5% noticeable prominent stars (distinct, sparkling focal stars)
+          starRadius = 2.4 + random() * 0.9;
+        } else if (sizeRoll > 0.86) {
+          // ~10.5% medium-large stars
+          starRadius = 1.55 + random() * 0.65;
+        } else {
+          // ~86% fine ambient stardust
+          starRadius = 0.35 + random() * 1.05;
+        }
+
         const particle: Star = {
           x: random() * width, y: random() * height,
           depth: (random() - .5) * .24,
-          radius: .35 + random() * 1.05, phase: random() * Math.PI * 2,
+          radius: starRadius, phase: random() * Math.PI * 2,
           speed: .003 + random() * .012, alpha: .2 + random() * .6,
           hue: 210,
           driftX: 0, driftY: 0, flowX: 0, flowY: 0,
@@ -137,7 +187,6 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
         }
         return particle;
       });
-
     };
 
     const particleBatches = hues.flatMap((hue, hueIndex) => Array.from({ length: 12 }, (_, index) => ({
@@ -167,10 +216,10 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
             backdrop.addColorStop(.52, "rgba(128, 92, 178, .08)");
             backdrop.addColorStop(1, "rgba(43, 112, 160, .10)");
             starGradient = context.createLinearGradient(0, height, width, 0);
-            starGradient.addColorStop(0, "#0b29fe");
-            starGradient.addColorStop(.28, "#3569d8");
-            starGradient.addColorStop(.56, "#6353a7");
-            starGradient.addColorStop(.78, "#27345f");
+            starGradient.addColorStop(0, "#246b5d");
+            starGradient.addColorStop(.28, "#2e5b52");
+            starGradient.addColorStop(.56, "#2b3f56");
+            starGradient.addColorStop(.78, "#354e6b");
             starGradient.addColorStop(1, "#17203c");
           } else {
             backdrop.addColorStop(0, "rgba(29, 45, 126, .42)");
@@ -207,9 +256,9 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
       if (variant === "starfield" && pointerX >= 0 && !particlesOnly) {
         const glowRadius = Math.max(154, width * .21);
         const cursorGlow = context.createRadialGradient(pointerX, pointerY, 0, pointerX, pointerY, glowRadius);
-        cursorGlow.addColorStop(0, lightBackground ? "rgba(11, 41, 254, .085)" : "rgba(11, 41, 254, .22)");
-        cursorGlow.addColorStop(.38, lightBackground ? "rgba(80, 105, 255, .045)" : "rgba(105, 126, 255, .10)");
-        cursorGlow.addColorStop(1, "rgba(11, 41, 254, 0)");
+        cursorGlow.addColorStop(0, lightBackground ? "rgba(37, 99, 235, 0.10)" : "rgba(59, 130, 246, 0.24)");
+        cursorGlow.addColorStop(0.38, lightBackground ? "rgba(59, 130, 246, 0.04)" : "rgba(147, 197, 253, 0.10)");
+        cursorGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
         context.fillStyle = cursorGlow;
         context.fillRect(0, 0, width, height);
       }
@@ -236,14 +285,15 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
       const sinY = Math.sin(pointerTiltX + idleTurn);
       const cosX = Math.cos(pointerTiltY);
       const sinX = Math.sin(pointerTiltY);
-      for (const star of stars) {
+
+      const palette = lightBackground ? LIGHT_STAR_PALETTE : DARK_STAR_PALETTE;
+
+      for (let starIndex = 0; starIndex < stars.length; starIndex++) {
+        const star = stars[starIndex];
         let x = star.x;
         let y = star.y;
         if (variant === "constellation") {
-          // Bring each particle in on its own randomized path. The stars form
-          // the constellation as they arrive; no large shape scales in.
           const arrival = reducedMotion ? 1 : Math.max(0, Math.min(1, (now - introStart - star.introDelay) / 5900));
-          // Quintic ease-in-out keeps the particles' starts and finishes soft.
           const easedArrival = arrival < .5
             ? 16 * arrival ** 5
             : 1 - Math.pow(-2 * arrival + 2, 5) / 2;
@@ -258,8 +308,6 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           x += (targetX - x) * easedArrival;
           y += (targetY - y) * easedArrival;
           if (!reducedMotion) {
-            // Gentle per-star orbital drift keeps the constellation alive even
-            // while the pointer is idle, without disturbing its overall shape.
             x += Math.sin(tick * .013 + star.phase) * 2.8;
             y += Math.cos(tick * .011 + star.phase * .83) * 2.8;
           }
@@ -267,48 +315,60 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           x += star.driftX;
           y += star.driftY;
         }
-        let dx = pointerIsActive ? x - pointerX : 0;
-        let dy = pointerIsActive ? y - pointerY : 0;
-        let distance = pointerIsActive ? Math.hypot(dx, dy) : Infinity;
-        const nearby = Math.max(0, 1 - distance / (variant === "constellation" ? 250 : 126));
+
+        const dx = pointerIsActive ? x - pointerX : 0;
+        const dy = pointerIsActive ? y - pointerY : 0;
+        const distance = pointerIsActive ? Math.hypot(dx, dy) : Infinity;
+        const nearby = Math.max(0, 1 - distance / (variant === "constellation" ? 250 : 135));
+
         if (!reducedMotion && nearby > 0) {
           const influence = nearby * nearby;
-          star.flowX = Math.max(-3.5, Math.min(3.5, star.flowX + pointer.vx * influence * .08));
-          star.flowY = Math.max(-3.5, Math.min(3.5, star.flowY + pointer.vy * influence * .08));
+          star.flowX = Math.max(-2.8, Math.min(2.8, star.flowX + pointer.vx * influence * .07));
+          star.flowY = Math.max(-2.8, Math.min(2.8, star.flowY + pointer.vy * influence * .07));
         }
         if (!reducedMotion) {
-          star.driftX = Math.max(-44, Math.min(44, star.driftX + star.flowX));
-          star.driftY = Math.max(-44, Math.min(44, star.driftY + star.flowY));
+          star.driftX = Math.max(-38, Math.min(38, star.driftX + star.flowX));
+          star.driftY = Math.max(-38, Math.min(38, star.driftY + star.flowY));
           star.flowX *= .9;
           star.flowY *= .9;
-          star.driftX *= .995;
-          star.driftY *= .995;
+          star.driftX *= .993;
+          star.driftY *= .993;
         }
-        const shimmer = reducedMotion ? 0 : Math.sin(tick * star.speed * 1.12 + star.phase) * .2;
-        const radius = star.radius + nearby * 1.5;
-        const alpha = Math.min(1, star.alpha + shimmer + nearby * .45);
+
+        const shimmer = reducedMotion ? 0 : Math.sin(tick * star.speed * 1.12 + star.phase) * .16;
+        const radius = star.radius + nearby * 0.75;
+
         if (variant === "constellation") {
-          // Group similarly colored dots into one canvas fill. This preserves
-          // the palette while avoiding a fill and shadow-state change per star.
+          const alpha = Math.min(1, star.alpha + shimmer + nearby * .45);
           const hueIndex = nearby > .2 ? 5 : hues.indexOf(star.hue);
           const bucket = Math.max(1, Math.min(12, Math.round(alpha * 12)));
           particleBatches[hueIndex * 12 + bucket - 1].arcs.push(x, y, radius);
           if (star.radius > 1.55 || nearby > .25) glowStars.push(x, y, radius, hues[hueIndex], alpha);
         } else {
+          const starColor = palette[starIndex % palette.length];
+          const isNoticeable = star.radius > 1.8;
+          const calculatedAlpha = lightBackground
+            ? Math.min(isNoticeable ? 0.6 : 0.42, Math.max(0.12, (star.alpha + shimmer) * (isNoticeable ? 0.58 : 0.44) + nearby * 0.32))
+            : Math.min(isNoticeable ? 0.95 : 0.72, Math.max(0.2, (star.alpha + shimmer) * (isNoticeable ? 0.85 : 0.65) + nearby * 0.35));
+
           context.beginPath();
           context.arc(x, y, radius, 0, Math.PI * 2);
-          context.globalAlpha = alpha;
-          const particleColor = lightBackground ? "#0b29fe" : "#b9efff";
-          context.fillStyle = particlesOnly ? particleColor : nearby > .2 ? (lightBackground ? "#0b29fe" : "#ffffff") : starGradient ?? "#eef2ff";
-          context.shadowBlur = star.radius > 1.55 ? 10 : 0;
-          context.shadowColor = particlesOnly
-            ? (lightBackground ? "rgba(11, 41, 254, .65)" : "rgba(185, 239, 255, .7)")
-            : lightBackground ? "rgba(11, 41, 254, .65)" : "rgba(196, 203, 255, .85)";
+          context.globalAlpha = calculatedAlpha;
+          context.fillStyle = particlesOnly
+            ? starColor
+            : nearby > .2
+            ? (lightBackground ? "#246b5d" : "#ffffff")
+            : starGradient ?? (lightBackground ? "#29415c" : "#eef2ff");
+          context.shadowBlur = isNoticeable
+            ? (lightBackground ? 4 : 8)
+            : (star.radius > 1.35 && nearby > 0.1) ? (lightBackground ? 3 : 5) : 0;
+          context.shadowColor = lightBackground ? "rgba(36, 107, 93, 0.4)" : "rgba(59, 130, 246, 0.7)";
           context.fill();
           context.shadowBlur = 0;
           context.globalAlpha = 1;
         }
       }
+
       for (const batch of particleBatches) {
         context.beginPath();
         for (let index = 0; index < batch.arcs.length; index += 3) {
@@ -321,6 +381,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
         context.fillStyle = batch.color;
         context.fill();
       }
+
       for (let index = 0; index < glowStars.length; index += 5) {
         const x = glowStars[index];
         const y = glowStars[index + 1];
@@ -335,20 +396,30 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
         context.fill();
         context.shadowBlur = 0;
       }
+
       if (!reducedMotion) frame = window.requestAnimationFrame(draw);
     };
 
     const observer = new ResizeObserver(resize);
     observer.observe(parent);
+    window.addEventListener("resize", resize);
     resize();
     draw();
+
     return () => {
       observer.disconnect();
-      parent.removeEventListener("pointermove", onPointerMove);
-      parent.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("resize", resize);
       window.cancelAnimationFrame(frame);
     };
-  }, [variant, tone]);
+  }, [variant, tone, particlesOnly]);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className={`pointer-events-none absolute inset-0 h-full w-full ${className}`} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className={`pointer-events-none ${className.includes("fixed") ? "fixed inset-0 h-screen w-screen" : "absolute inset-0 h-full w-full"} ${className}`}
+    />
+  );
 }
