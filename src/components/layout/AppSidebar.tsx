@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { ArrowLeft, Building2, FileSearch, GitCompareArrows, GraduationCap, Moon, PanelLeftClose, PanelLeftOpen, Sparkles, Sun, X } from "lucide-react";
+import { ArrowLeft, Building2, FileSearch, GitCompareArrows, GraduationCap, History, Moon, PanelLeftClose, PanelLeftOpen, Sparkles, Sun, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useSidebar, useTheme } from "@/components/layout/SidebarContext";
 
@@ -11,6 +11,7 @@ const links = [
   { to: "/jd-analytics", label: "Analyze a JD", icon: FileSearch },
   { to: "/skill-match", label: "Match resume to a job", icon: GitCompareArrows },
   { to: "/talent-check", label: "Talent Check", icon: Sparkles },
+  { to: "/history", label: "History", icon: History },
 ];
 
 export function AppSidebar({ homeOverlay = false }: { homeOverlay?: boolean }) {

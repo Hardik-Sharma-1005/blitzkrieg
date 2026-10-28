@@ -20,6 +20,7 @@ const NotFound = lazy(() => import("@/pages/NotFound").then(({ NotFound }) => ({
 const JDAnalytics = lazy(() => import("@/pages/JDAnalytics").then(({ JDAnalytics }) => ({ default: JDAnalytics })));
 const ResumeProfile = lazy(() => import("@/pages/ResumeProfile").then(({ ResumeProfile }) => ({ default: ResumeProfile })));
 const SkillMatch = lazy(() => import("@/pages/SkillMatch").then(({ SkillMatch }) => ({ default: SkillMatch })));
+const HistoryPage = lazy(() => import("@/pages/History").then(({ History }) => ({ default: History })));
 
 function AppShell() {
   const { theme } = useTheme();
@@ -49,6 +50,7 @@ function AppShell() {
             <Route path="/resume-profile" element={<ResumeProfile />} />
             <Route path="/talent-check" element={<ResumeProfile />} />
             <Route path="/skill-match" element={<SkillMatch />} />
+            <Route path="/history" element={<HistoryPage />} />
             <Route path="/company" element={<AppLayout />}>
               <Route index element={<Navigate to="intelligence" replace />} />
               <Route path="intelligence" element={<CompanyIntelligence />} />

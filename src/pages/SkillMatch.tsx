@@ -1,10 +1,11 @@
-import { useState, type ChangeEvent } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, type ChangeEvent } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { formatActivityFilename, readRecentSnapshot, recordRecentActivity } from "@/lib/recentActivity";
 
 type Skill = { skill_name: string; category_code: string; evidence: string; confidence: "high" | "medium" | "low" };
 type ResumeProfile = { source_type: "resume"; source_file: string; name: string; skills: Skill[]; extraction_mode?: string };
@@ -69,6 +70,7 @@ function EvidenceList({ title, items, status }: { title: string; items: MatchRow
 }
 
 export function SkillMatch() {
+  const location = useLocation();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jdFile, setJdFile] = useState<File | null>(null);
   const [resume, setResume] = useState<ResumeProfile | null>(null);
@@ -76,6 +78,15 @@ export function SkillMatch() {
   const [report, setReport] = useState<MatchReport | null>(null);
   const [busy, setBusy] = useState<"resume" | "jd" | "match" | "">("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
+    const saved = readRecentSnapshot<{ kind: "skill-match"; resume?: ResumeProfile; job?: JobDescription; report?: MatchReport }>(id);
+    if (!saved) return;
+    setResume(saved.resume ?? null);
+    setJob(saved.job ?? null);
+    setReport(saved.report ?? null);
+  }, [location.key, location.state]);
 
   const selectFile = (event: ChangeEvent<HTMLInputElement>, kind: "resume" | "jd") => {
     const file = event.target.files?.[0] ?? null;
@@ -99,6 +110,7 @@ export function SkillMatch() {
       const parsed = await readPayload<ResumeProfile>(response);
       if (!parsed.name || !Array.isArray(parsed.skills)) throw new Error("The resume service returned an unexpected profile.");
       setResume(parsed);
+      recordRecentActivity({ title: formatActivityFilename(parsed.source_file || resumeFile.name), action: "Built a resume profile for matching", path: "/skill-match" }, { kind: "skill-match", resume: parsed });
     } catch (cause) {
       setError(cause instanceof Error && cause.name === "TimeoutError" ? "Resume analysis did not finish within 2 minutes. Please retry." : cause instanceof Error ? cause.message : "We could not read this resume.");
     } finally { setBusy(""); }
@@ -112,6 +124,7 @@ export function SkillMatch() {
       const parsed = await readPayload<JobDescription>(await fetch(`${apiBase}/api/analyze`, { method: "POST", body, signal: AbortSignal.timeout(120_000) }));
       if (!Array.isArray(parsed.skills)) throw new Error("The JD service returned an unexpected result.");
       setJob(parsed);
+      recordRecentActivity({ title: formatActivityFilename(parsed.source_file || jdFile.name), action: "Analyzed a job description", path: "/skill-match" }, { kind: "skill-match", job: parsed });
     } catch (cause) {
       setError(cause instanceof Error && cause.name === "TimeoutError" ? "Job description analysis did not finish within 2 minutes. Please retry." : cause instanceof Error ? cause.message : "We could not read this job description.");
     } finally { setBusy(""); }
@@ -131,6 +144,7 @@ export function SkillMatch() {
       const payload = await readPayload<{ report: MatchReport }>(response);
       if (!payload.report || !Array.isArray(payload.report.matched_skills)) throw new Error("The matcher returned an unexpected report.");
       setReport(payload.report);
+      recordRecentActivity({ title: `${payload.report.company || "Role"} · ${payload.report.role || formatActivityFilename(payload.report.job_source_file)}`, action: "Matched a resume to a job", path: "/skill-match" }, { kind: "skill-match", resume, job, report: payload.report });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "We could not compare the documents.");
     } finally { setBusy(""); }

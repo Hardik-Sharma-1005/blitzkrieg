@@ -1,5 +1,5 @@
-import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -39,6 +39,7 @@ import { Card } from "@/components/ui/card";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useTheme } from "@/components/layout/SidebarContext";
 import { ALL_118_COMPANIES } from "@/data/allCompaniesList";
+import { formatActivityFilename, readRecentSnapshot, recordRecentActivity } from "@/lib/recentActivity";
 
 type Skill = {
   skill_name: string;
@@ -113,6 +114,7 @@ function ProfileSection({ title, items }: { title: string; items: Array<string |
 }
 
 export function ResumeProfile() {
+  const location = useLocation();
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [searchParams] = useSearchParams();
@@ -153,6 +155,18 @@ export function ResumeProfile() {
   const [sprintSolution, setSprintSolution] = useState("");
   const [evaluatingSprint, setEvaluatingSprint] = useState(false);
   const [sprintResult, setSprintResult] = useState<any | null>(null);
+
+  useEffect(() => {
+    const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
+    const saved = readRecentSnapshot<{ kind: "resume-profile" | "talent-check"; profile: CandidateProfile; talentReport?: any; company?: string }>(id);
+    if (!saved?.profile) return;
+    setProfile(saved.profile);
+    setTalentReport(saved.talentReport ?? null);
+    const breakdown = saved.talentReport?.per_skillset_gap_breakdown || saved.talentReport?.skillset_gap;
+    setRadarChartData(Array.isArray(breakdown) ? breakdown.map((item: any) => ({ category: item.category, Candidate: item.candidate_level, CompanyGoal: item.required_level, fullMark: 5 })) : []);
+    if (saved.company) setTargetCompany(saved.company);
+    setViewMode("workspace");
+  }, [location.key, location.state]);
 
   // Automatically reset interactive sessions when target or candidate changes
   const resetInteractiveSessions = () => {
@@ -492,6 +506,7 @@ export function ResumeProfile() {
       }
       const data = await res.json();
       setTalentReport(data.report);
+      recordRecentActivity({ title: formatActivityFilename(profile.source_file), action: `Completed a Talent Check · ${targetCompany}`, path: "/resume-profile" }, { kind: "talent-check", profile, talentReport: data.report, company: targetCompany });
       if (Array.isArray(data.radar_chart_data)) {
         setRadarChartData(data.radar_chart_data);
       } else if (data.report?.per_skillset_gap_breakdown) {
@@ -562,6 +577,7 @@ export function ResumeProfile() {
         throw new Error("The profile service returned an unexpected result. Please try again.");
       }
       setProfile(payload as CandidateProfile);
+      recordRecentActivity({ title: formatActivityFilename((payload as CandidateProfile).source_file || file.name), action: "Built a resume profile", path: "/resume-profile" }, { kind: "resume-profile", profile: payload as CandidateProfile });
       setViewMode("workspace");
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "We could not process this resume.";
