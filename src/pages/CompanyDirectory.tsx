@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Building2, Check, GitCompareArrows, Search, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { CompanyCard } from "@/components/company/CompanyCard";
@@ -17,6 +17,7 @@ export function CompanyDirectory() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState<"name-asc" | "name-desc" | "location">("name-asc");
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme } = useTheme();
   const { selectCompany, compareCompanyIds, toggleCompareCompany } = useCompany();
   const directoryQuery = useQuery({ queryKey: ["company-directory"], queryFn: fetchCompanyDirectory });
@@ -53,7 +54,12 @@ export function CompanyDirectory() {
     }), [companies, debouncedQuery, categoryFilter, sortOrder]);
 
   const clearFilters = () => { setQuery(""); setCategoryFilter("all"); setSortOrder("name-asc"); };
-  const chooseCompany = (company: (typeof companies)[number]) => { selectCompany(company); navigate("/company/intelligence"); };
+  const chooseCompany = (company: (typeof companies)[number]) => {
+    selectCompany(company);
+    const requestedRoute = (location.state as { returnTo?: unknown } | null)?.returnTo;
+    const returnTo = requestedRoute === "/company/skills" || requestedRoute === "/company/intelligence" ? requestedRoute : "/company/intelligence";
+    navigate(returnTo);
+  };
 
   return (
     <div className={`portal-home min-h-screen bg-transparent ${theme === "light" ? "theme-light" : ""}`}>

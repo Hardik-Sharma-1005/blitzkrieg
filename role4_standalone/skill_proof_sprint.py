@@ -35,21 +35,48 @@ Return ONLY a valid JSON object with these exact keys:
         "task": "Propose 2 architectural solutions (e.g., caching layer, async queues) to solve the latency."
     }
 
+
+def generate_profile_sprint_challenge(skill_name: str, category: str, resume_evidence: str = "") -> dict:
+    prompt = f"""
+Create one short applied skill challenge for a student to demonstrate {skill_name} ({category}).
+Use this resume evidence only as context: "{resume_evidence[:700]}".
+Return ONLY a valid JSON object with these exact keys:
+{{"title": "Short title", "scenario": "Brief realistic scenario", "task": "Specific task with a clear expected response"}}
+"""
+    response = call_gemini_api(prompt)
+    try:
+        raw_text = response.strip()
+        if "```" in raw_text:
+            raw_text = raw_text.split("```", 1)[1].replace("json", "", 1).strip().removesuffix("```").strip()
+        data = json.loads(raw_text)
+        if isinstance(data, dict) and all(isinstance(data.get(key), str) and data[key].strip() for key in ("title", "scenario", "task")):
+            return {**data, "category": category, "skill_name": skill_name, "generation_status": "available"}
+    except (ValueError, TypeError, IndexError):
+        pass
+    return {
+        "title": f"{skill_name} applied challenge",
+        "scenario": f"A project needs a practical solution that uses {skill_name}.",
+        "task": f"Describe how you would solve the problem using {skill_name}. Include your approach, one important trade-off, and how you would validate the result.",
+        "category": category,
+        "skill_name": skill_name,
+        "generation_status": "fallback",
+    }
+
 def evaluate_sprint_submission(challenge: dict, solution: str) -> dict:
     cat = challenge.get("category", "General")
     task = challenge.get("task", "")
 
     prompt = f"""
-Evaluate this candidate solution for task: "{task}".
-CANDIDATE SOLUTION: "{solution}"
+Evaluate the candidate solution for task: "{task}".
+Rate each criterion as an integer from 0 to 2:
+- correctness: technically sound and relevant to the task
+- feasibility: a practical approach with reasonable trade-offs
+- completeness: enough detail to carry out and validate the solution
 
-Return ONLY a valid JSON object with these exact keys:
-{{
-    "is_passed": true,
-    "score_pct": 85,
-    "feedback": "2 sentences of constructive evaluation",
-    "verified_skill_badge": "Verified Evidence: {cat} Applied Practice"
-}}
+Return ONLY JSON with these exact keys:
+{{"correctness": 0, "feasibility": 0, "completeness": 0, "feedback": "2 concise sentences of constructive evaluation"}}
+
+CANDIDATE SOLUTION: "{solution[:12000]}"
 """
 
     response = call_gemini_api(prompt)
@@ -58,7 +85,6 @@ Return ONLY a valid JSON object with these exact keys:
             "is_passed": False,
             "score_pct": 0,
             "feedback": "AI evaluation is temporarily unavailable. Your submission was received but was not scored or marked as passed. Please retry when the AI service is available.",
-            "verified_skill_badge": "",
             "evaluation_status": "unavailable",
         }
     try:
@@ -66,8 +92,18 @@ Return ONLY a valid JSON object with these exact keys:
         if "```" in raw_text:
             raw_text = raw_text.split("```")[1].replace("json", "").strip()
         data = json.loads(raw_text)
-        if isinstance(data, dict) and "is_passed" in data:
-            return data
+        criteria = ("correctness", "feasibility", "completeness")
+        if isinstance(data, dict) and all(type(data.get(key)) is int and 0 <= data[key] <= 2 for key in criteria) and isinstance(data.get("feedback"), str):
+            score = sum(data[key] for key in criteria)
+            passed = all(data[key] >= 1 for key in criteria) and score >= 4
+            return {
+                "is_passed": passed,
+                "score_pct": round(score / 6 * 100),
+                "criteria": {key: data[key] for key in criteria},
+                "feedback": data["feedback"][:1200],
+                "verified_skill_badge": f"{challenge.get('skill_name') or cat} badge" if passed else "",
+                "evaluation_status": "scored",
+            }
     except Exception:
         pass
 
@@ -75,6 +111,5 @@ Return ONLY a valid JSON object with these exact keys:
         "is_passed": False,
         "score_pct": 0,
         "feedback": "The AI response could not be validated. Your submission was not scored or marked as passed; please retry.",
-        "verified_skill_badge": "",
         "evaluation_status": "unavailable",
     }

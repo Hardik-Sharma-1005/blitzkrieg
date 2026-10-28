@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, GitCompareArrows, RefreshCw, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { fetchCompanyRecord } from "@/lib/companyRepository";
 import { asString, normalizeCompanyProfile, normalizeCompanySummary, normalizeDashboardSkills, splitItems, type CompanyProfile, type CompanySummary, type DashboardSkill, type JsonRecord } from "@/lib/companyData";
 import { useCompany } from "@/lib/companyContext";
+import { readRecentSnapshot, recordRecentActivity } from "@/lib/recentActivity";
 
 interface ComparisonCompany {
   summary: CompanySummary;
@@ -146,7 +147,11 @@ function CompanyOverview({ company, index }: { company: ComparisonCompany; index
 }
 
 export function CompanyComparison() {
+  const location = useLocation();
   const { compareCompanyIds, clearComparison } = useCompany();
+  const [historicalComparison, setHistoricalComparison] = useState<ComparisonCompany[] | null>(null);
+  const lastRecordedComparison = useRef("");
+  const historyActivityId = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
   const records = useQueries({ queries: compareCompanyIds.map((companyId) => ({
     queryKey: ["company-record", companyId],
     queryFn: () => fetchCompanyRecord(companyId),
@@ -164,8 +169,24 @@ export function CompanyComparison() {
   const failed = failedRecords.length > 0;
   const unavailable = !loading && !failed && companies.length !== compareCompanyIds.length;
   const retryFailedRecords = () => void Promise.all(failedRecords.map((record) => record.refetch()));
+  const visibleCompanies = historicalComparison ?? companies;
 
-  if (compareCompanyIds.length < 2) {
+  useEffect(() => {
+    const saved = readRecentSnapshot<{ kind: "company-comparison"; companies: ComparisonCompany[] }>(historyActivityId);
+    setHistoricalComparison(saved?.kind === "company-comparison" && Array.isArray(saved.companies) ? saved.companies : null);
+  }, [location.key, historyActivityId]);
+
+  useEffect(() => {
+    if (historyActivityId) return;
+    if (compareCompanyIds.length < 2) { lastRecordedComparison.current = ""; return; }
+    if (loading || failed || companies.length !== compareCompanyIds.length) return;
+    const key = compareCompanyIds.join(",");
+    if (lastRecordedComparison.current === key) return;
+    lastRecordedComparison.current = key;
+    recordRecentActivity({ feature: "company-comparison", title: companies.map((company) => company.profile.name).join(" vs "), action: `Compared ${companies.length} company profiles`, path: "/company/compare" }, { kind: "company-comparison", companies });
+  }, [companies, compareCompanyIds, failed, historyActivityId, loading]);
+
+  if (!historicalComparison && compareCompanyIds.length < 2) {
     return <main className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <Card className="p-7 text-center sm:p-10">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e4f2e9] text-[#246b5d]"><GitCompareArrows className="h-6 w-6" /></span>
@@ -178,12 +199,12 @@ export function CompanyComparison() {
     </main>;
   }
 
-  if (loading) return <main aria-busy="true" className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12">
+  if (!historicalComparison && loading) return <main aria-busy="true" className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:px-12">
     <p role="status" className="mb-4 text-sm font-medium text-slate-500">Loading your selected company profiles…</p>
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{compareCompanyIds.map((id) => <div key={id} className="h-72 animate-pulse rounded-2xl bg-[#eee8dc]" />)}</div>
   </main>;
 
-  if ((failed && companies.length < 2) || unavailable) return <main className="mx-auto max-w-xl px-5 py-12 text-center sm:py-16">
+  if (!historicalComparison && ((failed && companies.length < 2) || unavailable)) return <main className="mx-auto max-w-xl px-5 py-12 text-center sm:py-16">
     <Card className="p-7">
       <h1 className="font-heading text-xl font-semibold text-[#26354b]">{unavailable ? "A saved company is unavailable" : "Couldn’t load enough company profiles"}</h1>
       <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -209,18 +230,20 @@ export function CompanyComparison() {
         <div aria-hidden="true" className="ambient-drift pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-[#efb5a0]/40 blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-3xl">
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#246b5d]"><GitCompareArrows className="h-3.5 w-3.5" /> Your research shortlist</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/65 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-[#246b5d]"><GitCompareArrows className="h-3.5 w-3.5" /> {historicalComparison ? "Saved comparison" : "Your research shortlist"}</p>
             <h1 className="mt-4 font-heading text-3xl font-semibold leading-tight tracking-tight text-[#26354b] sm:text-4xl">Compare companies, side by side.</h1>
             <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">Compare the available company and skill data. Sample profiles are labeled, and missing details stay visible.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline"><Link to="/companies"><ArrowLeft className="h-4 w-4" /> Add companies</Link></Button>
-            <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>
+            {!historicalComparison && <Button variant="ghost" onClick={clearComparison}>Clear shortlist</Button>}
           </div>
         </div>
       </header>
 
-      {failed && <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">
+      {historicalComparison && <p role="status" className="mb-6 rounded-xl border border-[#dbe9dd] bg-[#f3f8f1] px-4 py-3 text-sm text-slate-700">You’re viewing the company data captured when this comparison was made.</p>}
+
+      {!historicalComparison && failed && <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#f0dfb2] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#76591d]">
         <p>{companies.length} of {compareCompanyIds.length} selected profiles loaded. {getComparisonLoadHelp(failedRecords[0]?.error)}</p>
         <Button variant="outline" size="sm" onClick={retryFailedRecords}><RefreshCw className="h-4 w-4" /> Retry failed profiles</Button>
       </div>}
@@ -228,10 +251,10 @@ export function CompanyComparison() {
       <section aria-labelledby="at-a-glance-heading">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div><p className="text-xs font-semibold uppercase tracking-[0.13em] text-[#a47d32]">At a glance</p><h2 id="at-a-glance-heading" className="mt-1 font-heading text-2xl font-semibold text-[#26354b]">Your selected companies</h2></div>
-          <span className="rounded-full border border-[#e9e1d5] bg-[#fffdf8] px-3 py-1.5 text-xs font-semibold text-slate-500">{companies.length} of {compareCompanyIds.length} selected profiles loaded</span>
+          <span className="rounded-full border border-[#e9e1d5] bg-[#fffdf8] px-3 py-1.5 text-xs font-semibold text-slate-500">{visibleCompanies.length} selected profiles</span>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {companies.map((company, index) => <CompanyOverview key={company.summary.companyId} company={company} index={index} />)}
+          {visibleCompanies.map((company, index) => <CompanyOverview key={company.summary.companyId} company={company} index={index} />)}
         </div>
       </section>
 
@@ -243,7 +266,7 @@ export function CompanyComparison() {
             <p className="mt-1 text-sm text-slate-500">{group.intro}</p>
           </div>
           <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {companies.map((company, companyIndex) => (
+            {visibleCompanies.map((company, companyIndex) => (
               <motion.div key={company.summary.companyId} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.08 }} transition={{ duration: 0.32, delay: companyIndex * 0.06 }}>
                 <Card className="h-full p-5 sm:p-6">
                   <div className="flex items-center gap-3 border-b border-[#f0eadd] pb-4">

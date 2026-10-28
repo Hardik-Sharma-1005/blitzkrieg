@@ -2,15 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, ExternalLink, Globe2, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { IntelligenceSectionCard } from "@/components/company/IntelligenceSectionCard";
 import { buildIntelligenceSections } from "@/data/intelligenceData";
-import { fetchCompanyRecord } from "@/lib/companyRepository";
+import { fetchCompanyRecord, type CompanyRecord } from "@/lib/companyRepository";
 import { normalizeCompanyProfile } from "@/lib/companyData";
 import { asString } from "@/lib/companyData";
 import { useCompany } from "@/lib/companyContext";
+import { readRecentSnapshot, recordRecentActivity } from "@/lib/recentActivity";
 
 const CATEGORY_GROUPS = [
   { id: "all", label: "All 21 Sections", indices: null },
@@ -21,14 +23,19 @@ const CATEGORY_GROUPS = [
 ];
 
 export function CompanyIntelligence() {
+  const location = useLocation();
   const { selectedCompany } = useCompany();
+  const [historySelection, setHistorySelection] = useState<typeof selectedCompany>(null);
+  const [historyRecord, setHistoryRecord] = useState<CompanyRecord | null>(null);
+  const activityId = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
+  const companySelection = historySelection ?? selectedCompany;
   const [activeCategory, setActiveCategory] = useState("all");
   const companyQuery = useQuery({
-    queryKey: ["company-record", selectedCompany?.companyId],
-    queryFn: () => fetchCompanyRecord(selectedCompany!.companyId),
-    enabled: Boolean(selectedCompany?.companyId),
+    queryKey: ["company-record", companySelection?.companyId],
+    queryFn: () => fetchCompanyRecord(companySelection!.companyId),
+    enabled: Boolean(companySelection?.companyId),
   });
-  const companyRecord = companyQuery.data;
+  const companyRecord = historyRecord ?? companyQuery.data;
   const profile = useMemo(
     () => companyRecord ? normalizeCompanyProfile(companyRecord.full_json, companyRecord.short_json) : null,
     [companyRecord],
@@ -39,6 +46,21 @@ export function CompanyIntelligence() {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const isScrollingRef = useRef(false);
   const scrollTimerRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const saved = readRecentSnapshot<{ kind: "company-intelligence"; company: NonNullable<typeof selectedCompany>; record: CompanyRecord }>(activityId);
+    setHistorySelection(saved?.kind === "company-intelligence" ? saved.company : null);
+    setHistoryRecord(saved?.kind === "company-intelligence" ? saved.record : null);
+    setActiveCategory("all");
+    setActiveIndex(0);
+  }, [location.key, activityId]);
+
+  const recordedCompany = useRef<number | null>(null);
+  useEffect(() => {
+    if (activityId || !companySelection || !companyRecord || recordedCompany.current === companySelection.companyId) return;
+    recordedCompany.current = companySelection.companyId;
+    recordRecentActivity({ feature: "company-intelligence", title: companySelection.companyName, action: "Viewed company intelligence profile", path: "/company/intelligence" }, { kind: "company-intelligence", company: companySelection, record: companyRecord });
+  }, [activityId, companyRecord, companySelection]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -66,7 +88,7 @@ export function CompanyIntelligence() {
     scrollTimerRef.current = window.setTimeout(() => { isScrollingRef.current = false; }, 900);
   }, []);
 
-  if (companyQuery.isPending) return (
+  if (!historyRecord && companyQuery.isPending) return (
     <div className="mx-auto flex min-h-[60vh] max-w-xl items-center justify-center p-6">
       <div className="relative z-10 flex flex-col items-center gap-3 rounded-2xl border border-[#e9e1d5] bg-white/95 p-8 text-center shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#246b5d] border-t-transparent" />
@@ -75,7 +97,7 @@ export function CompanyIntelligence() {
       </div>
     </div>
   );
-  if (companyQuery.isError || !companyRecord || !profile) return (
+  if ((!historyRecord && companyQuery.isError) || !companyRecord || !profile) return (
     <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-sm">
       <h2 className="font-heading text-xl font-semibold text-slate-900">Couldn’t load this company</h2>
       <p className="mt-2 text-sm text-slate-500">Please try again in a moment.</p>
@@ -85,6 +107,7 @@ export function CompanyIntelligence() {
 
   return (
     <div className="space-theme min-h-screen bg-transparent">
+      {historySelection && <p role="status" className="mx-auto mt-4 max-w-[1440px] rounded-xl border border-[#dbe9dd] bg-[#f3f8f1] px-4 py-3 text-sm text-slate-700">You’re viewing this company profile from recent activity.</p>}
       <div className="sticky top-[72px] z-20 border-b border-[#e8e0d2] bg-[#fffdf8]/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-4 px-5 py-4 sm:px-8 lg:px-12">
           <CompanyLogo name={profile.name} logoUrl={profile.logoUrl} websiteUrl={profile.websiteUrl} size="md" />

@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { SidebarProvider, ThemeProvider, useSidebar, useTheme } from "@/components/layout/SidebarContext";
 import { InteractiveCosmos } from "@/components/InteractiveCosmos";
+import { CandidateProfileProvider } from "@/lib/candidateProfile";
 
 const Index = lazy(() => import("@/pages/Index").then(({ Index }) => ({ default: Index })));
 const CompanyDirectory = lazy(() => import("@/pages/CompanyDirectory").then(({ CompanyDirectory }) => ({ default: CompanyDirectory })));
@@ -20,6 +21,11 @@ const NotFound = lazy(() => import("@/pages/NotFound").then(({ NotFound }) => ({
 const JDAnalytics = lazy(() => import("@/pages/JDAnalytics").then(({ JDAnalytics }) => ({ default: JDAnalytics })));
 const ResumeProfile = lazy(() => import("@/pages/ResumeProfile").then(({ ResumeProfile }) => ({ default: ResumeProfile })));
 const SkillMatch = lazy(() => import("@/pages/SkillMatch").then(({ SkillMatch }) => ({ default: SkillMatch })));
+const CandidateProfile = lazy(() => import("@/pages/CandidateProfile").then(({ CandidateProfile }) => ({ default: CandidateProfile })));
+const CheckWhereYouStand = lazy(() => import("@/pages/CheckWhereYouStand").then(({ CheckWhereYouStand }) => ({ default: CheckWhereYouStand })));
+const CandidateAssessments = lazy(() => import("@/pages/CandidateAssessments").then(({ CandidateAssessments }) => ({ default: CandidateAssessments })));
+const JobReadiness = lazy(() => import("@/pages/JobReadiness").then(({ JobReadiness }) => ({ default: JobReadiness })));
+const History = lazy(() => import("@/pages/History").then(({ History }) => ({ default: History })));
 
 function AppShell() {
   const { theme } = useTheme();
@@ -49,6 +55,11 @@ function AppShell() {
             <Route path="/resume-profile" element={<ResumeProfile />} />
             <Route path="/talent-check" element={<ResumeProfile />} />
             <Route path="/skill-match" element={<SkillMatch />} />
+            <Route path="/candidate-profile" element={<CandidateProfile />} />
+            <Route path="/check-where-you-stand" element={<CheckWhereYouStand />} />
+            <Route path="/candidate-assessments" element={<CandidateAssessments />} />
+            <Route path="/job-readiness" element={<JobReadiness />} />
+            <Route path="/history" element={<History />} />
             <Route path="/company" element={<AppLayout />}>
               <Route index element={<Navigate to="intelligence" replace />} />
               <Route path="intelligence" element={<CompanyIntelligence />} />
@@ -70,7 +81,7 @@ export default function App() {
   }));
   return <QueryClientProvider client={queryClient}>
     <TooltipProvider><SonnerToaster position="top-right" richColors />
-      <CompanyProvider><BrowserRouter><ThemeProvider><SidebarProvider><AppShell /></SidebarProvider></ThemeProvider></BrowserRouter></CompanyProvider>
+      <CompanyProvider><CandidateProfileProvider><BrowserRouter><ThemeProvider><SidebarProvider><AppShell /></SidebarProvider></ThemeProvider></BrowserRouter></CandidateProfileProvider></CompanyProvider>
     </TooltipProvider>
   </QueryClientProvider>;
 }

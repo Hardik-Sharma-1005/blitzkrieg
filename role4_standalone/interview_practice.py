@@ -51,3 +51,74 @@ Provide concise feedback with 3 bullet points:
     if response:
         return response
     return "Good effort! Make sure to include specific technical metrics and use the STAR method."
+
+
+def generate_profile_interview_question(skill_name: str, category: str, resume_evidence: str = "") -> dict:
+    prompt = f"""
+Write one focused interview question to assess the candidate's applied understanding of {skill_name} ({category}).
+Use the resume evidence only as context, not as proof of skill: "{resume_evidence[:700]}".
+Return ONLY JSON: {{"question": "..."}}
+"""
+    response = call_gemini_api(prompt)
+    try:
+        raw_text = response.strip()
+        if "```" in raw_text:
+            raw_text = raw_text.split("```", 1)[1].replace("json", "", 1).strip().removesuffix("```").strip()
+        data = json.loads(raw_text)
+        if isinstance(data, dict) and isinstance(data.get("question"), str) and data["question"].strip():
+            return {"question": data["question"].strip(), "generation_status": "available"}
+    except (ValueError, TypeError, IndexError):
+        pass
+    return {
+        "question": f"Describe a specific problem where you applied {skill_name}. What approach did you choose, what alternatives did you consider, and how did you know your solution worked?",
+        "generation_status": "fallback",
+    }
+
+
+def evaluate_profile_interview_answer(question: str, candidate_answer: str, skill_name: str) -> dict:
+    prompt = f"""
+Evaluate the candidate's answer for the skill {skill_name} using this rubric. Rate each criterion from 0 to 2:
+- technical_accuracy: correct understanding and technically sound reasoning
+- relevance: directly addresses the question with specific evidence or examples
+- explanation: explains decisions and outcomes clearly
+
+Return ONLY JSON with integer criterion scores and concise feedback:
+{{"technical_accuracy": 0, "relevance": 0, "explanation": 0, "feedback": "..."}}
+
+QUESTION: {question[:3000]}
+ANSWER: {candidate_answer[:12000]}
+"""
+    response = call_gemini_api(prompt)
+    if response.startswith("[API Error]"):
+        return {
+            "is_passed": False,
+            "score_pct": 0,
+            "criteria": {},
+            "feedback": "Assessment is temporarily unavailable. Your answer was not scored and no badge was awarded. Please try again later.",
+            "evaluation_status": "unavailable",
+        }
+    try:
+        raw_text = response.strip()
+        if "```" in raw_text:
+            raw_text = raw_text.split("```", 1)[1].replace("json", "", 1).strip().removesuffix("```").strip()
+        data = json.loads(raw_text)
+        keys = ("technical_accuracy", "relevance", "explanation")
+        if isinstance(data, dict) and all(type(data.get(key)) is int and 0 <= data[key] <= 2 for key in keys) and isinstance(data.get("feedback"), str):
+            score = sum(data[key] for key in keys)
+            passed = data["technical_accuracy"] >= 1 and data["relevance"] >= 1 and score >= 4
+            return {
+                "is_passed": passed,
+                "score_pct": round(score / 6 * 100),
+                "criteria": {key: data[key] for key in keys},
+                "feedback": data["feedback"][:1200],
+                "evaluation_status": "scored",
+            }
+    except (ValueError, TypeError, IndexError):
+        pass
+    return {
+        "is_passed": False,
+        "score_pct": 0,
+        "criteria": {},
+        "feedback": "The answer could not be scored reliably. No badge was awarded; please try again when assessment is available.",
+        "evaluation_status": "unavailable",
+    }

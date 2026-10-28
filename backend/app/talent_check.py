@@ -174,17 +174,11 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
                 max_score_boost = score_boost
                 best_roi_skill = cat
 
-    if is_ready:
-        ai_coach_advice = f"Outstanding job, {candidate_name}! You are officially READY for {matched_company_key} with a Readiness Score of {readiness_score}%. You have zero deal-breaker gaps."
-    else:
-        deal_breaker_text = ""
-        if deal_breakers:
-            top_db = deal_breakers[0]
-            deal_breaker_text = f" Your top deal-breaker risk is {top_db['category']} (Gap: {top_db['gap']} levels)."
-        roi_text = ""
-        if best_roi_skill:
-            roi_text = f" Quick Win Tip: Level up {best_roi_skill} by +1.0 to immediately boost your score by +{max_score_boost}%!"
-        ai_coach_advice = f"Hello {candidate_name}. You are currently at {readiness_score}% readiness for {matched_company_key}.{deal_breaker_text} To reach hiring readiness, you need approximately {round(total_learning_hours)} total learning hours.{roi_text}"
+    ai_coach_advice = (
+        f"This is an informational comparison with {matched_company_key}'s available company benchmark. "
+        "Resume mentions provide evidence to review, but they do not establish skill proficiency or predict a hiring outcome. "
+        "Use a practical assessment to validate skills, and treat benchmark differences as areas to explore."
+    )
 
     gap_breakdown.sort(key=lambda x: x["gap"], reverse=True)
 

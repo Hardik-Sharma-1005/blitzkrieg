@@ -319,6 +319,39 @@ class ResumeDocumentParser:
                 email = match.group(0)
                 break
 
+        contact_text = "\n".join(preamble[:12])
+        phone = ""
+        phone_pattern = re.compile(r"(?<!\w)(?:\+?\d[\d\s().-]{6,}\d)(?!\w)")
+        for line in preamble[:12]:
+            if email_pattern.search(line):
+                line = email_pattern.sub("", line)
+            match = phone_pattern.search(line)
+            if match:
+                candidate_phone = match.group(0).strip()
+                digits = re.sub(r"\D", "", candidate_phone)
+                if 7 <= len(digits) <= 15 and not re.fullmatch(r"(?:19|20)\d{2}", digits):
+                    phone = candidate_phone
+                    break
+
+        linkedin_match = re.search(r"(?:https?://)?(?:www\.)?linkedin\.com/(?:in|pub)/[^\s|,;]+", contact_text, re.IGNORECASE)
+        github_match = re.search(r"(?:https?://)?(?:www\.)?github\.com/[^\s|,;]+", contact_text, re.IGNORECASE)
+        linkedin = linkedin_match.group(0).rstrip(".)]") if linkedin_match else ""
+        github = github_match.group(0).rstrip(".)]") if github_match else ""
+        name = email_pattern.sub("", name)
+        name = phone_pattern.sub("", name)
+        name = re.sub(r"(?:https?://)?(?:www\.)?(?:linkedin|github)\.com/[^\s|,;]+", "", name, flags=re.IGNORECASE)
+        name = re.sub(r"^\s*name\s*[:\-]\s*", "", name, flags=re.IGNORECASE)
+        name = re.split(r"\s*[|•;]\s*", name, maxsplit=1)[0].strip(" ,|;•\t") or preamble[0].strip()
+        location = ""
+        for line in preamble[:12]:
+            match = re.search(r"\b(?:location|based in|city|address)\s*(?:[:\-–—|]\s*)?(.+)$", line, re.IGNORECASE)
+            if match:
+                location_value = email_pattern.sub("", match.group(1))
+                location_value = phone_pattern.sub("", location_value)
+                location_value = re.sub(r"(?:https?://)?(?:www\.)?(?:linkedin|github)\.com/[^\s|,;]+", "", location_value, flags=re.IGNORECASE)
+                location = re.split(r"\s*[|•;]\s*", location_value, maxsplit=1)[0].strip(" \t,|;•")[:160]
+                break
+
         def clean_items(items: List[str]) -> List[str]:
             res = []
             for item in items:
@@ -361,6 +394,10 @@ class ResumeDocumentParser:
             "cv_file": os.path.basename(file_path),
             "name": name,
             "email": email,
+            "phone": phone,
+            "location": location,
+            "linkedin": linkedin,
+            "github": github,
             "education": clean_items(sections.get("education", [])),
             "projects": clean_items(sections.get("projects", [])),
             "hackathons": hackathons,

@@ -896,24 +896,20 @@ footer a:hover,
 .app-shell.theme-light .space-theme :is([class*="border-[#dbe9dd]"],[class*="border-[#e9e1d5]"],[class*="border-[#ded7ca]"],[class*="border-[#d9d2c5]"],[class*="border-[#f0dfb2]"],[class*="border-[#f0d8d2]"]) { border-color: #e4e4e4 !important; }
 
 /* Theme boundary: normalize legacy feature colors to the active brand palette. */
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="bg-[#"]:not(button):not([class*="bg-[#246b5d]"]):not([class*="bg-[#216b5c]"]):not([class*="bg-[#1b5549]"]):not([class*="bg-[#185546]"]):not(.brand-primary-button),
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]):not(button):not(.brand-primary-button) {
-  background-color: #171717 !important;
-  color: #ededed !important;
-  border-color: #303030 !important;
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="bg-[#"]:not(button):not([class*="bg-[#246b5d]"]):not([class*="bg-[#216b5c]"]):not([class*="bg-[#1b5549]"]):not([class*="bg-[#185546]"]):not([class*="bg-[#9A5A82]"]):not([class*="bg-[#D99CC5]"]):not([class*="bg-[#342330]"]):not(.brand-primary-button) {
+  background-color: var(--surface-raised) !important;
+  color: var(--ink-primary) !important;
+  border-color: var(--line-default) !important;
 }
-.app-shell.theme-light :is(.space-theme, .portal-home) [class*="bg-[#"]:not(button):not([class*="bg-[#246b5d]"]):not([class*="bg-[#216b5c]"]):not([class*="bg-[#1b5549]"]):not([class*="bg-[#185546]"]):not(.brand-primary-button),
-.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="bg-red-"], [class*="bg-amber-"], [class*="bg-green-"], [class*="bg-slate-"]):not(button):not(.brand-primary-button) {
-  background-color: #f4f4f4 !important;
-  color: #262626 !important;
-  border-color: #e2e2e2 !important;
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="bg-[#"]:not(button):not([class*="bg-[#246b5d]"]):not([class*="bg-[#216b5c]"]):not([class*="bg-[#1b5549]"]):not([class*="bg-[#185546]"]):not([class*="bg-[#9A5A82]"]):not([class*="bg-[#D99CC5]"]):not([class*="bg-[#342330]"]):not(.brand-primary-button) {
+  background-color: var(--surface-raised) !important;
+  color: var(--ink-primary) !important;
+  border-color: var(--line-default) !important;
 }
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="text-[#"]:not([class*="text-[#9A5A82]"]):not([class*="text-[#D99CC5]"]):not(.company-compare-btn):not(.company-compare-btn *):not(.brand-compare-return-btn):not(.brand-compare-return-btn *) { color: #ededed !important; }
-.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-[#"]:not([class*="text-[#9A5A82]"]):not([class*="text-[#D99CC5]"]):not(.company-compare-btn):not(.company-compare-btn *):not(.brand-compare-return-btn):not(.brand-compare-return-btn *) { color: #262626 !important; }
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="border-[#"], [class*="border-red-"], [class*="border-amber-"], [class*="border-green-"], [class*="border-slate-"]) { border-color: #303030 !important; }
-.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="border-[#"], [class*="border-red-"], [class*="border-amber-"], [class*="border-green-"], [class*="border-slate-"]) { border-color: #e2e2e2 !important; }
-.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-red-"], [class*="text-amber-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-purple-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-yellow-"], [class*="text-teal-"], [class*="text-cyan-"], [class*="text-emerald-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-pink-"], [class*="text-lime-"], [class*="text-sky-"], [class*="text-fuchsia-"]) { color: #ededed !important; }
-.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-red-"], [class*="text-amber-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-purple-"], [class*="text-rose-"], [class*="text-orange-"], [class*="text-yellow-"], [class*="text-teal-"], [class*="text-cyan-"], [class*="text-emerald-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-pink-"], [class*="text-lime-"], [class*="text-sky-"], [class*="text-fuchsia-"]) { color: #262626 !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="text-[#"]:not([class*="text-[#176d55]"]):not([class*="text-[#185546]"]):not([class*="text-[#216b5c]"]):not([class*="text-[#216b5d]"]):not([class*="text-[#246b5d]"]):not([class*="text-[#287d68]"]):not([class*="text-[#286b53]"]):not([class*="text-[#679586]"]):not([class*="text-[#9A5A82]"]):not([class*="text-[#D99CC5]"]):not(.company-compare-btn):not(.company-compare-btn *):not(.brand-compare-return-btn):not(.brand-compare-return-btn *) { color: var(--ink-primary) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-[#"]:not([class*="text-[#176d55]"]):not([class*="text-[#185546]"]):not([class*="text-[#216b5c]"]):not([class*="text-[#216b5d]"]):not([class*="text-[#246b5d]"]):not([class*="text-[#287d68]"]):not([class*="text-[#286b53]"]):not([class*="text-[#679586]"]):not([class*="text-[#9A5A82]"]):not([class*="text-[#D99CC5]"]):not(.company-compare-btn):not(.company-compare-btn *):not(.brand-compare-return-btn):not(.brand-compare-return-btn *) { color: var(--ink-primary) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="border-[#"] { border-color: var(--line-default) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="border-[#"] { border-color: var(--line-default) !important; }
 .app-shell.theme-light :is(.space-theme, .portal-home) [class*="text-white"]:not(.company-compare-btn[aria-pressed="true"]):not(.company-compare-btn[aria-pressed="true"] *):not(.brand-primary-button):not(button[class*="bg-[#246b5d]"]):not(button[class*="bg-[#216b5c]"]):not(button[class*="bg-[#185546]"]):not(button[class*="bg-[#1b5549]"]) { color: #262626 !important; }
 .app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"]) { color: var(--brand-accent) !important; }
 .app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"]) { color: var(--brand-accent) !important; }
@@ -968,3 +964,92 @@ footer a:hover,
 .app-shell.theme-light .space-theme { background: transparent !important; background-image: none !important; }
 .app-shell .portal-home { background: transparent !important; }
 .app-shell .portal-home main.brand-directory { background: transparent !important; }
+
+/* Theme palettes: light uses ivory/teal; dark uses charcoal/rose. Keep legacy page utilities in sync. */
+.app-shell {
+  --surface-page: #08090d;
+  --surface-card: #11131b;
+  --surface-raised: #191c27;
+  --surface-soft: #222633;
+  --ink-primary: #f4f0f5;
+  --ink-secondary: #b5acba;
+  --line-default: #34303b;
+  --brand-accent: #e3a4ce;
+  --brand-action: #c17bab;
+  --brand-accent-hover: #d18bb9;
+  --primary: 322 55% 77%;
+  --ring: 322 55% 77%;
+}
+.app-shell.theme-light {
+  --surface-page: #f5f4ec;
+  --surface-card: #fffef9;
+  --surface-raised: #ebece2;
+  --surface-soft: #e2e8dc;
+  --ink-primary: #1d302c;
+  --ink-secondary: #536960;
+  --line-default: #d3ddd1;
+  --brand-accent: #236653;
+  --brand-action: #236653;
+  --brand-accent-hover: #194c3d;
+  --primary: 158 49% 27%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 158 49% 27%;
+  background: var(--surface-page) !important;
+  color: var(--ink-primary) !important;
+}
+.app-shell .portal-home {
+  --brand-accent: #e3a4ce;
+  --brand-action: #c17bab;
+  --brand-accent-hover: #d18bb9;
+  --home-bg: #08090d;
+  --home-surface: #11131b;
+  --home-ink: #f4f0f5;
+  --home-muted: #b5acba;
+  --home-line: #34303b;
+}
+.app-shell.theme-light .portal-home {
+  --brand-accent: #236653;
+  --brand-action: #236653;
+  --brand-accent-hover: #194c3d;
+  --home-bg: #f5f4ec;
+  --home-surface: #ebece2;
+  --home-ink: #1d302c;
+  --home-muted: #536960;
+  --home-line: #d3ddd1;
+}
+.app-shell:not(.theme-light) {
+  background: var(--surface-page) !important;
+  color: var(--ink-primary) !important;
+}
+.app-shell:not(.theme-light) > aside { background: #101119 !important; border-color: #302d37 !important; }
+.app-shell.theme-light > aside { background: #fffef9 !important; border-color: #d3ddd1 !important; }
+.app-shell:not(.theme-light) > aside nav a[aria-current="page"] { background: #211a25 !important; color: #fff !important; box-shadow: inset 3px 0 var(--brand-accent); }
+.app-shell.theme-light > aside nav a[aria-current="page"] { background: #e2e8dc !important; color: #194c3d !important; box-shadow: inset 3px 0 var(--brand-accent); }
+
+/* These exact color families are the hard-coded page utility colors used for brand and neutral surfaces. */
+.app-shell :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#185546]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"], [class*="text-[#286b53]"], [class*="text-[#679586]"]) { color: var(--brand-accent) !important; }
+.app-shell :is(.space-theme, .portal-home) :is([class*="bg-[#216b5c]"], [class*="bg-[#216b5d]"], [class*="bg-[#246b5d]"], [class*="bg-[#185546]"], [class*="bg-[#1b5549]"]) { background-color: var(--brand-action) !important; }
+.app-shell :is(.space-theme, .portal-home) :is([class*="border-[#216b5c]"], [class*="border-[#246b5d]"], [class*="border-[#80b7a4]"]) { border-color: var(--brand-accent) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e9f4ed]"], [class*="bg-[#eaf4ec]"], [class*="bg-[#f3f8f1]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#f1ece2]"], [class*="bg-[#faf7f0]"], [class*="bg-[#fbf8f1]"], [class*="bg-[#f7f1e7]"], [class*="bg-[#f2ece1]"], [class*="bg-[#f3eee4]"], [class*="bg-[#f5f0e6]"], [class*="bg-[#f7f3eb]"], [class*="bg-[#fff9e9]"]) { background-color: var(--surface-raised) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="bg-[#d4eadd]"], [class*="bg-[#f0dceb]"], [class*="bg-[#f3e5ef]"], [class*="bg-[#faf2f7]"]) { background-color: var(--surface-soft) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) :is([class*="border-[#e9e1d5]"], [class*="border-[#ddd5c8]"], [class*="border-[#d9e7dc]"], [class*="border-[#dbe9dd]"], [class*="border-[#d7e8dc]"], [class*="border-[#c9d9cd]"], [class*="border-[#d9d2c5]"], [class*="border-[#ded7ca]"], [class*="border-[#e5e9e5]"]) { border-color: var(--line-default) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="bg-[#0b0e14]"], [class*="bg-[#10151d]"], [class*="bg-[#111]"] , [class*="bg-[#202630]"], [class*="bg-[#2b3441]"]) { background-color: var(--surface-raised) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-[#D99CC5]"], [class*="text-[#e4b2d4]"], [class*="text-[#edf1f7]"], [class*="text-[#d4deeb]"]) { color: var(--ink-primary) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="border-[#29313b]"], [class*="border-[#2f3847]"], [class*="border-[#D99CC5]"]) { border-color: var(--line-default) !important; }
+.app-shell :is(.space-theme, .portal-home) :is(.rounded-2xl.border, .rounded-xl.border, .rounded-lg.border) { background-color: var(--surface-card) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .portal-home) [class*="bg-gradient-to"] { background-color: var(--surface-card) !important; background-image: none !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) [class*="bg-gradient-to"] { background-color: var(--surface-card) !important; background-image: none !important; }
+.app-shell :is(.space-theme, .portal-home) input:not([type="file"]),
+.app-shell :is(.space-theme, .portal-home) select,
+.app-shell :is(.space-theme, .portal-home) textarea { background-color: var(--surface-card) !important; color: var(--ink-primary) !important; border-color: var(--line-default) !important; }
+.app-shell :is(.space-theme, .portal-home) input::placeholder,
+.app-shell :is(.space-theme, .portal-home) textarea::placeholder { color: var(--ink-secondary) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) button:is([class*="bg-[#216b5c]"], [class*="bg-[#216b5d]"], [class*="bg-[#246b5d]"], [class*="bg-[#185546]"], [class*="bg-[#1b5549]"]) { color: #fff !important; }
+.app-shell :is(.space-theme, .portal-home) :is([class*="bg-[#9A5A82]"], [class*="bg-[#D99CC5]"]) { background-color: var(--brand-action) !important; }
+.app-shell :is(.space-theme, .portal-home) [class*="bg-[#342330]"] { background-color: var(--surface-soft) !important; }
+.app-shell :is(.space-theme, .portal-home) :is([class*="text-[#9A5A82]"], [class*="text-[#D99CC5]"]) { color: var(--brand-accent) !important; }
+.app-shell .company-compare-btn[aria-pressed="true"] { background-color: var(--brand-action) !important; border-color: var(--brand-action) !important; color: #fff !important; }
+.app-shell.theme-light .company-compare-btn[aria-pressed="true"] { color: #fff !important; }
+.app-shell:not(.theme-light) .brand-primary-button { background-color: var(--brand-action) !important; color: #151119 !important; }
+.app-shell.theme-light .brand-primary-button { background-color: var(--brand-action) !important; color: #fff !important; }
+.app-shell.theme-light .brand-tagline { color: var(--brand-accent) !important; }

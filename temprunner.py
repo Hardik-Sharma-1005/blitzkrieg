@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -12,8 +14,9 @@ import webbrowser
 
 ROOT = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT / "backend"
-FRONTEND_URL = "http://127.0.0.1:5173"
-BACKEND_HEALTH_URL = "http://127.0.0.1:8000/api/health"
+DEFAULT_FRONTEND_PORT = 5174
+BACKEND_HOST = "127.0.0.1"
+DEFAULT_BACKEND_PORT = 8000
 STARTUP_TIMEOUT_SECONDS = 30
 
 
@@ -42,27 +45,38 @@ def backend_python() -> str:
     return interpreter
 
 
-def start_backend() -> subprocess.Popen[bytes]:
+def backend_base_url(port: int) -> str:
+    return f"http://{BACKEND_HOST}:{port}"
+
+
+def backend_health_url(port: int) -> str:
+    return f"{backend_base_url(port)}/api/health"
+
+
+def start_backend(port: int) -> subprocess.Popen[bytes]:
     return subprocess.Popen(
-        [backend_python(), "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        [backend_python(), "-m", "uvicorn", "app.main:app", "--host", BACKEND_HOST, "--port", str(port)],
         cwd=BACKEND_DIR,
     )
 
 
-def start_frontend() -> subprocess.Popen[bytes]:
+def start_frontend(port: int, api_url: str) -> subprocess.Popen[bytes]:
+    frontend_env = os.environ.copy()
+    frontend_env["VITE_JD_ANALYTICS_API_URL"] = api_url
     if os.name == "nt":
         npm_command = shutil.which("npm.cmd") or shutil.which("npm")
         if not npm_command:
             raise RuntimeError("npm was not found. Install Node.js/npm and try again.")
-        command = f'"{npm_command}" run dev -- --host 127.0.0.1 --port 5173 --strictPort'
-        return subprocess.Popen(command, cwd=ROOT, shell=True)
+        command = f'"{npm_command}" run dev -- --host 127.0.0.1 --port {port} --strictPort'
+        return subprocess.Popen(command, cwd=ROOT, shell=True, env=frontend_env)
 
     npm_command = shutil.which("npm")
     if not npm_command:
         raise RuntimeError("npm was not found. Install Node.js/npm and try again.")
     return subprocess.Popen(
-        [npm_command, "run", "dev", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
+        [npm_command, "run", "dev", "--", "--host", "127.0.0.1", "--port", str(port), "--strictPort"],
         cwd=ROOT,
+        env=frontend_env,
     )
 
 
@@ -71,6 +85,47 @@ def responds(url: str) -> bool:
         with urllib.request.urlopen(url, timeout=0.5) as response:
             return 200 <= response.status < 400
     except (urllib.error.URLError, TimeoutError, OSError):
+        return False
+
+
+def backend_supports_profile_assessments(port: int) -> bool:
+    try:
+        with urllib.request.urlopen(f"{backend_base_url(port)}/openapi.json", timeout=2) as response:
+            schema = json.loads(response.read().decode("utf-8"))
+        paths = schema.get("paths", {})
+        required_paths = (
+            "/api/profile-assessment/interview/question",
+            "/api/profile-assessment/interview/evaluate",
+            "/api/profile-assessment/sprint/challenge",
+        )
+        return all(path in paths for path in required_paths)
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError, TypeError):
+        return False
+
+
+def port_is_in_use(port: int) -> bool:
+    if os.name == "nt":
+        # Windows may deny loopback probes in restricted shells, so inspect
+        # the TCP listener table before attempting to bind the chosen port.
+        try:
+            result = subprocess.run(
+                ["netstat", "-ano", "-p", "tcp"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            for line in result.stdout.splitlines():
+                columns = line.split()
+                if len(columns) >= 4 and columns[0].upper() == "TCP":
+                    local_address, state = columns[1], columns[3].upper()
+                    if state == "LISTENING" and local_address.rsplit(":", 1)[-1] == str(port):
+                        return True
+        except OSError:
+            pass
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=0.5):
+            return True
+    except OSError:
         return False
 
 
@@ -123,15 +178,33 @@ def main() -> int:
 
     processes: list[tuple[str, subprocess.Popen[bytes], str]] = []
     try:
-        backend = start_backend()
-        processes.append(("Backend", backend, BACKEND_HEALTH_URL))
-        frontend = start_frontend()
-        processes.append(("Frontend", frontend, FRONTEND_URL))
+        backend_port = DEFAULT_BACKEND_PORT
+        existing_backend = responds(backend_health_url(backend_port)) and backend_supports_profile_assessments(backend_port)
+        if existing_backend:
+            print("An up-to-date backend is already running; reusing it.")
+        else:
+            if port_is_in_use(backend_port):
+                print("Port 8000 has an older backend or another service. Starting the updated backend on a free nearby port.")
+                backend_port = next((port for port in range(DEFAULT_BACKEND_PORT + 1, DEFAULT_BACKEND_PORT + 11) if not port_is_in_use(port)), 0)
+                if not backend_port:
+                    print("No free backend port was found between 8001 and 8010.", file=sys.stderr)
+                    return 1
+            backend = start_backend(backend_port)
+            processes.append(("Backend", backend, backend_health_url(backend_port)))
+        frontend_port = next((port for port in range(DEFAULT_FRONTEND_PORT, DEFAULT_FRONTEND_PORT + 11) if not port_is_in_use(port)), 0)
+        if not frontend_port:
+            print(f"No free frontend port was found between {DEFAULT_FRONTEND_PORT} and {DEFAULT_FRONTEND_PORT + 10}.", file=sys.stderr)
+            return 1
+        if frontend_port != DEFAULT_FRONTEND_PORT:
+            print(f"The default frontend port {DEFAULT_FRONTEND_PORT} is already in use. Starting the updated website on port {frontend_port}.")
+        frontend_url = f"http://127.0.0.1:{frontend_port}"
+        frontend = start_frontend(frontend_port, backend_base_url(backend_port))
+        processes.append(("Frontend", frontend, frontend_url))
         if not wait_until_ready(processes):
             return 1
-        print(f"\nRADIX Talent Match is running at {FRONTEND_URL}")
+        print(f"\nRADIX Talent Match is running at {frontend_url}")
         print("Press Ctrl+C to stop the frontend and backend.")
-        webbrowser.open(FRONTEND_URL)
+        webbrowser.open(frontend_url)
         while True:
             for name, process, _ in processes:
                 if process.poll() is not None:

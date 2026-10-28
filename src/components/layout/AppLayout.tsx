@@ -1,5 +1,7 @@
-import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { ArrowLeft, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useTheme } from "@/components/layout/SidebarContext";
 import { useCompany } from "@/lib/companyContext";
 
@@ -8,7 +10,6 @@ function LayoutContent() {
   const { theme } = useTheme();
   const { pathname } = useLocation();
   const isComparePage = pathname === "/company/compare";
-  if (!selectedCompany && !isComparePage) return <Navigate to="/companies" replace />;
   return (
     <div className={`space-theme space-theme-shell relative isolate min-h-screen bg-transparent ${theme === "light" ? "theme-light" : ""}`}>
       <div className="relative z-10">
@@ -22,7 +23,16 @@ function LayoutContent() {
             <span>Company Directory</span>
           </Link>
         </header>
-        <main className="min-w-0"><Outlet /></main>
+        <main className="min-w-0">{!selectedCompany && !isComparePage ? (
+          <section className="mx-auto grid min-h-[60vh] max-w-3xl place-items-center px-5 py-12 sm:px-8">
+            <Card className="w-full p-7 text-center sm:p-10">
+              <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e4f2e9] text-[#246b5d]"><Building2 className="h-6 w-6" /></span>
+              <h1 className="mt-5 font-heading text-2xl font-semibold text-[#26354b]">Choose a company first</h1>
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">Company Intelligence and Skill Intelligence show one employer at a time. Choose a company from the directory and you’ll return to this page.</p>
+              <Button asChild className="mt-6 min-h-11"><Link to="/companies" state={{ returnTo: pathname }}>Open Company Directory</Link></Button>
+            </Card>
+          </section>
+        ) : <Outlet />}</main>
       </div>
     </div>
   );

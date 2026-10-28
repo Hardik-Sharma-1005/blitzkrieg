@@ -1,10 +1,11 @@
-import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, FileText, LoaderCircle, Sparkles, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { formatActivityFilename, readRecentSnapshot, recordRecentActivity } from "@/lib/recentActivity";
 
 type Skill = {
   skill_name: string;
@@ -32,6 +33,7 @@ const categories: Record<string, string> = {
 };
 
 export function JDAnalytics() {
+  const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [company, setCompany] = useState("");
@@ -40,6 +42,12 @@ export function JDAnalytics() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
+
+  useEffect(() => {
+    const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
+    const saved = readRecentSnapshot<{ kind: "jd-analysis"; result: JDResult }>(id);
+    if (saved?.kind === "jd-analysis") setResult(saved.result);
+  }, [location.key, location.state]);
 
   const chooseFile = (candidate: File | undefined) => {
     setError("");
@@ -86,7 +94,9 @@ export function JDAnalytics() {
       if (!payload || !("skills" in payload) || !Array.isArray(payload.skills)) {
         throw new Error("The analyzer returned an unexpected result. Please try again.");
       }
-      setResult(payload as JDResult);
+      const analyzed = payload as JDResult;
+      setResult(analyzed);
+      recordRecentActivity({ feature: "job-description", title: formatActivityFilename(analyzed.source_file || file.name), action: `Parsed job description${analyzed.role ? ` · ${analyzed.role}` : ""}`, path: "/jd-analytics" }, { kind: "jd-analysis", result: analyzed });
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "The JD could not be analyzed.";
       if (message.toLowerCase().includes("failed to fetch")) {

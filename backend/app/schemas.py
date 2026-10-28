@@ -45,6 +45,10 @@ class CandidateProfile(BaseModel):
     cv_file: str = Field(min_length=1)
     name: str = Field(min_length=1)
     email: str = ""
+    phone: str = ""
+    location: str = ""
+    linkedin: str = ""
+    github: str = ""
     education: List[Union[str, Dict[str, Any]]] = Field(default_factory=list)
     projects: List[Union[str, Dict[str, Any]]] = Field(default_factory=list)
     hackathons: List[Union[str, Dict[str, Any]]] = Field(default_factory=list)

@@ -38,8 +38,11 @@ from .role4_service import (
     ask_ai_agent_single_question,
     ensure_report,
     evaluate_interview_answer,
+    evaluate_profile_interview_answer,
     evaluate_sprint_submission,
     generate_interview_questions,
+    generate_profile_interview_question,
+    generate_profile_sprint_challenge,
     generate_markdown_report,
     generate_sprint_challenge,
 )
@@ -55,7 +58,6 @@ MAX_TEXT_CHARS = 50_000
 MAX_VISION_IMAGES = 12
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
 MAX_TOTAL_IMAGE_BYTES = 12 * 1024 * 1024
-OUTPUT_DIR = Path(__file__).resolve().parents[2] / "output"
 logger = logging.getLogger(__name__)
 
 
@@ -132,12 +134,27 @@ class VanshInterviewEvaluationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=3000)
     answer: str = Field(min_length=1, max_length=12000)
+    skill_name: str = Field(default="Interview Skills", max_length=120)
 
 
 class SprintEvaluationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     challenge: dict[str, Any]
     solution: str = Field(min_length=1, max_length=12000)
+
+
+class ProfileAssessmentSkillRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    skill_name: str = Field(min_length=1, max_length=120)
+    category_code: CategoryCode
+    evidence: str = Field(default="", max_length=500)
+
+
+class ProfileInterviewEvaluationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    skill_name: str = Field(min_length=1, max_length=120)
+    question: str = Field(min_length=1, max_length=3000)
+    answer: str = Field(min_length=1, max_length=12000)
 
 
 app = FastAPI(title="RADIX Talent Match API", version="0.1.0")
@@ -410,15 +427,6 @@ async def analyze_jd(
         extraction_mode=extraction_mode,
         extraction_note=extraction_note,
     )
-    try:
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        output_name = f"{Path(filename).stem}.json"
-        (OUTPUT_DIR / output_name).write_text(
-            json.dumps(result.model_dump(mode="json"), ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-    except OSError:
-        logger.warning("The extraction completed, but the output directory is not writable.")
     return result
 
 
@@ -479,6 +487,7 @@ def score_talent_check(req: TalentCheckRequest) -> dict[str, Any]:
     report["company_id"] = record["company_id"]
     report["benchmark_source"] = record["benchmark_source"]
     report["benchmark_notice"] = record["benchmark_note"]
+    report["resume_skill_evidence"] = req.candidate_profile.get("skills", [])[:300]
     return {"report": report, "radar_chart_data": get_radar_chart_data(report)}
 
 
@@ -566,11 +575,8 @@ async def vansh_interview_generate(req: TalentWorkflowRequest) -> dict[str, list
 
 
 @app.post("/api/interview-practice/evaluate")
-async def vansh_interview_evaluate(req: VanshInterviewEvaluationRequest) -> dict[str, str]:
-    feedback = await run_in_threadpool(evaluate_interview_answer, req.question, req.answer)
-    if feedback.startswith("[API Error]"):
-        raise HTTPException(502, feedback)
-    return {"feedback": feedback}
+async def vansh_interview_evaluate(req: VanshInterviewEvaluationRequest) -> dict[str, Any]:
+    return await run_in_threadpool(evaluate_profile_interview_answer, req.question, req.answer, req.skill_name)
 
 
 @app.post("/api/skill-sprint/generate")
@@ -586,6 +592,37 @@ async def vansh_sprint_generate(req: TalentWorkflowRequest) -> dict[str, Any]:
 async def vansh_sprint_evaluate(req: SprintEvaluationRequest) -> dict[str, Any]:
     result = await run_in_threadpool(evaluate_sprint_submission, req.challenge, req.solution)
     return {"result": result}
+
+
+@app.post("/api/profile-assessment/interview/question")
+async def profile_interview_question(req: ProfileAssessmentSkillRequest) -> dict[str, str]:
+    result = await run_in_threadpool(
+        generate_profile_interview_question,
+        req.skill_name,
+        req.category_code,
+        req.evidence,
+    )
+    return result
+
+
+@app.post("/api/profile-assessment/interview/evaluate")
+async def profile_interview_evaluate(req: ProfileInterviewEvaluationRequest) -> dict[str, Any]:
+    return await run_in_threadpool(
+        evaluate_profile_interview_answer,
+        req.question,
+        req.answer,
+        req.skill_name,
+    )
+
+
+@app.post("/api/profile-assessment/sprint/challenge")
+async def profile_sprint_challenge(req: ProfileAssessmentSkillRequest) -> dict[str, str]:
+    return await run_in_threadpool(
+        generate_profile_sprint_challenge,
+        req.skill_name,
+        req.category_code,
+        req.evidence,
+    )
 
 
 @app.post("/api/talent-check/report-md")
