@@ -74,7 +74,7 @@ function userResumeScore(skills: Skill[], category: string): { score: number; co
   return { score: Math.round(score * 10) / 10, confidence, evidenceCount: evidence.length };
 }
 
-function assessBenchmark(requiredLevel: number, score: number | null, category: string) {
+function assessBenchmark(requiredLevel: number, score: number | null) {
   const gap = Math.round((requiredLevel - (score ?? 0)) * 10) / 10;
   return { gap, isDealBreaker: gap >= dealBreakerThreshold };
 }
@@ -220,7 +220,7 @@ export function ResumeProfile() {
   const benchmarkRows = (talentReport?.per_skillset_gap_breakdown || talentReport?.skillset_gap || []).map((row: any) => {
     const resumeScore = userResumeScore(profile?.skills ?? [], row.category);
     const requiredLevel = Number.isFinite(Number(row.required_level)) ? Number(row.required_level) : 0;
-    return { ...row, resumeScore, requiredLevel, ...assessBenchmark(requiredLevel, resumeScore?.score ?? null, row.category) };
+    return { ...row, resumeScore, requiredLevel, ...assessBenchmark(requiredLevel, resumeScore?.score ?? null) };
   });
   const orderBenchmarkRows = (topic = "") => [...benchmarkRows].sort((left: any, right: any) => {
     if (topic && left.category === topic) return -1;
