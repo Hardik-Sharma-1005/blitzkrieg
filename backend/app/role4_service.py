@@ -6,7 +6,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
-ROLE4_DIR = Path(__file__).resolve().parents[2] / "role4_standalone"
+PROJECT_DIR = Path(__file__).resolve().parents[2]
+ROLE4_DIR = next(
+    (
+        directory
+        for directory in (PROJECT_DIR / "role4_standalone", PROJECT_DIR / "Talent Check")
+        if (directory / "ai_agent.py").is_file()
+    ),
+    PROJECT_DIR / "role4_standalone",
+)
 if str(ROLE4_DIR) not in sys.path:
     sys.path.insert(0, str(ROLE4_DIR))
 

@@ -12,7 +12,12 @@ from backend.app.resume_pipeline import ResumePipeline
 from backend.app.schemas import CandidateProfile
 from docx import Document
 
-ROLE4_DIR = Path(__file__).resolve().parents[2] / "role4_standalone"
+PROJECT_DIR = Path(__file__).resolve().parents[2]
+ROLE4_DIR = next(
+    directory
+    for directory in (PROJECT_DIR / "role4_standalone", PROJECT_DIR / "Talent Check")
+    if (directory / "ai_agent.py").is_file()
+)
 sys.path.insert(0, str(ROLE4_DIR))
 import config as role4_config
 
@@ -65,14 +70,14 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
         self.assertEqual(by_category["SQL"], 2.8)
         self.assertEqual(by_category["NETW"], 1.8)
 
-    def test_deal_breaker_requires_gap_and_minimum_skill_weight(self):
+    def test_deal_breaker_requires_only_a_gap_of_at_least_one_point_five(self):
         benchmark = {category: 2.0 for category in RADIX_CATEGORIES}
         report = main.run_talent_check({}, "Synthetic benchmark", {"Synthetic benchmark": benchmark})
-        expected = {"COD", "DSA", "SYSD", "SWE"}
+        expected = set(RADIX_CATEGORIES)
         self.assertEqual(report["deal_breakers_count"], len(expected))
         self.assertEqual({row["category"] for row in report["deal_breakers_list"]}, expected)
         self.assertTrue(all(row["gap"] == 2.0 for row in report["deal_breakers_list"]))
-        self.assertFalse(next(row for row in report["per_skillset_gap_breakdown"] if row["category"] == "COMM")["is_deal_breaker"])
+        self.assertTrue(next(row for row in report["per_skillset_gap_breakdown"] if row["category"] == "COMM")["is_deal_breaker"])
         self.assertFalse(report["is_ready"])
         self.assertEqual(report["readiness_verdict"], "UNREADY")
 

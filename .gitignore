@@ -4,9 +4,26 @@ dist/
 backend/.venv/
 __pycache__/
 *.py[cod]
+# Local environment files. Keep sanitized templates versioned.
 .env
-.env.local
-backend/.env
+.env.*
+!.env.example
+
+# Private keys and exported service credentials.
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+id_ecdsa
+credentials.json
+client_secret*.json
+service-account*.json
+*-service-account*.json
 *.tsbuildinfo
 output/*.json
 !output/.gitkeep

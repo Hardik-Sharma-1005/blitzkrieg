@@ -65,10 +65,6 @@ const categories: Record<string, string> = {
 
 const confidenceScores: Record<Skill["confidence"], number> = { high: 3.8, medium: 2.8, low: 1.8 };
 const dealBreakerThreshold = 1.5;
-const benchmarkWeights: Record<string, number> = {
-  COD: 1.4, DSA: 1.4, SYSD: 1.3, SWE: 1.2, OOD: 1.1, CLOUD: 1.1,
-  AI: 1.0, APTI: 1.0, SQL: 1.0, OS: 0.9, NETW: 0.9, COMM: 0.8,
-};
 
 function userResumeScore(skills: Skill[], category: string): { score: number; confidence: Skill["confidence"]; evidenceCount: number } | null {
   const evidence = skills.filter((skill) => skill.category_code === category);
@@ -80,7 +76,7 @@ function userResumeScore(skills: Skill[], category: string): { score: number; co
 
 function assessBenchmark(requiredLevel: number, score: number | null, category: string) {
   const gap = Math.round((requiredLevel - (score ?? 0)) * 10) / 10;
-  return { gap, isDealBreaker: gap >= dealBreakerThreshold && (benchmarkWeights[category] ?? 1.0) >= 1.2 };
+  return { gap, isDealBreaker: gap >= dealBreakerThreshold };
 }
 
 function escapeHtml(value: unknown): string {
@@ -1244,7 +1240,7 @@ export function ResumeProfile() {
                                       <td className="px-3 py-2.5 font-medium text-slate-600">
                                         {row.requiredLevel.toFixed(1)} / 5.0
                                       </td>
-                                      <td className="px-3 py-2.5">
+                                      <td className={`px-3 py-2.5 ${row.isDealBreaker ? "text-red-700" : "text-slate-700"}`}>
                                         <span className="font-semibold">{row.isDealBreaker ? "Deal breaker" : "No deal breaker"}</span>
                                         <span className="mt-0.5 block text-[10px]">{row.gap > 0 ? `Gap ${row.gap.toFixed(1)}` : row.gap < 0 ? `${Math.abs(row.gap).toFixed(1)} above target` : "At target"}</span>
                                       </td>
