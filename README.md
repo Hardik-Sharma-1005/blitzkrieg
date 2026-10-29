@@ -8,7 +8,7 @@
 
 **An AI-powered career and placement intelligence platform built to help students understand employer expectations, identify skill gaps, and prepare with purpose.**
 
-[🚀 Live Demo](https://jss-placement-intelligence-portal.vercel.app)
+[🚀 Live Website](https://jss-placement-intelligence-portal.vercel.app)
 
 <br/>
 
