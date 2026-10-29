@@ -235,7 +235,7 @@ export function ResumeProfile() {
     }));
     return { ...talentReport, focus_category: topic || undefined, per_skillset_gap_breakdown: rows, skillset_gap: rows };
   };
-  const dealBreakerCount = benchmarkRows.filter((row: any) => row.isDealBreaker).length;
+  const dealBreakerCount = benchmarkRows.filter((row: any) => row.gap >= dealBreakerThreshold).length;
   const readinessScore = Math.max(0, Math.min(100, Number(talentReport?.readiness_score) || 0));
   const readinessThreshold = Number(talentReport?.readiness_threshold) || 75;
   const meetsReadinessThreshold = readinessScore >= readinessThreshold && dealBreakerCount === 0;
@@ -1207,7 +1207,7 @@ export function ResumeProfile() {
                               <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-[#26354b]">
                                 Resume Evidence Compared with Company Benchmark
                               </h4>
-                              <span className="text-[11px] text-slate-500">Deal breaker threshold: gap ≥ 1.5</span>
+                              <span className="text-[11px] text-slate-500">Every competency gap of 1.5 or more counts as a deal breaker.</span>
                             </div>
                             <div className="overflow-x-auto">
                               <table className="w-full text-left text-xs sm:text-sm">
