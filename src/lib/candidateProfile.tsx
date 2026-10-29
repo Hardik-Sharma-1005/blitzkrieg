@@ -43,6 +43,7 @@ type ProfileContextValue = {
   profile: ParsedCandidateProfile | null;
   badges: CandidateSkillBadge[];
   profileReviewed: boolean;
+  interviewCompleted: boolean;
   readinessChecked: boolean;
   skippedSteps: string[];
   applyResume: (profile: ParsedCandidateProfile) => void;
@@ -50,6 +51,7 @@ type ProfileContextValue = {
   awardBadge: (skill: CandidateSkill, assessment: AssessmentKind, evidence: string) => void;
   clearProfile: () => void;
   markProfileReviewed: () => void;
+  markInterviewCompleted: () => void;
   markReadinessChecked: () => void;
   setStepSkipped: (stepKey: string, skipped: boolean) => void;
 };
@@ -57,15 +59,21 @@ type ProfileContextValue = {
 const storageKey = "blitzkrieg-candidate-session-v1";
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
-function readSession(): { profile: ParsedCandidateProfile | null; badges: CandidateSkillBadge[]; profileReviewed: boolean; readinessChecked: boolean; skippedSteps: string[] } {
+function readSession(): { profile: ParsedCandidateProfile | null; badges: CandidateSkillBadge[]; profileReviewed: boolean; interviewCompleted: boolean; readinessChecked: boolean; skippedSteps: string[] } {
   try {
     const saved = window.sessionStorage.getItem(storageKey);
-    if (!saved) return { profile: null, badges: [], profileReviewed: false, readinessChecked: false, skippedSteps: [] };
-    const parsed = JSON.parse(saved) as { profile?: ParsedCandidateProfile | null; badges?: CandidateSkillBadge[]; profileReviewed?: boolean; readinessChecked?: boolean; skippedSteps?: string[] };
-    if (!parsed.profile || !Array.isArray(parsed.profile.skills)) return { profile: null, badges: [], profileReviewed: false, readinessChecked: false, skippedSteps: [] };
-    return { profile: parsed.profile, badges: Array.isArray(parsed.badges) ? parsed.badges : [], profileReviewed: parsed.profileReviewed === true, readinessChecked: parsed.readinessChecked === true, skippedSteps: Array.isArray(parsed.skippedSteps) ? parsed.skippedSteps : [] };
+    if (!saved) return { profile: null, badges: [], profileReviewed: false, interviewCompleted: false, readinessChecked: false, skippedSteps: [] };
+    const parsed = JSON.parse(saved) as { profile?: ParsedCandidateProfile | null; badges?: CandidateSkillBadge[]; profileReviewed?: boolean; interviewCompleted?: boolean; readinessChecked?: boolean; skippedSteps?: string[] };
+    if (!parsed.profile || !Array.isArray(parsed.profile.skills)) return { profile: null, badges: [], profileReviewed: false, interviewCompleted: false, readinessChecked: false, skippedSteps: [] };
+    const savedBadges = Array.isArray(parsed.badges) ? parsed.badges : [];
+    const legacyInterviewCompleted = savedBadges.some((badge) => Array.isArray(badge.assessments) && badge.assessments.includes("mock_interview"));
+    const badges = savedBadges.flatMap((badge) => {
+      const assessments = Array.isArray(badge.assessments) ? badge.assessments.filter((assessment) => assessment === "skill_proof_sprint") : [];
+      return assessments.length ? [{ ...badge, assessments }] : [];
+    });
+    return { profile: parsed.profile, badges, profileReviewed: parsed.profileReviewed === true, interviewCompleted: parsed.interviewCompleted === true || legacyInterviewCompleted, readinessChecked: parsed.readinessChecked === true, skippedSteps: Array.isArray(parsed.skippedSteps) ? parsed.skippedSteps : [] };
   } catch {
-    return { profile: null, badges: [], profileReviewed: false, readinessChecked: false, skippedSteps: [] };
+    return { profile: null, badges: [], profileReviewed: false, interviewCompleted: false, readinessChecked: false, skippedSteps: [] };
   }
 }
 
@@ -82,7 +90,7 @@ export function CandidateProfileProvider({ children }: { children: ReactNode }) 
   }, [session]);
 
   const applyResume = useCallback((profile: ParsedCandidateProfile) => {
-    setSession({ profile: { ...profile }, badges: [], profileReviewed: false, readinessChecked: false, skippedSteps: [] });
+    setSession({ profile: { ...profile }, badges: [], profileReviewed: false, interviewCompleted: false, readinessChecked: false, skippedSteps: [] });
   }, []);
 
   const updateBasicInfo = useCallback((updates: Pick<ParsedCandidateProfile, "name" | "email" | "phone" | "location" | "linkedin" | "github">) => {
@@ -116,14 +124,15 @@ export function CandidateProfileProvider({ children }: { children: ReactNode }) 
     });
   }, []);
 
-  const clearProfile = useCallback(() => setSession({ profile: null, badges: [], profileReviewed: false, readinessChecked: false, skippedSteps: [] }), []);
+  const clearProfile = useCallback(() => setSession({ profile: null, badges: [], profileReviewed: false, interviewCompleted: false, readinessChecked: false, skippedSteps: [] }), []);
   const markProfileReviewed = useCallback(() => setSession((current) => current.profile ? { ...current, profileReviewed: true } : current), []);
+  const markInterviewCompleted = useCallback(() => setSession((current) => current.profile ? { ...current, interviewCompleted: true } : current), []);
   const markReadinessChecked = useCallback(() => setSession((current) => ({ ...current, readinessChecked: true })), []);
   const setStepSkipped = useCallback((stepKey: string, skipped: boolean) => setSession((current) => ({
     ...current,
     skippedSteps: skipped ? [...new Set([...current.skippedSteps, stepKey])] : current.skippedSteps.filter((key) => key !== stepKey),
   })), []);
-  const value = useMemo(() => ({ profile: session.profile, badges: session.badges, profileReviewed: session.profileReviewed, readinessChecked: session.readinessChecked, skippedSteps: session.skippedSteps, applyResume, updateBasicInfo, awardBadge, clearProfile, markProfileReviewed, markReadinessChecked, setStepSkipped }), [session, applyResume, updateBasicInfo, awardBadge, clearProfile, markProfileReviewed, markReadinessChecked, setStepSkipped]);
+  const value = useMemo(() => ({ profile: session.profile, badges: session.badges, profileReviewed: session.profileReviewed, interviewCompleted: session.interviewCompleted, readinessChecked: session.readinessChecked, skippedSteps: session.skippedSteps, applyResume, updateBasicInfo, awardBadge, clearProfile, markProfileReviewed, markInterviewCompleted, markReadinessChecked, setStepSkipped }), [session, applyResume, updateBasicInfo, awardBadge, clearProfile, markProfileReviewed, markInterviewCompleted, markReadinessChecked, setStepSkipped]);
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 }

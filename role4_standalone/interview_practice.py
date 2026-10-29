@@ -4,7 +4,11 @@ from config import call_gemini_api
 
 def generate_interview_questions(talent_check_output: dict) -> list:
     gaps = [item for item in talent_check_output.get("per_skillset_gap_breakdown", []) if item["gap"] > 0]
-    top_gaps = [g["category"] for g in gaps[:2]] if gaps else ["General Software Engineering"]
+    focus_category = talent_check_output.get("focus_category")
+    if focus_category:
+        top_gaps = [focus_category]
+    else:
+        top_gaps = [g["category"] for g in gaps[:2]] if gaps else ["General Software Engineering"]
     company = talent_check_output.get("target_company", "Google")
 
     prompt = f"""
@@ -59,9 +63,12 @@ Write one focused interview question to assess the candidate's applied understan
 Use the resume evidence only as context, not as proof of skill: "{resume_evidence[:700]}".
 Return ONLY JSON: {{"question": "..."}}
 """
-    response = call_gemini_api(prompt)
     try:
-        raw_text = response.strip()
+        response = call_gemini_api(prompt)
+    except Exception:
+        response = ""
+    try:
+        raw_text = response.strip() if isinstance(response, str) else ""
         if "```" in raw_text:
             raw_text = raw_text.split("```", 1)[1].replace("json", "", 1).strip().removesuffix("```").strip()
         data = json.loads(raw_text)
@@ -72,6 +79,40 @@ Return ONLY JSON: {{"question": "..."}}
     return {
         "question": f"Describe a specific problem where you applied {skill_name}. What approach did you choose, what alternatives did you consider, and how did you know your solution worked?",
         "generation_status": "fallback",
+    }
+
+
+def _fallback_interview_evaluation(question: str, candidate_answer: str, skill_name: str) -> dict:
+    """Score locally when an AI provider fails or returns an invalid rubric."""
+    answer = candidate_answer.strip()
+    words = answer.split()
+    normalized_answer = answer.casefold()
+    skill_tokens = [token for token in skill_name.casefold().split() if len(token) > 2]
+    question_tokens = {token.strip(".,?!:;()[]{}\"'").casefold() for token in question.split()}
+    question_tokens = {token for token in question_tokens if len(token) > 3}
+    answer_tokens = {token.strip(".,?!:;()[]{}\"'").casefold() for token in words}
+    relevant = any(token in normalized_answer for token in skill_tokens) or bool(question_tokens & answer_tokens)
+    technical_signals = ("because", "implement", "design", "test", "data", "api", "query", "algorithm", "trade-off", "tradeoff", "performance", "debug", "system", "architecture", "code", "measure")
+    evidence_signals = ("for example", "for instance", "I built", "I implemented", "I measured", "result", "improved", "reduced", "increased", "trade-off", "tradeoff", "decided", "tested")
+    criteria = {
+        "technical_accuracy": 2 if len(words) >= 30 and any(signal in normalized_answer for signal in technical_signals) else 1 if len(words) >= 12 else 0,
+        "relevance": 2 if relevant and len(words) >= 20 else 1 if relevant or len(words) >= 12 else 0,
+        "explanation": 2 if len(words) >= 35 and any(signal.casefold() in normalized_answer for signal in evidence_signals) else 1 if len(words) >= 12 else 0,
+    }
+    score = sum(criteria.values())
+    passed = criteria["technical_accuracy"] >= 1 and criteria["relevance"] >= 1 and score >= 4
+    feedback = (
+        "This response was scored with the local rubric because the AI evaluator was unavailable. Add a specific example, explain your technical choices, and describe the outcome for a stronger response."
+        if answer else
+        "Your response is empty. Add an answer with your approach, a relevant example, and the result before submitting."
+    )
+    return {
+        "is_passed": passed,
+        "score_pct": round(score / 6 * 100),
+        "criteria": criteria,
+        "feedback": feedback,
+        "evaluation_status": "scored",
+        "evaluation_method": "local_fallback",
     }
 
 
@@ -88,22 +129,17 @@ Return ONLY JSON with integer criterion scores and concise feedback:
 QUESTION: {question[:3000]}
 ANSWER: {candidate_answer[:12000]}
 """
-    response = call_gemini_api(prompt)
-    if response.startswith("[API Error]"):
-        return {
-            "is_passed": False,
-            "score_pct": 0,
-            "criteria": {},
-            "feedback": "Assessment is temporarily unavailable. Your answer was not scored and no badge was awarded. Please try again later.",
-            "evaluation_status": "unavailable",
-        }
     try:
-        raw_text = response.strip()
+        response = call_gemini_api(prompt)
+    except Exception:
+        response = ""
+    try:
+        raw_text = response.strip() if isinstance(response, str) else ""
         if "```" in raw_text:
             raw_text = raw_text.split("```", 1)[1].replace("json", "", 1).strip().removesuffix("```").strip()
         data = json.loads(raw_text)
         keys = ("technical_accuracy", "relevance", "explanation")
-        if isinstance(data, dict) and all(type(data.get(key)) is int and 0 <= data[key] <= 2 for key in keys) and isinstance(data.get("feedback"), str):
+        if isinstance(data, dict) and all(type(data.get(key)) is int and 0 <= data[key] <= 2 for key in keys) and isinstance(data.get("feedback"), str) and data["feedback"].strip():
             score = sum(data[key] for key in keys)
             passed = data["technical_accuracy"] >= 1 and data["relevance"] >= 1 and score >= 4
             return {
@@ -112,13 +148,8 @@ ANSWER: {candidate_answer[:12000]}
                 "criteria": {key: data[key] for key in keys},
                 "feedback": data["feedback"][:1200],
                 "evaluation_status": "scored",
+                "evaluation_method": "ai",
             }
     except (ValueError, TypeError, IndexError):
         pass
-    return {
-        "is_passed": False,
-        "score_pct": 0,
-        "criteria": {},
-        "feedback": "The answer could not be scored reliably. No badge was awarded; please try again when assessment is available.",
-        "evaluation_status": "unavailable",
-    }
+    return _fallback_interview_evaluation(question, candidate_answer, skill_name)

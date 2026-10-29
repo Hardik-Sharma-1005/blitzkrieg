@@ -10,36 +10,36 @@
   --foreground: 220 34% 17%;
   --card: 0 0% 100%;
   --card-foreground: 220 34% 17%;
-  --primary: 166 46% 31%;
-  --primary-foreground: 45 75% 99%;
-  --secondary: 160 18% 93%;
+  --primary: 323 27% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 320 20% 95%;
   --secondary-foreground: 220 34% 17%;
-  --muted: 150 12% 94%;
+  --muted: 320 14% 94%;
   --muted-foreground: 219 12% 43%;
-  --accent: 160 37% 91%;
-  --accent-foreground: 164 40% 25%;
-  --input: 150 12% 82%;
-  --border: 150 12% 86%;
-  --ring: 198 69% 52%;
+  --accent: 320 35% 92%;
+  --accent-foreground: 323 27% 35%;
+  --input: 320 12% 82%;
+  --border: 320 12% 86%;
+  --ring: 323 27% 48%;
   --radius: 1rem;
   --navy: 220 56% 21%;
   --navy-light: 218 37% 31%;
   --gold: 43 68% 53%;
   --coral: 13 78% 65%;
-  --mint: 158 43% 70%;
+  --mint: 320 38% 75%;
   --sky: 198 70% 74%;
   --lilac: 257 55% 79%;
   --super-dream: 263 62% 69%;
   --dream: 203 72% 56%;
-  --standard: 157 45% 38%;
+  --standard: 323 31% 49%;
   --regular: 36 75% 48%;
   --expert: 9 65% 54%;
   --advanced: 22 75% 52%;
   --pro: 203 72% 56%;
-  --beginner: 157 45% 38%;
-  --sidebar-background: 40 45% 94%;
+  --beginner: 323 31% 49%;
+  --sidebar-background: 320 18% 96%;
   --sidebar-foreground: 220 25% 25%;
-  --sidebar-accent: 157 38% 89%;
+  --sidebar-accent: 320 35% 92%;
 }
 
 .dark {
@@ -53,14 +53,14 @@
   --secondary-foreground: 42 35% 94%;
   --muted: 220 25% 20%;
   --muted-foreground: 215 15% 66%;
-  --accent: 164 35% 24%;
-  --accent-foreground: 157 42% 83%;
+  --accent: 320 23% 26%;
+  --accent-foreground: 320 40% 82%;
   --input: 220 20% 25%;
   --border: 220 20% 25%;
   --ring: 198 69% 52%;
   --sidebar-background: 220 30% 14%;
   --sidebar-foreground: 42 35% 90%;
-  --sidebar-accent: 220 25% 20%;
+  --sidebar-accent: 320 23% 26%;
 }
 
 * { box-sizing: border-box; }
@@ -300,6 +300,57 @@ button, input, select { font: inherit; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .portal-hero::before { transform: none; }
 }
+
+/* Theme-aware candidate skill badge panel and empty state. */
+.app-shell .skill-badges-panel {
+  border-color: var(--line-default) !important;
+  background: var(--surface-card) !important;
+  color: var(--ink-primary) !important;
+}
+.app-shell .skill-badges-panel .skill-badges-heading { color: var(--ink-primary) !important; }
+.app-shell .skill-badges-panel .skill-badges-description { color: var(--ink-secondary) !important; }
+.app-shell .skill-badges-panel .skill-badges-count {
+  border-color: var(--line-default) !important;
+  background: var(--surface-soft) !important;
+  color: var(--brand-accent) !important;
+}
+.app-shell .skill-badges-panel .skill-badges-empty {
+  border-color: var(--line-default) !important;
+  background: var(--surface-raised) !important;
+  color: var(--ink-secondary) !important;
+}
+.app-shell .skill-badges-panel .skill-badge-item {
+  border-color: var(--line-default) !important;
+  background: var(--surface-raised) !important;
+  color: var(--ink-secondary) !important;
+}
+.app-shell .skill-badges-panel .skill-badge-item h3 { color: var(--ink-primary) !important; }
+.app-shell .skill-badges-panel .skill-badge-item [class*="bg-[#e4f2e9]"] {
+  background: var(--surface-soft) !important;
+  color: var(--brand-accent) !important;
+}
+.app-shell .candidate-edit-details {
+  border-color: var(--line-default) !important;
+  background: var(--surface-raised) !important;
+  color: var(--ink-primary) !important;
+}
+.app-shell .candidate-edit-details:hover {
+  border-color: var(--brand-accent) !important;
+  background: var(--surface-soft) !important;
+  color: var(--brand-accent) !important;
+}
+.app-shell .candidate-profile-check-link {
+  border-color: var(--line-default) !important;
+  background: var(--surface-raised) !important;
+  color: var(--ink-primary) !important;
+}
+.app-shell .candidate-profile-check-link:hover {
+  border-color: var(--brand-accent) !important;
+  background: var(--surface-soft) !important;
+  color: var(--brand-accent) !important;
+}
+.app-shell .field-validation-error { color: #b42318 !important; }
+.app-shell:not(.theme-light) .field-validation-error { color: #ff8d8d !important; }
 
 /* Light mode uses the same neutral palette with the platform's existing green accent. */
 .app-shell.theme-light { background: #f7f8f5; color: #26354b; }
@@ -965,7 +1016,7 @@ footer a:hover,
 .app-shell .portal-home { background: transparent !important; }
 .app-shell .portal-home main.brand-directory { background: transparent !important; }
 
-/* Theme palettes: light uses ivory/teal; dark uses charcoal/rose. Keep legacy page utilities in sync. */
+/* Shared brand palette: bolt mauve, supported by charcoal and soft rose surfaces. */
 .app-shell {
   --surface-page: #08090d;
   --surface-card: #11131b;
@@ -974,33 +1025,33 @@ footer a:hover,
   --ink-primary: #f4f0f5;
   --ink-secondary: #b5acba;
   --line-default: #34303b;
-  --brand-accent: #e3a4ce;
-  --brand-action: #c17bab;
-  --brand-accent-hover: #d18bb9;
-  --primary: 322 55% 77%;
-  --ring: 322 55% 77%;
+  --brand-accent: #D99CC5;
+  --brand-action: #D99CC5;
+  --brand-accent-hover: #e6b2d5;
+  --primary: 322 44% 73%;
+  --ring: 322 44% 73%;
 }
 .app-shell.theme-light {
-  --surface-page: #f5f4ec;
-  --surface-card: #fffef9;
-  --surface-raised: #ebece2;
-  --surface-soft: #e2e8dc;
-  --ink-primary: #1d302c;
-  --ink-secondary: #536960;
-  --line-default: #d3ddd1;
-  --brand-accent: #236653;
-  --brand-action: #236653;
-  --brand-accent-hover: #194c3d;
-  --primary: 158 49% 27%;
+  --surface-page: #f8f6f8;
+  --surface-card: #fff;
+  --surface-raised: #f3edf2;
+  --surface-soft: #efe2eb;
+  --ink-primary: #2d2630;
+  --ink-secondary: #655b67;
+  --line-default: #e1d7e0;
+  --brand-accent: #9A5A82;
+  --brand-action: #9A5A82;
+  --brand-accent-hover: #87496E;
+  --primary: 323 27% 48%;
   --primary-foreground: 0 0% 100%;
-  --ring: 158 49% 27%;
+  --ring: 323 27% 48%;
   background: var(--surface-page) !important;
   color: var(--ink-primary) !important;
 }
 .app-shell .portal-home {
-  --brand-accent: #e3a4ce;
-  --brand-action: #c17bab;
-  --brand-accent-hover: #d18bb9;
+  --brand-accent: #D99CC5;
+  --brand-action: #D99CC5;
+  --brand-accent-hover: #e6b2d5;
   --home-bg: #08090d;
   --home-surface: #11131b;
   --home-ink: #f4f0f5;
@@ -1008,23 +1059,23 @@ footer a:hover,
   --home-line: #34303b;
 }
 .app-shell.theme-light .portal-home {
-  --brand-accent: #236653;
-  --brand-action: #236653;
-  --brand-accent-hover: #194c3d;
-  --home-bg: #f5f4ec;
-  --home-surface: #ebece2;
-  --home-ink: #1d302c;
-  --home-muted: #536960;
-  --home-line: #d3ddd1;
+  --brand-accent: #9A5A82;
+  --brand-action: #9A5A82;
+  --brand-accent-hover: #87496E;
+  --home-bg: #f8f6f8;
+  --home-surface: #f3edf2;
+  --home-ink: #2d2630;
+  --home-muted: #655b67;
+  --home-line: #e1d7e0;
 }
 .app-shell:not(.theme-light) {
   background: var(--surface-page) !important;
   color: var(--ink-primary) !important;
 }
 .app-shell:not(.theme-light) > aside { background: #101119 !important; border-color: #302d37 !important; }
-.app-shell.theme-light > aside { background: #fffef9 !important; border-color: #d3ddd1 !important; }
+.app-shell.theme-light > aside { background: #fff !important; border-color: #e1d7e0 !important; }
 .app-shell:not(.theme-light) > aside nav a[aria-current="page"] { background: #211a25 !important; color: #fff !important; box-shadow: inset 3px 0 var(--brand-accent); }
-.app-shell.theme-light > aside nav a[aria-current="page"] { background: #e2e8dc !important; color: #194c3d !important; box-shadow: inset 3px 0 var(--brand-accent); }
+.app-shell.theme-light > aside nav a[aria-current="page"] { background: #f3e5ef !important; color: #713c60 !important; box-shadow: inset 3px 0 var(--brand-accent); }
 
 /* These exact color families are the hard-coded page utility colors used for brand and neutral surfaces. */
 .app-shell :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#185546]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"], [class*="text-[#286b53]"], [class*="text-[#679586]"]) { color: var(--brand-accent) !important; }
@@ -1053,3 +1104,91 @@ footer a:hover,
 .app-shell:not(.theme-light) .brand-primary-button { background-color: var(--brand-action) !important; color: #151119 !important; }
 .app-shell.theme-light .brand-primary-button { background-color: var(--brand-action) !important; color: #fff !important; }
 .app-shell.theme-light .brand-tagline { color: var(--brand-accent) !important; }
+/* Routed pages have a general light-theme link rule; keep primary-link text high contrast. */
+.app-shell.theme-light .space-theme a.brand-primary-button { color: #fff !important; }
+
+/* Keep standalone routed pages on the same readable palette as the workspace. */
+.app-shell:not(.theme-light) .app-route-content :is([class*="text-slate-900"], [class*="text-slate-800"], [class*="text-slate-700"], [class*="text-[#26354b]"]) { color: var(--ink-primary) !important; }
+.app-shell:not(.theme-light) .app-route-content :is([class*="text-slate-600"], [class*="text-slate-500"], [class*="text-slate-400"]) { color: var(--ink-secondary) !important; }
+.app-shell:not(.theme-light) .app-route-content :is([class*="bg-white"], [class*="bg-[#faf7f0]"], [class*="bg-[#fbf8f1]"], [class*="bg-[#fffdf8]"]) { background-color: var(--surface-raised) !important; }
+.app-shell.theme-light .app-route-content :is([class*="bg-[#e4f2e9]"], [class*="bg-[#f3f8f1]"], [class*="bg-[#eaf4ec]"], [class*="bg-[#faf7f0]"]) { background-color: var(--surface-raised) !important; }
+.app-shell.theme-light .space-theme a { color: var(--brand-accent) !important; }
+.app-shell.theme-light :is(.space-theme, .portal-home) :is([class*="text-[#176d55]"], [class*="text-[#185546]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"], [class*="text-[#286b53]"], [class*="text-[#679586]"]) { color: var(--brand-accent) !important; }
+
+.app-shell :is(.space-theme, .app-route-content) :is([class*="text-[#176d55]"], [class*="text-[#185546]"], [class*="text-[#216b5c]"], [class*="text-[#216b5d]"], [class*="text-[#246b5d]"], [class*="text-[#287d68]"], [class*="text-[#286b53]"], [class*="text-[#679586]"]) { color: var(--brand-accent) !important; }
+.app-shell :is(.space-theme, .app-route-content) :is([class*="bg-[#e4f2e9]"], [class*="bg-[#e8f4eb]"], [class*="bg-[#e9f4ed]"], [class*="bg-[#eaf4ec]"], [class*="bg-[#f3f8f1]"], [class*="bg-[#e8f5f8]"], [class*="bg-[#f1ecfa]"], [class*="bg-[#faf7f0]"]) { background-color: var(--surface-soft) !important; }
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-[#216b5c]"],
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-[#216b5d]"],
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-[#246b5d]"],
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-[#185546]"],
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-[#1b5549]"] { background: var(--brand-action) !important; border-color: var(--brand-action) !important; color: #fff !important; }
+.app-shell :is(.space-theme, .app-route-content) :is([class*="border-[#216b5c]"], [class*="border-[#246b5d]"], [class*="border-[#80b7a4]"]) { border-color: var(--brand-accent) !important; }
+.app-shell :is(.space-theme, .app-route-content) :is(.rounded-2xl.border, .rounded-xl.border, .rounded-lg.border) { background-color: var(--surface-card); }
+.app-shell :is(.space-theme, .app-route-content) :is([class*="text-green-"], [class*="text-emerald-"]) { color: var(--brand-accent) !important; }
+.app-shell :is(.space-theme, .app-route-content) :is([class*="border-green-"], [class*="border-emerald-"]) { border-color: var(--brand-accent) !important; }
+.app-shell :is(.space-theme, .app-route-content) :is([class*="bg-green-"], [class*="bg-emerald-"]) { background-color: var(--surface-soft) !important; }
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-green-"],
+.app-shell :is(.space-theme, .app-route-content) :is(button, a)[class*="bg-emerald-"] { background-color: var(--brand-action) !important; color: #fff !important; }
+.app-shell:not(.theme-light) .app-route-content :is([class*="bg-amber-"], [class*="bg-red-"], [class*="bg-rose-"]) { background-color: var(--surface-raised) !important; }
+.app-shell:not(.theme-light) .app-route-content :is([class*="border-amber-"], [class*="border-red-"], [class*="border-rose-"]) { border-color: var(--line-default) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .app-route-content) :is([class*="text-amber-"], [class*="text-red-"], [class*="text-rose-"]) { color: var(--brand-accent) !important; }
+.app-shell:not(.theme-light) :is(.space-theme, .app-route-content) button:is([class*="bg-[#9A5A82]"], [class*="bg-[#87496E]"]) { background-color: var(--brand-action) !important; color: #171119 !important; }
+
+/* Keep the guided workflow easy to spot without making it look selected all the time. */
+.app-shell .check-stand-link {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-secondary) !important;
+  box-shadow: none;
+  font-weight: 600;
+}
+.app-shell .check-stand-link:hover { border-color: rgba(217, 156, 197, .24) !important; background: var(--surface-soft) !important; color: var(--brand-accent) !important; box-shadow: none; }
+.app-shell:not(.theme-light) > aside nav a.check-stand-link[aria-current="page"],
+.app-shell.theme-light > aside nav a.check-stand-link[aria-current="page"] { border-color: rgba(217, 156, 197, .2); background: var(--surface-soft) !important; color: var(--brand-accent) !important; box-shadow: inset 3px 0 var(--brand-accent); }
+.app-shell .check-stand-bolt { position: relative; display: inline-flex; flex: none; color: var(--brand-accent); }
+.app-shell .check-stand-bolt svg { filter: drop-shadow(0 0 4px rgba(217, 156, 197, .45)); animation: check-stand-bolt 2.1s ease-in-out infinite; transform-origin: 50% 55%; }
+.app-shell .check-stand-bolt::after { position: absolute; top: -4px; right: -4px; color: var(--brand-accent); content: "✦"; font-size: 8px; line-height: 1; animation: check-stand-twinkle 1.6s ease-in-out infinite; }
+@keyframes check-stand-bolt { 0%, 100% { transform: translateY(0) rotate(0) scale(1); } 28% { transform: translateY(-1.5px) rotate(-9deg) scale(1.08); } 55% { transform: translateY(.5px) rotate(7deg) scale(1.02); } 78% { transform: translateY(-.5px) rotate(-4deg) scale(1.05); } }
+@keyframes check-stand-twinkle { 0%, 100% { opacity: .38; transform: scale(.7) rotate(0); } 50% { opacity: 1; transform: scale(1.2) rotate(30deg); } }
+@media (prefers-reduced-motion: reduce) { .app-shell .check-stand-bolt svg, .app-shell .check-stand-bolt::after { animation: none; } }
+
+/* Benchmark rows use explicit semantic colors so the threshold is clear in both themes. */
+.app-shell .space-theme .benchmark-safe { background-color: #edf7ed !important; }
+.app-shell .space-theme .benchmark-deal-breaker { background-color: #fdecec !important; }
+.app-shell .space-theme .benchmark-safe-pill { background-color: #e4f2e9; color: #216b42; }
+.app-shell .space-theme .benchmark-deal-breaker-pill { background-color: #fce4e4; color: #a12727; }
+.app-shell:not(.theme-light) .space-theme .benchmark-safe { background-color: #1b382a !important; }
+.app-shell:not(.theme-light) .space-theme .benchmark-deal-breaker { background-color: #452327 !important; }
+.app-shell:not(.theme-light) .space-theme .benchmark-safe-pill { background-color: #1b382a; color: #a9ddb8; }
+.app-shell:not(.theme-light) .space-theme .benchmark-deal-breaker-pill { background-color: #452327; color: #f2aaaa; }
+
+/* Give enabled actions a consistent brand glow and lift on hover. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]) {
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+button:not(:disabled):not([aria-disabled="true"]):hover,
+[role="button"]:not([aria-disabled="true"]):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+.app-shell:not(.theme-light) button:not(:disabled):not([aria-disabled="true"]):hover,
+.app-shell:not(.theme-light) [role="button"]:not([aria-disabled="true"]):hover,
+.portal-home:not(.theme-light) button:not(:disabled):not([aria-disabled="true"]):hover,
+.portal-home:not(.theme-light) [role="button"]:not([aria-disabled="true"]):hover {
+  box-shadow: 0 0 0 1px rgba(217, 156, 197, .28), 0 0 20px rgba(217, 156, 197, .3) !important;
+}
+.app-shell.theme-light button:not(:disabled):not([aria-disabled="true"]):hover,
+.app-shell.theme-light [role="button"]:not([aria-disabled="true"]):hover,
+.portal-home.theme-light button:not(:disabled):not([aria-disabled="true"]):hover,
+.portal-home.theme-light [role="button"]:not([aria-disabled="true"]):hover {
+  box-shadow: 0 0 0 1px rgba(154, 90, 130, .2), 0 5px 16px rgba(154, 90, 130, .2) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) { transition: box-shadow .18s ease, filter .18s ease; }
+  button:not(:disabled):not([aria-disabled="true"]):hover,
+  [role="button"]:not([aria-disabled="true"]):hover { transform: none; }
+}

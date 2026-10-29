@@ -4,7 +4,7 @@ from config import call_gemini_api
 
 def generate_sprint_challenge(talent_check_output: dict) -> dict:
     gaps = [item for item in talent_check_output.get("per_skillset_gap_breakdown", []) if item["gap"] > 0]
-    cat = gaps[0]["category"] if gaps else "COD"
+    cat = talent_check_output.get("focus_category") or (gaps[0]["category"] if gaps else "COD")
 
     prompt = f"""
 Create a 3-minute technical micro-challenge for category '{cat}'.
@@ -24,7 +24,7 @@ Return ONLY a valid JSON object with these exact keys:
             raw_text = raw_text.split("```")[1].replace("json", "").strip()
         data = json.loads(raw_text)
         if isinstance(data, dict) and "task" in data:
-            return data
+            return {**data, "category": cat}
     except Exception:
         pass
 

@@ -51,6 +51,65 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
                 )
                 self.assertEqual(len(result["radar_chart_data"]), 12)
 
+    def test_resume_confidence_maps_to_score_and_additional_skills_add_point_two(self):
+        from backend.app.talent_check import normalize_candidate_skills
+
+        normalized = normalize_candidate_skills({"skills": [
+            {"skill_name": "Python", "category_code": "COD", "confidence": "high"},
+            {"skill_name": "Django", "category_code": "COD", "confidence": "high"},
+            {"skill_name": "SQL", "category_code": "SQL", "confidence": "medium"},
+            {"skill_name": "Networking", "category_code": "NETW", "confidence": "low"},
+        ]})
+        by_category = {skill["category_code"]: skill["level"] for skill in normalized["skills"]}
+        self.assertEqual(by_category["COD"], 4.0)
+        self.assertEqual(by_category["SQL"], 2.8)
+        self.assertEqual(by_category["NETW"], 1.8)
+
+    def test_gap_at_least_one_point_five_is_a_deal_breaker_regardless_of_weight(self):
+        benchmark = {category: 2.0 for category in RADIX_CATEGORIES}
+        report = main.run_talent_check({}, "Synthetic benchmark", {"Synthetic benchmark": benchmark})
+        self.assertEqual(report["deal_breakers_count"], len(RADIX_CATEGORIES))
+        self.assertTrue(all(row["is_deal_breaker"] and row["gap"] == 2.0 for row in report["per_skillset_gap_breakdown"]))
+        self.assertFalse(report["is_ready"])
+
+    def test_readiness_threshold_requires_at_least_75_percent_and_no_deal_breakers(self):
+        benchmark = {category: 3.8 for category in RADIX_CATEGORIES}
+        candidate = {"skills": [
+            {"skill_name": f"Evidence {category}", "category_code": category, "confidence": "high"}
+            for category in RADIX_CATEGORIES
+        ]}
+        report = main.run_talent_check(candidate, "Synthetic benchmark", {"Synthetic benchmark": benchmark})
+
+        self.assertGreaterEqual(report["readiness_score"], 75.0)
+        self.assertEqual(report["deal_breakers_count"], 0)
+        self.assertTrue(report["is_ready"])
+
+    def test_markdown_report_includes_confidence_scores_and_deal_breaker_column(self):
+        report = {
+            "candidate_name": "Synthetic Student",
+            "target_company": "Synthetic Company",
+            "resume_skill_evidence": [
+                {"skill_name": "Python", "category_code": "COD", "confidence": "high"},
+                {"skill_name": "Django", "category_code": "COD", "confidence": "high"},
+                {"skill_name": "SQL", "category_code": "SQL", "confidence": "medium"},
+            ],
+            "per_skillset_gap_breakdown": [
+                {"category": "COD", "candidate_level": 4.0, "required_level": 4.5},
+                {"category": "SQL", "candidate_level": 2.8, "required_level": 4.5},
+                {"category": "NETW", "candidate_level": 0, "required_level": 3.0},
+            ],
+            "readiness_score": 82.5,
+            "readiness_threshold": 75.0,
+        }
+        markdown = main.generate_markdown_report(report)
+        self.assertIn("User resume score", markdown)
+        self.assertIn("Deal breakers", markdown)
+        self.assertIn("4.0 / 5.0 (high confidence)", markdown)
+        self.assertIn("2.8 / 5.0 (medium confidence)", markdown)
+        self.assertIn("No evidence found", markdown)
+        self.assertIn("**Deal breakers (gap ≥ 1.5):** 2", markdown)
+        self.assertIn("**Readiness score:** 82.5% — minimum threshold not met", markdown)
+
     def test_every_directory_company_has_a_complete_company_or_radix_benchmark(self):
         self.assertEqual(len(company_benchmark_metadata["companies"]), 118)
         for record in company_benchmark_metadata["companies"]:
@@ -137,6 +196,49 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
             result = role4_config.call_gemini_api("Synthetic prompt without student data")
         self.assertEqual(result, "Synthetic backup response")
         backup_client.__enter__.return_value.post.assert_called_once()
+
+    def test_mock_interview_uses_local_rubric_when_ai_provider_is_unavailable(self):
+        from backend.app.role4_service import evaluate_profile_interview_answer
+
+        answer = (
+            "I designed and implemented a Python API for the project. For example, I tested the data flow, "
+            "compared two approaches, and chose the simpler design because it reduced response time. "
+            "I measured the result and improved reliability for users."
+        )
+        with patch("interview_practice.call_gemini_api", return_value="[API Error]: provider timed out"):
+            result = evaluate_profile_interview_answer("How did you use Python to design an API?", answer, "Python")
+
+        self.assertEqual(result["evaluation_status"], "scored")
+        self.assertEqual(result["evaluation_method"], "local_fallback")
+        self.assertGreaterEqual(result["score_pct"], 0)
+        self.assertLessEqual(result["score_pct"], 100)
+        self.assertEqual(set(result["criteria"]), {"technical_accuracy", "relevance", "explanation"})
+        self.assertTrue(all(0 <= score <= 2 for score in result["criteria"].values()))
+        self.assertIn("local rubric", result["feedback"])
+
+    def test_mock_interview_malformed_ai_response_falls_back_and_empty_answer_is_handled(self):
+        from backend.app.role4_service import evaluate_profile_interview_answer
+
+        with patch("interview_practice.call_gemini_api", return_value='{"technical_accuracy": "two"}'):
+            result = evaluate_profile_interview_answer("Explain Python", "", "Python")
+
+        self.assertEqual(result["evaluation_status"], "scored")
+        self.assertEqual(result["evaluation_method"], "local_fallback")
+        self.assertFalse(result["is_passed"])
+        self.assertEqual(result["score_pct"], 0)
+        self.assertIn("response is empty", result["feedback"])
+
+    def test_mock_interview_provider_exception_falls_back_without_losing_answer(self):
+        from backend.app.role4_service import evaluate_profile_interview_answer
+
+        with patch("interview_practice.call_gemini_api", side_effect=TimeoutError("synthetic timeout")):
+            result = evaluate_profile_interview_answer(
+                "Explain a Python design choice", "I chose a simple design because it was easier to test.", "Python"
+            )
+
+        self.assertEqual(result["evaluation_status"], "scored")
+        self.assertEqual(result["evaluation_method"], "local_fallback")
+        self.assertGreater(result["score_pct"], 0)
 
 
 if __name__ == "__main__":

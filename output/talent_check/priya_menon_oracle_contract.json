@@ -1,0 +1,182 @@
+{
+  "company": "Oracle",
+  "candidate_name": "Priya Menon",
+  "source_file": "Priya Menon.pdf",
+  "readiness_score": 30.5,
+  "is_ready": false,
+  "skillset_gap": [
+    {
+      "category_code": "CLOUD",
+      "required_level": 4.2,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "OOD",
+      "required_level": 4.0,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "SWE",
+      "required_level": 4.0,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "DSA",
+      "required_level": 3.8,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "APTI",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "COMM",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "SYSD",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "AI",
+      "required_level": 2.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "CDG",
+      "required_level": 4.0,
+      "candidate_level": 3.8,
+      "gap": true
+    },
+    {
+      "category_code": "EQ",
+      "required_level": 3.5,
+      "candidate_level": 4.0,
+      "gap": false
+    },
+    {
+      "category_code": "NETW",
+      "required_level": 3.5,
+      "candidate_level": 3.8,
+      "gap": false
+    },
+    {
+      "category_code": "OS",
+      "required_level": 3.5,
+      "candidate_level": 3.8,
+      "gap": false
+    }
+  ],
+  "total_estimated_learning_hours": 286.0,
+  "deal_breakers": [
+    {
+      "category": "DSA",
+      "current": 0.0,
+      "required": 3.8,
+      "gap": 3.8
+    },
+    {
+      "category": "SWE",
+      "current": 0.0,
+      "required": 4.0,
+      "gap": 4.0
+    },
+    {
+      "category": "SYSD",
+      "current": 0.0,
+      "required": 3.5,
+      "gap": 3.5
+    }
+  ],
+  "what_if_recommendation": {
+    "recommended_skill_to_study": "AI",
+    "projected_score_boost_pct": 3.1
+  },
+  "ai_candidate_agent_advice": "Hello Priya Menon. You are currently at 30.5% readiness for Oracle. Your top deal-breaker risk is DSA (Gap: 3.8 levels). To reach hiring readiness, you need approximately 286 total learning hours. Quick Win Tip: Level up AI by +1.0 to immediately boost your score by +3.1%!",
+  "radar_chart_data": [
+    {
+      "category": "CLOUD",
+      "Candidate": 0.0,
+      "CompanyGoal": 4.2,
+      "fullMark": 5.0
+    },
+    {
+      "category": "OOD",
+      "Candidate": 0.0,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "SWE",
+      "Candidate": 0.0,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "DSA",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.8,
+      "fullMark": 5.0
+    },
+    {
+      "category": "APTI",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "COMM",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "SYSD",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "AI",
+      "Candidate": 0.0,
+      "CompanyGoal": 2.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "CDG",
+      "Candidate": 3.8,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "EQ",
+      "Candidate": 4.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "NETW",
+      "Candidate": 3.8,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "OS",
+      "Candidate": 3.8,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    }
+  ],
+  "generated_at": "2026-10-25T20:52:47.447151"
+}

@@ -4,14 +4,14 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "relative z-10 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D99CC5] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-[#216b5c] text-white hover:bg-[#185546] shadow-xs",
-        outline: "border border-[#ddd5c8] bg-[#fffdf8] text-slate-700 hover:bg-[#f7f1e7] shadow-xs",
-        ghost: "bg-white/85 text-slate-600 hover:bg-[#f2ece1] hover:text-slate-950 dark:bg-slate-900/85 backdrop-blur-xs",
-        soft: "bg-[#e4f2e9] text-[#246b5d] hover:bg-[#d4eadd]",
+        default: "bg-[#9A5A82] text-white hover:bg-[#87496E] shadow-xs",
+        outline: "border border-[#e1d7e0] bg-white text-[#423944] hover:bg-[#f3edf2] shadow-xs",
+        ghost: "bg-white/85 text-[#655b67] hover:bg-[#f3edf2] hover:text-[#2d2630] dark:bg-slate-900/85 backdrop-blur-xs",
+        soft: "bg-[#f3e5ef] text-[#713c60] hover:bg-[#efe2eb]",
       },
       size: {
         default: "h-10 px-4 py-2",

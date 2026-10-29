@@ -136,7 +136,7 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
         total_weighted_achieved += achieved_ratio * weight
         total_possible_weight += weight
 
-        is_deal_breaker = (gap >= 1.5) and (weight >= 1.2)
+        is_deal_breaker = gap >= 1.5
         if is_deal_breaker:
             deal_breakers.append({
                 "category": cat,

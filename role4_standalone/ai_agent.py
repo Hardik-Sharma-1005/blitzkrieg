@@ -21,7 +21,8 @@ INSTRUCTIONS:
 2. If they ask about a specific skill (like OS, System Design, or Networking), give concrete topics, resources, or mini-projects to study.
 3. Refer to resume evidence and company benchmark data where relevant. Treat resume evidence as a mention, not proof of proficiency.
 4. Never label the candidate ready/not ready for hiring, assign a deal-breaker based on a company benchmark, or present inferred levels as demonstrated skill.
-4. Keep the response concise, encouraging, and clear (4 to 6 sentences). Do NOT use generic canned greetings.
+5. Format the response for easy scanning using Markdown: give a short direct answer first, then use a brief heading and 2–4 concise bullets for plans, priorities, or multiple recommendations. Bold skill names and keep each bullet focused on one action.
+6. Use separate paragraphs, avoid long run-on paragraphs and Markdown tables, and keep the complete response concise (about 4–6 sentences). Do not include literal escape sequences or generic canned greetings.
 """
 
     response = call_gemini_api(prompt)

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -13,7 +14,6 @@ import {
   Target,
   AlertTriangle,
   Zap,
-  TrendingUp,
   CheckCircle,
   Download,
   MessageSquare,
@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { FormattedAIMessage } from "@/components/FormattedAIMessage";
 import { useTheme } from "@/components/layout/SidebarContext";
 import { ALL_118_COMPANIES } from "@/data/allCompaniesList";
 import { useCandidateProfile, type CandidateSkill as Skill, type ParsedCandidateProfile as CandidateProfile, type ProfileEntry } from "@/lib/candidateProfile";
@@ -61,6 +62,26 @@ const categories: Record<string, string> = {
   OS: "Operating Systems",
   OTHER: "Other",
 };
+
+const confidenceScores: Record<Skill["confidence"], number> = { high: 3.8, medium: 2.8, low: 1.8 };
+const dealBreakerThreshold = 1.5;
+
+function userResumeScore(skills: Skill[], category: string): { score: number; confidence: Skill["confidence"]; evidenceCount: number } | null {
+  const evidence = skills.filter((skill) => skill.category_code === category);
+  if (!evidence.length) return null;
+  const confidence = evidence.reduce<Skill["confidence"]>((best, skill) => confidenceScores[skill.confidence] > confidenceScores[best] ? skill.confidence : best, "low");
+  const score = Math.min(5, confidenceScores[confidence] + (evidence.length - 1) * 0.2);
+  return { score: Math.round(score * 10) / 10, confidence, evidenceCount: evidence.length };
+}
+
+function assessBenchmark(requiredLevel: number, score: number | null) {
+  const gap = Math.round((requiredLevel - (score ?? 0)) * 10) / 10;
+  return { gap, isDealBreaker: gap >= dealBreakerThreshold };
+}
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
+}
 
 function displayValue(value: unknown): string {
   if (typeof value === "string" || typeof value === "number") return String(value);
@@ -97,7 +118,7 @@ export function ResumeProfile() {
   const navigate = useNavigate();
   const isTalentCheckRoute = location.pathname === "/talent-check";
   const [searchParams] = useSearchParams();
-  const { profile: savedProfile, badges: savedBadges, applyResume, awardBadge } = useCandidateProfile();
+  const { profile: savedProfile, badges: savedBadges, applyResume, awardBadge, markInterviewCompleted } = useCandidateProfile();
   const requestedCompany = ALL_118_COMPANIES.find((company) => String(company.company_id) === searchParams.get("company_id"));
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -119,13 +140,14 @@ export function ResumeProfile() {
   // Interactive Feature Tabs within Talent Check Workspace
   const [activeTab, setActiveTab] = useState<"matrix" | "coach" | "interview" | "sprint">("matrix");
 
-  // Feature 1: AI Coach Chat
+  // Feature 1: BlitzyAI Chat
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "coach"; text: string }>>([]);
   const [chatInput, setChatInput] = useState("");
   const [sendingChat, setSendingChat] = useState(false);
 
   // Feature 2: Mock Interview Practice
   const [interviewQuestions, setInterviewQuestions] = useState<string[]>([]);
+  const [interviewTopic, setInterviewTopic] = useState("");
   const [generatingInterview, setGeneratingInterview] = useState(false);
   const [interviewAnswer, setInterviewAnswer] = useState("");
   const [evaluatingAnswer, setEvaluatingAnswer] = useState(false);
@@ -133,6 +155,7 @@ export function ResumeProfile() {
 
   // Feature 3: Skill Proof Sprint & Badge
   const [sprintChallenge, setSprintChallenge] = useState<any | null>(null);
+  const [sprintTopic, setSprintTopic] = useState("");
   const [generatingSprint, setGeneratingSprint] = useState(false);
   const [sprintSolution, setSprintSolution] = useState("");
   const [evaluatingSprint, setEvaluatingSprint] = useState(false);
@@ -140,7 +163,7 @@ export function ResumeProfile() {
 
   useEffect(() => {
     const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
-    const saved = readRecentSnapshot<{ kind: "resume-parsed" | "talent-check"; profile: CandidateProfile; report?: any; company?: string; radarChartData?: any[]; activeTab?: "matrix" | "coach" | "interview" | "sprint"; chatMessages?: Array<{ sender: "user" | "coach"; text: string }>; interviewQuestions?: string[]; interviewAnswer?: string; interviewFeedback?: string; sprintChallenge?: any; sprintSolution?: string; sprintResult?: any }>(id);
+    const saved = readRecentSnapshot<{ kind: "resume-parsed" | "talent-check"; profile: CandidateProfile; report?: any; company?: string; radarChartData?: any[]; activeTab?: "matrix" | "coach" | "interview" | "sprint"; chatMessages?: Array<{ sender: "user" | "coach"; text: string }>; interviewQuestions?: string[]; interviewTopic?: string; interviewAnswer?: string; interviewFeedback?: string; sprintChallenge?: any; sprintTopic?: string; sprintSolution?: string; sprintResult?: any }>(id);
     if (!saved?.profile) return;
     resetInteractiveSessions();
     setProfile(saved.profile);
@@ -150,9 +173,11 @@ export function ResumeProfile() {
     if (saved.company) setTargetCompany(saved.company);
     setChatMessages(saved.chatMessages ?? []);
     setInterviewQuestions(saved.interviewQuestions ?? []);
+    setInterviewTopic(saved.interviewTopic ?? "");
     setInterviewAnswer(saved.interviewAnswer ?? "");
     setInterviewFeedback(saved.interviewFeedback ?? "");
     setSprintChallenge(saved.sprintChallenge ?? null);
+    setSprintTopic(saved.sprintTopic ?? "");
     setSprintSolution(saved.sprintSolution ?? "");
     setSprintResult(saved.sprintResult ?? null);
     setActiveTab(saved.activeTab ?? "matrix");
@@ -166,9 +191,11 @@ export function ResumeProfile() {
     setChatMessages([]);
     setChatInput("");
     setInterviewQuestions([]);
+    setInterviewTopic("");
     setInterviewAnswer("");
     setInterviewFeedback("");
     setSprintChallenge(null);
+    setSprintTopic("");
     setSprintSolution("");
     setSprintResult(null);
     setActiveTab("matrix");
@@ -185,10 +212,39 @@ export function ResumeProfile() {
     if (!profile || !talentReport) return;
     recordRecentActivity({ feature: "talent-check", title: `${profile.name || "Candidate"} · ${targetCompany}`, action, path: "/talent-check" }, {
       kind: "talent-check", profile, report: talentReport, company: targetCompany, radarChartData, activeTab,
-      chatMessages, interviewQuestions, interviewAnswer, interviewFeedback, sprintChallenge, sprintSolution, sprintResult,
+      chatMessages, interviewQuestions, interviewTopic, interviewAnswer, interviewFeedback, sprintChallenge, sprintTopic, sprintSolution, sprintResult,
       ...details,
     });
   };
+
+  const benchmarkRows = (talentReport?.per_skillset_gap_breakdown || talentReport?.skillset_gap || []).map((row: any) => {
+    const resumeScore = userResumeScore(profile?.skills ?? [], row.category);
+    const requiredLevel = Number.isFinite(Number(row.required_level)) ? Number(row.required_level) : 0;
+    return { ...row, resumeScore, requiredLevel, ...assessBenchmark(requiredLevel, resumeScore?.score ?? null) };
+  });
+  const orderBenchmarkRows = (topic = "") => [...benchmarkRows].sort((left: any, right: any) => {
+    if (topic && left.category === topic) return -1;
+    if (topic && right.category === topic) return 1;
+    return right.gap - left.gap;
+  });
+  const reportForTopic = (topic = "") => {
+    const rows = orderBenchmarkRows(topic).map((row: any) => ({
+      ...row,
+      candidate_level: row.resumeScore?.score ?? 0,
+      gap: Math.max(0, row.gap),
+    }));
+    return { ...talentReport, focus_category: topic || undefined, per_skillset_gap_breakdown: rows, skillset_gap: rows };
+  };
+  const dealBreakerCount = benchmarkRows.filter((row: any) => row.isDealBreaker).length;
+  const readinessScore = Math.max(0, Math.min(100, Number(talentReport?.readiness_score) || 0));
+  const readinessThreshold = Number(talentReport?.readiness_threshold) || 75;
+  const meetsReadinessThreshold = readinessScore >= readinessThreshold && dealBreakerCount === 0;
+  const comparisonRadarData = benchmarkRows.map((row: any) => ({
+    category: row.category,
+    UserTarget: row.resumeScore?.score ?? 0,
+    CompanyTarget: row.requiredLevel,
+    fullMark: 5,
+  }));
 
   // Download 1-Page Competency Report (.md)
   const downloadReportFile = async () => {
@@ -223,14 +279,13 @@ export function ResumeProfile() {
       window.print();
       return;
     }
-    const breakdown = talentReport.per_skillset_gap_breakdown || talentReport.skillset_gap || [];
-    const rowsHtml = breakdown.map((row: any, idx: number) => `
-      <tr style="${idx % 2 === 0 ? 'background: #ffffff;' : 'background: #faf7f0;'}">
+    const rowsHtml = benchmarkRows.map((row: any, idx: number) => `
+      <tr style="background: ${row.isDealBreaker ? '#fdecec' : '#edf7ed'};">
         <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 11px;">${idx + 1}</td>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-weight: 600; font-size: 12px; color: #1e293b;">${categories[row.category] || row.category}</td>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 12px;">${profile?.skills.some((skill) => skill.category_code === row.category) ? 'Found in resume' : 'No evidence found'}</td>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 12px;">${(row.required_level || 0).toFixed(1)} / 5.0</td>
-        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 12px;">${profile?.skills.some((skill) => skill.category_code === row.category) ? 'Validate through an assessment' : 'Build resume evidence'}</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-weight: 600; font-size: 12px; color: #1e293b;">${escapeHtml(categories[row.category] || row.category)}</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 12px;">${row.resumeScore ? `${row.resumeScore.score.toFixed(1)} / 5.0 (${escapeHtml(row.resumeScore.confidence)} confidence)` : 'No evidence found'}</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 12px;">${row.requiredLevel.toFixed(1)} / 5.0</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #e9e1d5; font-size: 12px; font-weight: 700; color: ${row.isDealBreaker ? '#a12727' : '#216b42'};">${row.isDealBreaker ? 'Deal breaker' : 'No deal breaker'} · ${row.gap > 0 ? `gap ${row.gap.toFixed(1)}` : row.gap < 0 ? `${Math.abs(row.gap).toFixed(1)} above target` : 'at target'}</td>
       </tr>
     `).join("");
 
@@ -247,7 +302,7 @@ export function ResumeProfile() {
           h1 { margin: 0 0 4px 0; font-size: 18px; color: #26354b; }
           .meta { font-size: 12px; color: #64748b; }
           .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-          .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+          .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
           .card { background: #faf7f0; border: 1px solid #e9e1d5; border-radius: 8px; padding: 8px 12px; }
           .card .label { font-size: 10px; text-transform: uppercase; font-weight: 600; color: #64748b; margin-bottom: 2px; }
           .card .val { font-size: 18px; font-weight: 700; color: #26354b; }
@@ -260,8 +315,8 @@ export function ResumeProfile() {
       <body>
         <div class="header">
           <div>
-            <h1>Resume Evidence and Company Benchmark Overview</h1>
-            <div class="meta">Candidate: <strong>${talentReport.candidate_name}</strong> | Target: <strong>${talentReport.target_company}</strong></div>
+            <h1>User Resume Score and Company Benchmark Overview</h1>
+            <div class="meta">Candidate: <strong>${escapeHtml(talentReport.candidate_name)}</strong> | Target: <strong>${escapeHtml(talentReport.target_company)}</strong></div>
           </div>
           <div><span class="badge" style="background: #e4f2e9; color: #246b5d;">BENCHMARK OVERVIEW</span></div>
         </div>
@@ -273,7 +328,16 @@ export function ResumeProfile() {
           </div>
           <div class="card">
             <div class="label">Company benchmark areas</div>
-            <div class="val">${breakdown.length}</div>
+            <div class="val">${benchmarkRows.length}</div>
+          </div>
+          <div class="card">
+            <div class="label">Deal breakers (gap ≥ 1.5)</div>
+            <div class="val">${dealBreakerCount}</div>
+          </div>
+          <div class="card">
+            <div class="label">Readiness score</div>
+            <div class="val">${readinessScore.toFixed(1)}%</div>
+            <div style="font-size: 10px; color: ${meetsReadinessThreshold ? '#216b42' : '#a12727'};">${meetsReadinessThreshold ? 'Minimum threshold met' : 'Minimum threshold not met'}</div>
           </div>
           <div class="card">
             <div class="label">Interpretation</div>
@@ -281,15 +345,15 @@ export function ResumeProfile() {
           </div>
         </div>
 
-        <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #26354b;">Competency Matrix vs. ${talentReport.target_company} (12 RADIX Skillsets)</h3>
+        <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #26354b;">User Resume Score vs. ${escapeHtml(talentReport.target_company)} Company Benchmark</h3>
         <table>
           <thead>
             <tr>
               <th>#</th>
               <th>Competency</th>
-              <th>Resume evidence</th>
+              <th>User resume score</th>
               <th>Company target</th>
-              <th>Suggested focus</th>
+              <th>Deal breakers</th>
             </tr>
           </thead>
           <tbody>
@@ -298,7 +362,7 @@ export function ResumeProfile() {
         </table>
 
         <div class="box">
-          <strong style="color: #246b5d;">How to use this overview:</strong> Resume mentions are evidence to review, not a measure of skill proficiency or a hiring decision. Use an assessment to validate a skill.
+          <strong style="color: #246b5d;">Score formula:</strong> High confidence = 3.8, medium = 2.8, low = 1.8; each additional skill in the same category adds 0.2, capped at 5.0. Missing evidence has no user score and counts as 0 only for gap calculation. Gaps of 1.5 or more are preparation flags, not hiring decisions.
         </div>
 
         <div class="footer">
@@ -314,7 +378,7 @@ export function ResumeProfile() {
     }, 250);
   };
 
-  // Send AI Coach Message (with intelligent fallback)
+  // Send BlitzyAI Message (with intelligent fallback)
   const sendChatMessage = async (e?: FormEvent, directQuestion?: string) => {
     if (e) e.preventDefault();
     const userText = (directQuestion || chatInput).trim();
@@ -334,16 +398,16 @@ export function ResumeProfile() {
       if (data && data.answer && !data.answer.startsWith("[API Error]")) {
         const coachAnswer = String(data.answer);
         setChatMessages((prev) => [...prev, { sender: "coach", text: coachAnswer }]);
-        recordTalentActivity("Asked the AI coach for guidance", { activeTab: "coach", chatMessages: [...chatMessages, { sender: "user", text: userText }, { sender: "coach", text: coachAnswer }] });
+        recordTalentActivity("Asked BlitzyAI for guidance", { activeTab: "coach", chatMessages: [...chatMessages, { sender: "user", text: userText }, { sender: "coach", text: coachAnswer }] });
       } else {
         const answerFallback = "The coach is temporarily unavailable. Review the resume evidence next to the company benchmark, then use a practical assessment to validate any skill that matters for your target role.";
         setChatMessages((prev) => [...prev, { sender: "coach", text: answerFallback }]);
-        recordTalentActivity("Requested AI coach guidance", { activeTab: "coach", chatMessages: [...chatMessages, { sender: "user", text: userText }, { sender: "coach", text: answerFallback }] });
+        recordTalentActivity("Requested BlitzyAI guidance", { activeTab: "coach", chatMessages: [...chatMessages, { sender: "user", text: userText }, { sender: "coach", text: answerFallback }] });
       }
     } catch {
       const answerFallback = "The coach is temporarily unavailable. A missing resume mention is not proof that you lack a skill; consider adding relevant evidence or validating the skill through an assessment.";
       setChatMessages((prev) => [...prev, { sender: "coach", text: answerFallback }]);
-      recordTalentActivity("Requested AI coach guidance", { activeTab: "coach", chatMessages: [...chatMessages, { sender: "user", text: userText }, { sender: "coach", text: answerFallback }] });
+      recordTalentActivity("Requested BlitzyAI guidance", { activeTab: "coach", chatMessages: [...chatMessages, { sender: "user", text: userText }, { sender: "coach", text: answerFallback }] });
     } finally {
       setSendingChat(false);
     }
@@ -354,19 +418,21 @@ export function ResumeProfile() {
     if (!talentReport) return;
     setGeneratingInterview(true);
     setInterviewFeedback("");
+    const focusedReport = reportForTopic(interviewTopic);
+    const requestedRow = interviewTopic ? focusedReport.per_skillset_gap_breakdown.find((row: any) => row.category === interviewTopic) : null;
     try {
       const res = await fetch(`${apiBase}/api/interview-practice/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ report: talentReport }),
+        body: JSON.stringify({ report: focusedReport }),
       });
       const data = await res.json().catch(() => null);
       if (data && Array.isArray(data.questions) && data.questions.length > 0) {
         setInterviewQuestions(data.questions);
         recordTalentActivity("Generated mock interview questions", { activeTab: "interview", interviewQuestions: data.questions });
       } else {
-        const breakdown = talentReport.per_skillset_gap_breakdown || talentReport.skillset_gap || [];
-        const topGap = breakdown.find((g: any) => g.gap > 0);
+        const breakdown = focusedReport.per_skillset_gap_breakdown || [];
+        const topGap = requestedRow || breakdown.find((g: any) => g.gap > 0);
         const catName = topGap ? (categories[topGap.category] || topGap.category) : "System Architecture";
         const questions = [
           `Can you describe how you would design a scalable, low-latency microservices architecture focusing on ${catName}, and how you would handle network partitions or failure under heavy load?`,
@@ -376,8 +442,8 @@ export function ResumeProfile() {
         recordTalentActivity("Generated mock interview questions", { activeTab: "interview", interviewQuestions: questions });
       }
     } catch {
-      const breakdown = talentReport.per_skillset_gap_breakdown || talentReport.skillset_gap || [];
-      const topGap = breakdown.find((g: any) => g.gap > 0);
+      const breakdown = focusedReport.per_skillset_gap_breakdown || [];
+      const topGap = requestedRow || breakdown.find((g: any) => g.gap > 0);
       const catName = topGap ? (categories[topGap.category] || topGap.category) : "System Architecture";
       const questions = [
         `How would you architect a distributed service to meet ${talentReport.target_company}'s high throughput requirements while ensuring strong data consistency in ${catName}?`,
@@ -398,19 +464,14 @@ export function ResumeProfile() {
       const res = await fetch(`${apiBase}/api/interview-practice/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: interviewQuestions[0], answer: interviewAnswer, skill_name: skillForCategory().skill_name }),
+        body: JSON.stringify({ question: interviewQuestions[0], answer: interviewAnswer, skill_name: skillForCategory(interviewTopic || undefined).skill_name }),
       });
       const data = await res.json().catch(() => null);
       if (data && data.feedback && !data.feedback.startsWith("[API Error]")) {
-        const status = data.evaluation_status === "unavailable" ? "NOT SCORED · No badge awarded" : data.is_passed ? `PASSED · ${data.score_pct}%` : `KEEP PRACTICING · ${data.score_pct ?? 0}%`;
+        const status = data.evaluation_status === "unavailable" ? "NOT SCORED" : data.is_passed ? `PASSED · ${data.score_pct}%` : `KEEP PRACTICING · ${data.score_pct ?? 0}%`;
         setInterviewFeedback(`${status}\n${data.feedback}`);
         recordTalentActivity("Submitted a mock interview answer", { activeTab: "interview", interviewAnswer, interviewFeedback: `${status}\n${data.feedback}` });
-        if (data.is_passed === true && data.evaluation_status === "scored" && profileApplied) {
-          const assessedSkill = skillForCategory();
-          const alreadyEarned = savedBadges.some((badge) => badge.skill_name.toLowerCase() === assessedSkill.skill_name.toLowerCase());
-          awardBadge(assessedSkill, "mock_interview", "Passed one generated Mock Interview question");
-          toast.success(alreadyEarned ? `${assessedSkill.skill_name} badge updated with additional assessment evidence.` : `${assessedSkill.skill_name} badge added to your profile!`);
-        }
+        if (data.evaluation_status === "scored" && profileApplied) markInterviewCompleted();
       } else {
         const fallback = `Evaluation: Strong technical direction! To maximize your interview score at ${talentReport.target_company}, structure your response strictly using the STAR framework (Situation, Task, Action, Result) and quantify the performance improvements (e.g., latency reduction, throughput scaling).`;
         setInterviewFeedback(fallback);
@@ -430,19 +491,21 @@ export function ResumeProfile() {
     if (!talentReport || !profileApplied) return;
     setGeneratingSprint(true);
     setSprintResult(null);
+    const focusedReport = reportForTopic(sprintTopic);
+    const requestedRow = sprintTopic ? focusedReport.per_skillset_gap_breakdown.find((row: any) => row.category === sprintTopic) : null;
     try {
       const res = await fetch(`${apiBase}/api/skill-sprint/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ report: talentReport }),
+        body: JSON.stringify({ report: focusedReport }),
       });
       const data = await res.json().catch(() => null);
       if (data && data.challenge && data.challenge.task) {
         setSprintChallenge(data.challenge);
         recordTalentActivity("Generated a Skill Proof Sprint challenge", { activeTab: "sprint", sprintChallenge: data.challenge });
       } else {
-        const breakdown = talentReport.per_skillset_gap_breakdown || talentReport.skillset_gap || [];
-        const topGap = breakdown.find((g: any) => g.gap > 0);
+        const breakdown = focusedReport.per_skillset_gap_breakdown || [];
+        const topGap = requestedRow || breakdown.find((g: any) => g.gap > 0);
         const cat = topGap ? topGap.category : "CDG";
         const catName = categories[cat] || cat;
         const challenge = {
@@ -455,8 +518,8 @@ export function ResumeProfile() {
         recordTalentActivity("Generated a Skill Proof Sprint challenge", { activeTab: "sprint", sprintChallenge: challenge });
       }
     } catch {
-      const breakdown = talentReport.per_skillset_gap_breakdown || talentReport.skillset_gap || [];
-      const topGap = breakdown.find((g: any) => g.gap > 0);
+      const breakdown = focusedReport.per_skillset_gap_breakdown || [];
+      const topGap = requestedRow || breakdown.find((g: any) => g.gap > 0);
       const cat = topGap ? topGap.category : "CDG";
       const catName = categories[cat] || cat;
       const challenge = {
@@ -642,13 +705,14 @@ export function ResumeProfile() {
 
   return (
     <div className="space-theme min-h-screen bg-transparent">
-      {replaceWarning && (
-        <div className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/55 p-4" role="presentation">
+      {replaceWarning && createPortal(
+        <div className="fixed inset-0 z-[9999] grid place-items-center bg-slate-950/55 p-4" role="presentation">
           <section role="dialog" aria-modal="true" aria-labelledby="replace-profile-title" className="w-full max-w-md rounded-2xl border border-[#e9e1d5] bg-white p-6 shadow-2xl">
             <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-700"><AlertTriangle className="h-5 w-5" /></span><div><h2 id="replace-profile-title" className="font-heading text-lg font-semibold text-[#26354b]">Replace your current profile?</h2><p className="mt-2 text-sm leading-6 text-slate-600">Applying this resume will replace all current profile information{savedBadges.length ? ` and remove ${savedBadges.length === 1 ? "your skill badge" : "your skill badges"}` : " and clear any skill badges"}. This only affects this browser session.</p></div></div>
             <div className="mt-6 flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setReplaceWarning(false)}>Cancel</Button><Button type="button" onClick={applyParsedResume}>Continue</Button></div>
           </section>
-        </div>
+        </div>,
+        document.body,
       )}
       {/* Top Header */}
       <header className="border-b border-[#e9e1d5] bg-[#fffdf8]">
@@ -833,11 +897,13 @@ export function ResumeProfile() {
 
             {/* VIEW A: TALENT CHECK SPLIT-PANE WORKSPACE */}
             {viewMode === "workspace" && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div className={`grid grid-cols-1 gap-6 items-start ${talentReport ? "lg:grid-cols-12" : ""}`}>
                 {/* LEFT PANE: Benchmark Controller & Candidate Scoreboard (Sticky on Desktop) */}
-                <div className="lg:col-span-4 xl:col-span-4 space-y-5 lg:sticky lg:top-4">
+                <div className={talentReport ? "space-y-5 lg:sticky lg:top-4 lg:col-span-4 xl:col-span-4" : ""}>
                   {/* Company Benchmark Selector Card */}
-                  <Card className="p-5 border-2 border-[#246b5d]/30 bg-white shadow-sm space-y-4">
+                  <Card className={`border-2 border-[#246b5d]/30 bg-white p-5 shadow-sm ${talentReport ? "space-y-4" : ""}`}>
+                    <div className={!talentReport ? "grid gap-6 md:grid-cols-2 md:items-center" : "space-y-4"}>
+                      <div className="space-y-4">
                     <div className="border-b border-[#e9e1d5] pb-3">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-[#246b5d] flex items-center gap-1">
                         <Sparkles className="h-3.5 w-3.5" /> Target Employer
@@ -891,30 +957,43 @@ export function ResumeProfile() {
                         {talentError}
                       </div>
                     )}
+                      </div>
+                      {!talentReport && (
+                        <div className="rounded-2xl border border-[#e9e1d5] bg-[#faf7f0] p-5 text-center sm:p-7">
+                          <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f3e5ef] text-[#9A5A82]"><Target className="h-6 w-6" /></div>
+                          <h3 className="mt-4 font-heading text-xl font-bold text-[#26354b]">Ready to evaluate against {targetCompany}?</h3>
+                          <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-slate-600">
+                            Run one check to compare your resume evidence with this company’s 12-skill benchmark, then explore the gap matrix, interview practice, and Skill Proof Sprint.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </Card>
 
                   {/* Readiness Summary & KPI Scoreboard */}
                   {talentReport && (
                     <Card className="p-5 border border-[#e9e1d5] bg-white shadow-sm space-y-4">
                       <div className="border-b border-[#e9e1d5] pb-3 flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                          Resume evidence vs. company benchmark
-                        </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#e4f2e9] px-2.5 py-0.5 text-xs font-bold text-[#246b5d]">
-                          <><CheckCircle className="h-3.5 w-3.5 text-green-600" /> INFORMATIONAL</>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Resume evidence vs. company benchmark</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${dealBreakerCount ? "benchmark-deal-breaker-pill" : "benchmark-safe-pill"}`}>
+                          {dealBreakerCount ? <AlertTriangle className="h-3.5 w-3.5" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                          {dealBreakerCount} deal breaker{dealBreakerCount === 1 ? "" : "s"}
                         </span>
                       </div>
 
-                      {/* Large Circular / Metric Readout */}
+                      {/* Readiness Score */}
                       <div className="rounded-2xl border border-[#e9e1d5] bg-[#faf7f0] p-4 text-center">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Resume evidence found</p>
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Readiness score</p>
                         <div className="mt-1 flex items-baseline justify-center gap-1">
-                          <span className="font-heading text-4xl font-extrabold text-[#26354b]">
-                            {new Set(profile.skills.map((skill) => skill.category_code)).size}
-                          </span>
-                          <span className="text-xs text-slate-500">skill areas</span>
+                          <span className="font-heading text-4xl font-extrabold text-[#26354b]">{readinessScore.toFixed(1)}%</span>
                         </div>
-                        <p className="mt-2 text-[10px] text-slate-500">Resume mentions do not independently verify proficiency.</p>
+                        <div className="mx-auto mt-3 h-2 max-w-xs overflow-hidden rounded-full bg-slate-200">
+                          <div className="h-full rounded-full bg-[#9A5A82] transition-[width]" style={{ width: `${readinessScore}%` }} />
+                        </div>
+                        <p className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${meetsReadinessThreshold ? "benchmark-safe-pill" : "benchmark-deal-breaker-pill"}`}>
+                          {meetsReadinessThreshold ? "Minimum threshold met" : "Minimum threshold not met"}
+                        </p>
+                        <p className="mt-1 text-[10px] text-slate-500">Requires at least {readinessThreshold}% and 0 deal breakers. Resume evidence does not independently verify proficiency.</p>
                       </div>
 
                       {/* 2-Column Mini Metrics */}
@@ -940,14 +1019,6 @@ export function ResumeProfile() {
                         </div>
                       </div>
 
-                      {/* Quick ROI Box */}
-                      <div className="rounded-xl border border-[#f0dfb2] bg-[#fff9e9] p-3 text-xs text-slate-800 leading-relaxed">
-                        <p className="font-bold text-[#76591d] flex items-center gap-1 mb-1">
-                          <TrendingUp className="h-3.5 w-3.5 text-amber-600" /> Quick Win Strategy:
-                        </p>
-                        Use the table as a guide to compare resume evidence with this company benchmark. A missing mention is not proof that you lack the skill; add evidence to your resume or validate it through an assessment.
-                      </div>
-
                       {/* Action / Download Buttons */}
                       <div className="border-t border-[#e9e1d5] pt-3 space-y-2">
                         <Button
@@ -971,30 +1042,8 @@ export function ResumeProfile() {
                   )}
                 </div>
 
-                {/* RIGHT PANE: Interactive Gap Matrix, Radar Chart, AI Coach, Interview, Sprint */}
-                <div className="lg:col-span-8 xl:col-span-8 space-y-5">
-                  {!talentReport ? (
-                    <Card className="p-8 sm:p-12 text-center border border-[#e9e1d5] bg-white shadow-sm space-y-4">
-                      <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#e4f2e9] text-[#246b5d]">
-                        <Target className="h-7 w-7" />
-                      </div>
-                      <h3 className="font-heading text-xl font-bold text-[#26354b]">
-                        Ready to evaluate against {targetCompany}?
-                      </h3>
-                      <p className="mx-auto max-w-md text-sm text-slate-600 leading-relaxed">
-                        Click <strong>&quot;Run Talent Check&quot;</strong> in the left panel to compare your extracted skills against employer-specific benchmarks, view the 12-competency radar chart, practice interview questions, and run a skill proof sprint.
-                      </p>
-                      <Button
-                        type="button"
-                        onClick={runTalentCheckOnProfile}
-                        disabled={checkingTalent}
-                        className="bg-[#246b5d] hover:bg-[#1b5549] text-white font-semibold"
-                      >
-                        {checkingTalent ? <LoaderCircle className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                        Run Talent Check Now
-                      </Button>
-                    </Card>
-                  ) : (
+                {/* RIGHT PANE: Interactive Gap Matrix, Radar Chart, BlitzyAI, Interview, Sprint */}
+                {talentReport && <div className="space-y-5 lg:col-span-8 xl:col-span-8">
                     <Card className="p-5 sm:p-6 border border-[#e9e1d5] bg-white shadow-sm space-y-6">
                       {/* Workflow Navigation Tabs */}
                       <div className="flex flex-wrap gap-2 border-b border-[#e9e1d5] pb-3">
@@ -1018,7 +1067,7 @@ export function ResumeProfile() {
                               : "bg-[#faf7f0] text-slate-600 hover:bg-[#e9e1d5]"
                           }`}
                         >
-                          <MessageSquare className="h-3.5 w-3.5" /> 2. AI Career Coach
+                          <MessageSquare className="h-3.5 w-3.5" /> 2. BlitzyAI
                         </button>
                         <button
                           type="button"
@@ -1048,14 +1097,14 @@ export function ResumeProfile() {
                       {activeTab === "matrix" && (
                         <div className="space-y-6">
                           {/* 12-Skill Radar Chart Visualization */}
-                          <div className="hidden rounded-2xl border border-[#e9e1d5] bg-[#faf7f0] p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900/90 shadow-sm transition-colors">
+                          <div className="rounded-2xl border border-[#e9e1d5] bg-[#faf7f0] p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900/90 shadow-sm transition-colors">
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                               <div>
                                 <h4 className="font-heading text-sm font-bold text-[#26354b] dark:text-slate-100">
-                                  12-Competency RADIX Benchmark Radar
+                                  Resume Score vs. Company Target
                                 </h4>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                                  Visualizing candidate skill profile vs. {talentReport.target_company} expectations (1-5 scale)
+                                  Comparing resume evidence scores with {talentReport.target_company} targets (1–5 scale). Categories without evidence are plotted as 0.
                                 </p>
                               </div>
                               <Badge variant="outline" className="text-xs border-[#e9e1d5] dark:border-slate-700 dark:text-slate-300 dark:bg-slate-800/70">
@@ -1065,7 +1114,7 @@ export function ResumeProfile() {
 
                             <div className="h-80 sm:h-96 w-full">
                               <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart data={radarChartData} outerRadius="75%">
+                                <RadarChart data={comparisonRadarData} outerRadius="75%">
                                   <PolarGrid stroke={isDark ? "rgba(255, 255, 255, 0.18)" : "#e2dad0"} />
                                   <PolarAngleAxis
                                     dataKey="category"
@@ -1082,29 +1131,29 @@ export function ResumeProfile() {
                                     tick={{ fill: isDark ? "#94a3b8" : "#64748b", fontSize: 10, fontWeight: 600 }}
                                   />
                                   <Radar
-                                    name="Candidate Score"
-                                    dataKey="Candidate"
-                                    stroke={isDark ? "#F472B6" : "#9A5A82"}
+                                    name="User Resume Score"
+                                    dataKey="UserTarget"
+                                    stroke={isDark ? "#F0A7D4" : "#9A5A82"}
                                     fill={isDark ? "#D99CC5" : "#9A5A82"}
-                                    fillOpacity={isDark ? 0.45 : 0.35}
+                                    fillOpacity={isDark ? 0.38 : 0.28}
                                     strokeWidth={2.5}
                                     dot={{
                                       r: 3.5,
-                                      fill: isDark ? "#F472B6" : "#9A5A82",
+                                      fill: isDark ? "#F0A7D4" : "#9A5A82",
                                       stroke: isDark ? "#0f172a" : "#ffffff",
                                       strokeWidth: 1.5,
                                     }}
                                   />
                                   <Radar
                                     name="Company Target"
-                                    dataKey="CompanyGoal"
-                                    stroke={isDark ? "#38BDF8" : "#0284c7"}
-                                    fill={isDark ? "#38BDF8" : "#0284c7"}
-                                    fillOpacity={isDark ? 0.25 : 0.2}
+                                    dataKey="CompanyTarget"
+                                    stroke={isDark ? "#A7B7FF" : "#53627A"}
+                                    fill={isDark ? "#A7B7FF" : "#53627A"}
+                                    fillOpacity={isDark ? 0.25 : 0.16}
                                     strokeWidth={2.5}
                                     dot={{
                                       r: 3.5,
-                                      fill: isDark ? "#38BDF8" : "#0284c7",
+                                      fill: isDark ? "#A7B7FF" : "#53627A",
                                       stroke: isDark ? "#0f172a" : "#ffffff",
                                       strokeWidth: 1.5,
                                     }}
@@ -1144,7 +1193,7 @@ export function ResumeProfile() {
                           {/* Coach Advice Text Box */}
                           <div className="rounded-2xl border border-[#dbe9dd] bg-[#f3f8f1] p-4 sm:p-5">
                             <p className="text-xs font-bold text-[#246b5d] uppercase tracking-wider flex items-center gap-1 mb-2">
-                              <Sparkles className="h-4 w-4" /> AI Candidate Diagnostic Advice
+                              <Sparkles className="h-4 w-4" /> BlitzyAI advice
                             </p>
                             <p className="text-sm leading-6 text-slate-700">
                               {talentReport.ai_candidate_agent_advice}
@@ -1157,36 +1206,42 @@ export function ResumeProfile() {
                               <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-[#26354b]">
                                 Resume Evidence Compared with Company Benchmark
                               </h4>
-                              <span className="text-[11px] text-slate-500">Benchmark targets are informational</span>
+                              <span className="text-[11px] text-slate-500">Deal breaker threshold: gap ≥ 1.5</span>
                             </div>
                             <div className="overflow-x-auto">
                               <table className="w-full text-left text-xs sm:text-sm">
                                 <thead className="bg-[#f5f0e6] text-[11px] font-semibold uppercase text-slate-600">
                                   <tr>
                                     <th className="px-4 py-2.5">Competency</th>
-                                    <th className="px-3 py-2.5">Resume evidence</th>
+                                    <th className="px-3 py-2.5">User resume score</th>
                                     <th className="px-3 py-2.5">Company target</th>
-                                    <th className="px-3 py-2.5">Suggested focus</th>
+                                    <th className="px-3 py-2.5">Deal breakers</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[#e9e1d5]">
-                                  {talentReport.per_skillset_gap_breakdown.map((row: any, idx: number) => (
+                                  {benchmarkRows.map((row: any, idx: number) => (
                                     <tr
                                       key={idx}
-                                      className={idx % 2 === 0 ? "bg-white" : "bg-[#faf7f0]/40"}
+                                      className={row.isDealBreaker ? "benchmark-deal-breaker" : "benchmark-safe"}
                                     >
                                       <td className="px-4 py-2.5 font-semibold text-slate-800">
                                         {categories[row.category] || row.category}
                                         <span className="text-[10px] text-slate-400 font-normal ml-1.5">({row.category})</span>
                                       </td>
                                       <td className="px-3 py-2.5 font-medium text-slate-700">
-                                        {profile.skills.some((skill) => skill.category_code === row.category) ? "Found in resume" : "No evidence found"}
+                                        {row.resumeScore ? <>
+                                          <span className="font-semibold">{row.resumeScore.score.toFixed(1)} / 5.0</span>
+                                          <span className="mt-0.5 block text-[10px] font-normal text-slate-500">
+                                            {row.resumeScore.confidence} confidence{row.resumeScore.evidenceCount > 1 ? ` · +${((row.resumeScore.evidenceCount - 1) * 0.2).toFixed(1)} additional evidence` : ""}
+                                          </span>
+                                        </> : <span>No evidence found</span>}
                                       </td>
                                       <td className="px-3 py-2.5 font-medium text-slate-600">
-                                        {(row.required_level || 0).toFixed(1)} / 5.0
+                                        {row.requiredLevel.toFixed(1)} / 5.0
                                       </td>
                                       <td className="px-3 py-2.5">
-                                        {profile.skills.some((skill) => skill.category_code === row.category) ? <span className="text-slate-600">Validate with an assessment</span> : <span className="font-medium text-amber-700">Build resume evidence</span>}
+                                        <span className="font-semibold">{row.isDealBreaker ? "Deal breaker" : "No deal breaker"}</span>
+                                        <span className="mt-0.5 block text-[10px]">{row.gap > 0 ? `Gap ${row.gap.toFixed(1)}` : row.gap < 0 ? `${Math.abs(row.gap).toFixed(1)} above target` : "At target"}</span>
                                       </td>
                                     </tr>
                                   ))}
@@ -1197,13 +1252,13 @@ export function ResumeProfile() {
                         </div>
                       )}
 
-                      {/* TAB 2: AI CAREER COACH CHAT */}
+                      {/* TAB 2: BLITZYAI CHAT */}
                       {activeTab === "coach" && (
                         <div className="space-y-4">
                           <div className="flex items-center justify-between border-b border-[#e9e1d5] pb-3">
                             <div>
                               <h4 className="font-heading text-sm font-bold text-[#26354b]">
-                                Grounded AI Career Coach Chat
+                                BlitzyAI Career Chat
                               </h4>
                               <p className="text-xs text-slate-500">
                                 Ask anything about bridging your gap for {talentReport.target_company}.
@@ -1236,9 +1291,9 @@ export function ResumeProfile() {
                           <div className="min-h-56 max-h-96 overflow-y-auto space-y-3 p-4 bg-[#faf7f0] rounded-xl border border-[#e9e1d5]">
                             <div className="rounded-xl bg-white p-3.5 text-xs sm:text-sm text-slate-700 shadow-sm border border-[#e9e1d5]">
                               <p className="font-semibold text-[#246b5d] mb-1 flex items-center gap-1 text-xs">
-                                <Sparkles className="h-3.5 w-3.5" /> Initial AI Coach Diagnosis:
+                                <Sparkles className="h-3.5 w-3.5" /> BlitzyAI Initial Diagnosis:
                               </p>
-                              <p>{talentReport.ai_candidate_agent_advice}</p>
+                              <FormattedAIMessage text={talentReport.ai_candidate_agent_advice} />
                             </div>
 
                             {chatMessages.map((msg, i) => (
@@ -1250,17 +1305,17 @@ export function ResumeProfile() {
                                     : "mr-auto bg-white text-slate-800 border border-[#e9e1d5]"
                                 }`}
                               >
-                                <p className="font-semibold mb-1 text-[10px] uppercase tracking-wider opacity-80">
-                                  {msg.sender === "user" ? "You" : "AI Career Coach"}
+                                <p className="mb-1 text-[10px] font-semibold opacity-80">
+                                  {msg.sender === "user" ? "You" : "BlitzyAI"}
                                 </p>
-                                <p className="whitespace-pre-wrap">{msg.text}</p>
+                                <FormattedAIMessage text={msg.text} />
                               </div>
                             ))}
 
                             {sendingChat && (
                               <div className="rounded-xl bg-white p-3 text-xs text-slate-500 italic border border-[#e9e1d5] flex items-center gap-2">
                                 <LoaderCircle className="h-3.5 w-3.5 animate-spin text-[#246b5d]" />
-                                AI Coach is preparing your grounded advice…
+                                BlitzyAI is preparing your grounded advice…
                               </div>
                             )}
                           </div>
@@ -1271,7 +1326,7 @@ export function ResumeProfile() {
                               type="text"
                               value={chatInput}
                               onChange={(e) => setChatInput(e.target.value)}
-                              placeholder={`Ask AI Coach about preparing for ${talentReport.target_company}...`}
+                              placeholder={`Ask BlitzyAI about preparing for ${talentReport.target_company}...`}
                               disabled={sendingChat}
                               className="flex-1 rounded-xl border border-[#d9d2c5] px-4 py-2.5 text-xs sm:text-sm focus:border-[#246b5d] focus:outline-none"
                             />
@@ -1297,6 +1352,18 @@ export function ResumeProfile() {
                               <p className="text-xs text-slate-500">
                                 {profileApplied ? "Practice a question based on your selected company benchmark." : "Apply this resume to your Candidate Profile before earning assessment badges."}
                               </p>
+                              <label className="mt-2 block max-w-sm text-xs font-semibold text-slate-700">
+                                Question topic
+                                <select
+                                  value={interviewTopic}
+                                  onChange={(event) => { setInterviewTopic(event.target.value); setInterviewQuestions([]); setInterviewAnswer(""); setInterviewFeedback(""); }}
+                                  disabled={!profileApplied || generatingInterview}
+                                  className="mt-1 min-h-10 w-full rounded-lg border border-[#d9d2c5] bg-white px-3 text-xs font-normal focus:border-[#246b5d] focus:outline-none"
+                                >
+                                  <option value="">Auto-select largest gap</option>
+                                  {orderBenchmarkRows().map((row: any) => <option key={row.category} value={row.category}>{categories[row.category] || row.category} · gap {row.gap.toFixed(1)}</option>)}
+                                </select>
+                              </label>
                             </div>
                             <Button
                               type="button"
@@ -1383,6 +1450,18 @@ export function ResumeProfile() {
                               <p className="text-xs text-slate-500">
                                 {profileApplied ? "Solve a focused practical challenge to earn an applied skill badge." : "Apply this resume to your Candidate Profile before earning assessment badges."}
                               </p>
+                              <label className="mt-2 block max-w-sm text-xs font-semibold text-slate-700">
+                                Challenge topic
+                                <select
+                                  value={sprintTopic}
+                                  onChange={(event) => { setSprintTopic(event.target.value); setSprintChallenge(null); setSprintSolution(""); setSprintResult(null); }}
+                                  disabled={!profileApplied || generatingSprint}
+                                  className="mt-1 min-h-10 w-full rounded-lg border border-[#d9d2c5] bg-white px-3 text-xs font-normal focus:border-[#246b5d] focus:outline-none"
+                                >
+                                  <option value="">Auto-select largest gap</option>
+                                  {orderBenchmarkRows().map((row: any) => <option key={row.category} value={row.category}>{categories[row.category] || row.category} · gap {row.gap.toFixed(1)}</option>)}
+                                </select>
+                              </label>
                             </div>
                             <Button
                               type="button"
@@ -1477,8 +1556,7 @@ export function ResumeProfile() {
                         </div>
                       )}
                     </Card>
-                  )}
-                </div>
+                </div>}
               </div>
             )}
 

@@ -121,7 +121,7 @@ function CompanyOverview({ company, index }: { company: ComparisonCompany; index
             <CompanyLogo name={company.profile.name} logoUrl={company.profile.logoUrl} websiteUrl={company.profile.websiteUrl} size="md" />
             <div className="min-w-0 flex-1">
               <h3 className="break-words font-heading text-lg font-semibold text-[#26354b]">{company.profile.name}</h3>
-              <Badge variant={index === 1 ? "amber" : index === 2 ? "purple" : "green"} className="mt-1">{company.profile.category || "Company"}</Badge>
+              <Badge variant={index === 1 ? "amber" : index === 2 ? "purple" : "rose"} className="mt-1">{company.profile.category || "Company"}</Badge>
             </div>
           </div>
           <dl className="mt-5 grid grid-cols-2 gap-3">

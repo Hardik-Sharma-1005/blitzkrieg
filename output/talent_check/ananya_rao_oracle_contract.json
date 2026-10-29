@@ -1,0 +1,163 @@
+{
+  "company": "Oracle",
+  "candidate_name": "Ananya Rao",
+  "source_file": "Ananya Rao.pdf",
+  "readiness_score": 69.3,
+  "is_ready": false,
+  "skillset_gap": [
+    {
+      "category_code": "CLOUD",
+      "required_level": 4.2,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "APTI",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "EQ",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "AI",
+      "required_level": 2.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "SWE",
+      "required_level": 4.0,
+      "candidate_level": 3.8,
+      "gap": true
+    },
+    {
+      "category_code": "CDG",
+      "required_level": 4.0,
+      "candidate_level": 4.0,
+      "gap": false
+    },
+    {
+      "category_code": "DSA",
+      "required_level": 3.8,
+      "candidate_level": 4.4,
+      "gap": false
+    },
+    {
+      "category_code": "OOD",
+      "required_level": 4.0,
+      "candidate_level": 4.2,
+      "gap": false
+    },
+    {
+      "category_code": "COMM",
+      "required_level": 3.5,
+      "candidate_level": 3.8,
+      "gap": false
+    },
+    {
+      "category_code": "SYSD",
+      "required_level": 3.5,
+      "candidate_level": 4.2,
+      "gap": false
+    },
+    {
+      "category_code": "NETW",
+      "required_level": 3.5,
+      "candidate_level": 4.0,
+      "gap": false
+    },
+    {
+      "category_code": "OS",
+      "required_level": 3.5,
+      "candidate_level": 4.4,
+      "gap": false
+    }
+  ],
+  "total_estimated_learning_hours": 115.5,
+  "deal_breakers": [],
+  "what_if_recommendation": {
+    "recommended_skill_to_study": "AI",
+    "projected_score_boost_pct": 3.1
+  },
+  "ai_candidate_agent_advice": "Hello Ananya Rao. You are currently at 69.3% readiness for Oracle. To reach hiring readiness, you need approximately 116 total learning hours. Quick Win Tip: Level up AI by +1.0 to immediately boost your score by +3.1%!",
+  "radar_chart_data": [
+    {
+      "category": "CLOUD",
+      "Candidate": 0.0,
+      "CompanyGoal": 4.2,
+      "fullMark": 5.0
+    },
+    {
+      "category": "APTI",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "EQ",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "AI",
+      "Candidate": 0.0,
+      "CompanyGoal": 2.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "SWE",
+      "Candidate": 3.8,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "CDG",
+      "Candidate": 4.0,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "DSA",
+      "Candidate": 4.4,
+      "CompanyGoal": 3.8,
+      "fullMark": 5.0
+    },
+    {
+      "category": "OOD",
+      "Candidate": 4.2,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "COMM",
+      "Candidate": 3.8,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "SYSD",
+      "Candidate": 4.2,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "NETW",
+      "Candidate": 4.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "OS",
+      "Candidate": 4.4,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    }
+  ],
+  "generated_at": "2026-10-25T20:52:47.362240"
+}

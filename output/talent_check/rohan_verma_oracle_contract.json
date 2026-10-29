@@ -1,0 +1,163 @@
+{
+  "company": "Oracle",
+  "candidate_name": "Rohan Verma",
+  "source_file": "Rohan Verma.pdf",
+  "readiness_score": 83.9,
+  "is_ready": true,
+  "skillset_gap": [
+    {
+      "category_code": "APTI",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "NETW",
+      "required_level": 3.5,
+      "candidate_level": 0.0,
+      "gap": true
+    },
+    {
+      "category_code": "CDG",
+      "required_level": 4.0,
+      "candidate_level": 3.8,
+      "gap": true
+    },
+    {
+      "category_code": "CLOUD",
+      "required_level": 4.2,
+      "candidate_level": 4.0,
+      "gap": true
+    },
+    {
+      "category_code": "SWE",
+      "required_level": 4.0,
+      "candidate_level": 3.8,
+      "gap": true
+    },
+    {
+      "category_code": "DSA",
+      "required_level": 3.8,
+      "candidate_level": 4.2,
+      "gap": false
+    },
+    {
+      "category_code": "OOD",
+      "required_level": 4.0,
+      "candidate_level": 4.0,
+      "gap": false
+    },
+    {
+      "category_code": "COMM",
+      "required_level": 3.5,
+      "candidate_level": 3.8,
+      "gap": false
+    },
+    {
+      "category_code": "AI",
+      "required_level": 2.5,
+      "candidate_level": 4.0,
+      "gap": false
+    },
+    {
+      "category_code": "EQ",
+      "required_level": 3.5,
+      "candidate_level": 3.8,
+      "gap": false
+    },
+    {
+      "category_code": "SYSD",
+      "required_level": 3.5,
+      "candidate_level": 4.0,
+      "gap": false
+    },
+    {
+      "category_code": "OS",
+      "required_level": 3.5,
+      "candidate_level": 3.8,
+      "gap": false
+    }
+  ],
+  "total_estimated_learning_hours": 57.5,
+  "deal_breakers": [],
+  "what_if_recommendation": {
+    "recommended_skill_to_study": "APTI",
+    "projected_score_boost_pct": 2.2
+  },
+  "ai_candidate_agent_advice": "Outstanding job, Rohan Verma! You are officially READY for Oracle with a Readiness Score of 83.9%. You have zero deal-breaker gaps.",
+  "radar_chart_data": [
+    {
+      "category": "APTI",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "NETW",
+      "Candidate": 0.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "CDG",
+      "Candidate": 3.8,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "CLOUD",
+      "Candidate": 4.0,
+      "CompanyGoal": 4.2,
+      "fullMark": 5.0
+    },
+    {
+      "category": "SWE",
+      "Candidate": 3.8,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "DSA",
+      "Candidate": 4.2,
+      "CompanyGoal": 3.8,
+      "fullMark": 5.0
+    },
+    {
+      "category": "OOD",
+      "Candidate": 4.0,
+      "CompanyGoal": 4.0,
+      "fullMark": 5.0
+    },
+    {
+      "category": "COMM",
+      "Candidate": 3.8,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "AI",
+      "Candidate": 4.0,
+      "CompanyGoal": 2.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "EQ",
+      "Candidate": 3.8,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "SYSD",
+      "Candidate": 4.0,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    },
+    {
+      "category": "OS",
+      "Candidate": 3.8,
+      "CompanyGoal": 3.5,
+      "fullMark": 5.0
+    }
+  ],
+  "generated_at": "2026-10-25T20:52:47.506333"
+}

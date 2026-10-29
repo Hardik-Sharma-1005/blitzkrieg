@@ -14,6 +14,36 @@ const categoryNames: Record<string, string> = {
 };
 
 const assessmentNames = { mock_interview: "Mock Interview", skill_proof_sprint: "Skill Proof Sprint" } as const;
+type BasicInfo = { name: string; email: string; phone: string; location: string; linkedin: string; github: string };
+
+function getBasicInfoErrors(info: BasicInfo): Partial<Record<keyof BasicInfo, string>> {
+  const errors: Partial<Record<keyof BasicInfo, string>> = {};
+  const name = info.name.trim();
+  if (!name) errors.name = "Enter your name.";
+  else if (name.length < 2 || name.length > 80 || !/^[\p{L}\p{M}][\p{L}\p{M}\s.'’\-]{1,79}$/u.test(name)) errors.name = "Use 2–80 letters; spaces, apostrophes, periods, and hyphens are allowed.";
+
+  const email = info.email.trim();
+  if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))) errors.email = "Enter a valid email address.";
+
+  const phone = info.phone.trim();
+  if (phone && (!/^[0-9\s().-]+$/.test(phone) || phone.replace(/\D/g, "").length !== 10)) errors.phone = "Enter exactly 10 digits; spaces, parentheses, dots, and hyphens are allowed.";
+
+  const location = info.location.trim();
+  if (location && (location.length < 2 || location.length > 100 || !/[\p{L}\p{N}]/u.test(location) || !/^[\p{L}\p{M}\p{N}\s.,'’()\-/]+$/u.test(location))) errors.location = "Enter a location using 2–100 letters or numbers.";
+
+  const validProfileUrl = (value: string, host: string) => {
+    try {
+      const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+      return (url.hostname === host || url.hostname === `www.${host}`) && url.pathname.split("/").filter(Boolean).length >= 1;
+    } catch { return false; }
+  };
+  const linkedin = info.linkedin.trim();
+  if (linkedin && (linkedin.length > 500 || !validProfileUrl(linkedin, "linkedin.com"))) errors.linkedin = "Enter a LinkedIn profile URL, such as linkedin.com/in/your-name.";
+  const github = info.github.trim();
+  if (github && (github.length > 500 || !validProfileUrl(github, "github.com"))) errors.github = "Enter a GitHub profile URL, such as github.com/your-name.";
+
+  return errors;
+}
 
 function displayEntry(value: unknown): string {
   if (typeof value === "string" || typeof value === "number") return String(value);
@@ -38,13 +68,19 @@ export function CandidateProfile() {
   const badges = historySnapshot?.badges ?? activeBadges;
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [basicInfo, setBasicInfo] = useState({ name: "", email: "", phone: "", location: "", linkedin: "", github: "" });
+  const [basicInfo, setBasicInfo] = useState<BasicInfo>({ name: "", email: "", phone: "", location: "", linkedin: "", github: "" });
+  const basicInfoErrors = getBasicInfoErrors(basicInfo);
+  const basicInfoValid = Object.keys(basicInfoErrors).length === 0;
   const loggedGuidedReview = useRef("");
 
   useEffect(() => {
     const id = (location.state as { recentActivityId?: unknown } | null)?.recentActivityId;
     const saved = readRecentSnapshot<{ kind: "candidate-profile"; profile: ParsedCandidateProfile; badges?: CandidateSkillBadge[] }>(id);
-    setHistorySnapshot(saved?.kind === "candidate-profile" ? { profile: saved.profile, badges: saved.badges ?? [] } : null);
+    const sprintBadges = (saved?.badges ?? []).flatMap((badge) => {
+      const assessments = Array.isArray(badge.assessments) ? badge.assessments.filter((assessment) => assessment === "skill_proof_sprint") : [];
+      return assessments.length ? [{ ...badge, assessments }] : [];
+    });
+    setHistorySnapshot(saved?.kind === "candidate-profile" ? { profile: saved.profile, badges: sprintBadges } : null);
   }, [location.key, location.state]);
 
   useEffect(() => {
@@ -66,9 +102,11 @@ export function CandidateProfile() {
 
   const saveBasics = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    updateBasicInfo(basicInfo);
+    if (!basicInfoValid) return;
+    const normalizedInfo = Object.fromEntries(Object.entries(basicInfo).map(([key, value]) => [key, value.trim()])) as BasicInfo;
+    updateBasicInfo(normalizedInfo);
     if (profile) {
-      const updated = { ...profile, ...basicInfo };
+      const updated = { ...profile, ...normalizedInfo };
       recordRecentActivity({ feature: "profile", title: updated.name || "Candidate profile", action: "Updated basic profile information", path: "/candidate-profile" }, { kind: "candidate-profile", profile: updated, badges });
     }
     setEditing(false);
@@ -90,27 +128,31 @@ export function CandidateProfile() {
       <div><p className="inline-flex items-center gap-2 rounded-full bg-[#e4f2e9] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-[#246b5d]"><UserRound className="h-3.5 w-3.5" /> {historySnapshot ? "Profile history" : "Candidate Profile"}</p>
         <h1 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-[#26354b] sm:text-4xl">{profile.name || "Your profile"}</h1>
         <p className="mt-2 text-sm text-slate-600">Built from <span className="font-medium">{profile.source_file}</span> · {historySnapshot ? "saved in this tab session" : "available for this tab session"}</p></div>
-      <div className="flex flex-wrap gap-2">{!historySnapshot && <Button variant="outline" asChild><Link to="/check-where-you-stand"><Sparkles className="h-4 w-4" /> Check where you stand</Link></Button>}<Button asChild><Link to="/resume-profile"><FileText className="h-4 w-4" /> Apply another resume</Link></Button></div>
+      <div className="flex flex-wrap gap-2">{!historySnapshot && <Button variant="outline" className="candidate-profile-check-link" asChild><Link to="/check-where-you-stand"><Sparkles className="h-4 w-4" /> Check where you stand</Link></Button>}<Button asChild><Link to="/resume-profile"><FileText className="h-4 w-4" /> Apply another resume</Link></Button></div>
     </header>
 
     {historySnapshot && <div role="status" className="rounded-xl border border-[#dbe9dd] bg-[#f3f8f1] px-4 py-3 text-sm text-slate-700">You’re viewing a saved profile activity. Editing it won’t change the current profile.</div>}
 
-    <Card className="overflow-hidden border-[#d9e7dc] bg-gradient-to-br from-[#f3f8f1] to-white p-5 sm:p-7">
-      <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="flex items-center gap-2"><Award className="h-5 w-5 text-[#246b5d]" /><h2 className="font-heading text-xl font-semibold text-[#26354b]">Skill badges</h2></div><p className="mt-1 text-sm text-slate-600">Badges are earned by passing an assessment. Resume skills are shown separately as extracted evidence.</p></div><Badge variant="outline" className="border-[#80b7a4] text-[#246b5d]">{badges.length} earned</Badge></div>
-      {badges.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{badges.map((badge) => <article key={badge.skill_name} className="rounded-xl border border-[#dbe9dd] bg-white p-4">
+    <Card className="skill-badges-panel overflow-hidden border p-5 sm:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="flex items-center gap-2"><Award className="h-5 w-5 text-[var(--brand-accent)]" /><h2 className="skill-badges-heading font-heading text-xl font-semibold">Skill badges</h2></div><p className="skill-badges-description mt-1 text-sm">Badges are earned by passing an assessment. Resume skills are shown separately as extracted evidence.</p></div><Badge variant="outline" className="skill-badges-count">{badges.length} earned</Badge></div>
+      {badges.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{badges.map((badge) => <article key={badge.skill_name} className="skill-badge-item rounded-xl border p-4">
         <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#e4f2e9] text-[#246b5d]"><Award className="h-5 w-5" /></span><div><h3 className="font-semibold text-[#26354b]">{badge.skill_name} badge</h3><p className="mt-0.5 text-xs text-slate-500">{categoryNames[badge.category_code] ?? badge.category_code}</p></div></div>
         <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Earned through</p><p className="mt-1 text-sm text-slate-700">{badge.assessments.map((assessment) => assessmentNames[assessment]).join(" · ")}</p>
         <p className="mt-1 text-xs text-slate-500">Earned {new Date(badge.awarded_at).toLocaleDateString()}</p>
         {badge.evidence.length > 0 && <p className="mt-2 text-xs leading-5 text-slate-600">{badge.evidence.join(" · ")}</p>}
-      </article>)}</div> : <div className="mt-5 rounded-xl border border-dashed border-[#c9d9cd] bg-white/80 p-5 text-sm text-slate-600">No badges yet. Use a recommended skill in Mock Interview or Skill Proof Sprint and pass its assessment to earn one.</div>}
+      </article>)}</div> : <div className="skill-badges-empty mt-5 rounded-xl border border-dashed p-5 text-sm">No badges yet. Pass a Skill Proof Sprint challenge to earn a practical skill badge.</div>}
     </Card>
 
     <Card className="p-5 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex items-center gap-2"><UserRound className="h-5 w-5 text-[#246b5d]" /><h2 className="font-heading text-xl font-semibold text-[#26354b]">Basic information</h2></div><p className="mt-1 text-sm text-slate-600">You can edit these personal details during this session.</p></div>
-        {!editing && !historySnapshot && <Button type="button" variant="outline" onClick={() => setEditing(true)}>Edit details</Button>}</div>
-      {editing ? <form onSubmit={saveBasics} className="mt-5 grid gap-4 sm:grid-cols-2">
-        {([ ["name", "Name", "text"], ["email", "Email", "email"], ["phone", "Phone", "tel"], ["location", "Location", "text"], ["linkedin", "LinkedIn link", "text"], ["github", "GitHub link", "text"] ] as const).map(([key, label, type]) => <label key={key} className="text-sm font-medium text-slate-700">{label}<input type={type} value={basicInfo[key]} onChange={(event) => setBasicInfo((current) => ({ ...current, [key]: event.target.value }))} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9d2c5] bg-white px-3 text-sm focus:border-[#246b5d] focus:outline-none focus:ring-2 focus:ring-[#246b5d]/15" /></label>)}
-        <div className="flex items-center gap-2 sm:col-span-2"><Button type="submit">Save details</Button><Button type="button" variant="outline" onClick={() => { setEditing(false); setBasicInfo({ name: profile.name ?? "", email: profile.email ?? "", phone: profile.phone ?? "", location: profile.location ?? "", linkedin: profile.linkedin ?? "", github: profile.github ?? "" }); }}>Cancel</Button></div>
+        {!editing && !historySnapshot && <Button type="button" variant="outline" className="candidate-edit-details" onClick={() => setEditing(true)}>Edit details</Button>}</div>
+      {editing ? <form noValidate onSubmit={saveBasics} className="mt-5 grid gap-4 sm:grid-cols-2">
+        {([ ["name", "Name", "text", 80], ["email", "Email", "email", 254], ["phone", "Phone", "tel", 30], ["location", "Location", "text", 100], ["linkedin", "LinkedIn link", "url", 500], ["github", "GitHub link", "url", 500] ] as const).map(([key, label, type, maxLength]) => {
+          const errorId = `${key}-validation-error`;
+          const fieldError = basicInfoErrors[key];
+          return <label key={key} className="text-sm font-medium text-slate-700">{label}<input type={type} required={key === "name"} maxLength={maxLength} value={basicInfo[key]} aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined} onChange={(event) => setBasicInfo((current) => ({ ...current, [key]: event.target.value }))} className={`mt-1.5 min-h-11 w-full rounded-xl border bg-white px-3 text-sm focus:outline-none focus:ring-2 ${fieldError ? "border-red-500 focus:border-red-500 focus:ring-red-500/15" : "border-[#d9d2c5] focus:border-[#246b5d] focus:ring-[#246b5d]/15"}`} />{fieldError && <span id={errorId} className="field-validation-error mt-1 block text-xs leading-4" role="alert">{fieldError}</span>}</label>;
+        })}
+        <div className="flex items-center gap-2 sm:col-span-2"><Button type="submit" disabled={!basicInfoValid}>Save details</Button><Button type="button" variant="outline" onClick={() => { setEditing(false); setBasicInfo({ name: profile.name ?? "", email: profile.email ?? "", phone: profile.phone ?? "", location: profile.location ?? "", linkedin: profile.linkedin ?? "", github: profile.github ?? "" }); }}>Cancel</Button></div>
       </form> : <><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {([ ["Name", profile.name, UserRound], ["Email", profile.email, Mail], ["Phone", profile.phone, Phone], ["Location", profile.location, MapPin], ["LinkedIn", profile.linkedin, Link2], ["GitHub", profile.github, CodeXml] ] as const).map(([label, value, Icon]) => <div key={label} className="flex min-h-16 items-center gap-3 rounded-xl bg-[#faf7f0] px-4 py-3"><Icon className="h-4 w-4 shrink-0 text-[#679586]" /><div className="min-w-0"><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p><p className="truncate text-sm text-slate-800">{value || "Not provided"}</p></div></div>)}
       </div>{saved && <p role="status" className="mt-3 text-sm font-medium text-[#246b5d]">Your details are updated for this session.</p>}</>}

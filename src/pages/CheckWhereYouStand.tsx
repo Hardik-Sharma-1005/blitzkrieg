@@ -8,17 +8,17 @@ import { useCandidateProfile } from "@/lib/candidateProfile";
 const steps = [
   { key: "resume", title: "Build your candidate profile", description: "Parse a resume and apply it to your temporary profile.", to: "/resume-profile", icon: FileText, required: true },
       { key: "profile", title: "Review your profile", description: "Check your resume details and update your basic information.", to: "/candidate-profile", icon: UserRound, required: true },
-  { key: "interview", title: "Practice a mock interview", description: "Choose a recommended skill, answer a generated question, and earn a badge by passing.", to: "/candidate-assessments?kind=mock_interview", icon: Sparkles },
+  { key: "interview", title: "Practice a mock interview", description: "Choose a recommended skill, answer a generated question, and get structured feedback.", to: "/candidate-assessments?kind=mock_interview", icon: Sparkles },
   { key: "sprint", title: "Try a Skill Proof Sprint", description: "Solve a short skill challenge and earn a badge by passing.", to: "/candidate-assessments?kind=skill_proof_sprint", icon: Award },
   { key: "readiness", title: "Check readiness for a job", description: "Optionally compare your profile with a job description or company benchmark.", to: "/job-readiness", icon: Target },
 ];
 
 export function CheckWhereYouStand() {
-  const { profile, badges, profileReviewed, readinessChecked, skippedSteps, setStepSkipped } = useCandidateProfile();
+  const { profile, badges, profileReviewed, interviewCompleted, readinessChecked, skippedSteps, setStepSkipped } = useCandidateProfile();
   const completed = {
     resume: Boolean(profile),
     profile: profileReviewed,
-    interview: badges.some((badge) => badge.assessments.includes("mock_interview")),
+    interview: interviewCompleted,
     sprint: badges.some((badge) => badge.assessments.includes("skill_proof_sprint")),
     readiness: readinessChecked,
   };
