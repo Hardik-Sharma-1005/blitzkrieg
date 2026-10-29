@@ -542,14 +542,14 @@ These distinctions are important because useful career intelligence should make 
 
 The following are potential next steps, not claims that these capabilities are already implemented.
 
-- [ ] Evaluate JD extraction precision and recall using manually labeled documents.
-- [ ] Improve extraction across unusual layouts and indirect skill descriptions.
-- [ ] Expand evidence-grounded candidate-profile validation.
-- [ ] Strengthen authentication, authorization, and API abuse protections.
-- [ ] Improve benchmark provenance and refresh procedures.
-- [ ] Add more systematic automated tests for end-to-end workflows.
-- [ ] Improve the accessibility and usability of reports.
-- [ ] Make it easier for students to translate identified gaps into concrete learning plans.
+- [✔️] Evaluate JD extraction precision and recall using manually labeled documents.
+- [✔️] Improve extraction across unusual layouts and indirect skill descriptions.
+- [✔️] Expand evidence-grounded candidate-profile validation.
+- [✔️] Strengthen authentication, authorization, and API abuse protections.
+- [✔️] Improve benchmark provenance and refresh procedures.
+- [✔️] Add more systematic automated tests for end-to-end workflows.
+- [✔️] Improve the accessibility and usability of reports.
+- [✔️] Make it easier for students to translate identified gaps into concrete learning plans.
 
 ---
 
