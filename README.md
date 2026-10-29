@@ -1,272 +1,602 @@
-# ⚡ Blitzkrieg
-### Career intelligence that turns placement preparation into a plan.
+<div align="center">
 
-Blitzkrieg is a career and placement intelligence platform built for students, recruiters, and placement teams at **JSS University, Noida**. It connects company research, job-description analysis, resume parsing, candidate profiles, skill matching, and company-benchmark readiness into one workflow.
+<img width="653" height="235" alt="image" src="https://github.com/user-attachments/assets/951d3b45-9ddb-4aeb-b7fe-2202bdad8b20" />
 
-> **Understand the role. Understand your evidence. Find the gaps. Prepare with purpose.**
 
-<p align="center">
-  <a href="https://jss-placement-intelligence-portal.vercel.app/"><strong>🚀 Open the live demo</strong></a>
-  ·
-  <a href="https://github.com/Hardik-Sharma-1005/blitzkrieg"><strong>💻 Explore the source</strong></a>
-</p>
+### blitzkrieg
+### Your Career. Decoded. Your Preparation. Strategized.
+
+**An AI-powered career and placement intelligence platform built to help students understand employer expectations, identify skill gaps, and prepare with purpose.**
+
+[🚀 Live Demo](https://jss-placement-intelligence-portal.vercel.app)
+
+<br/>
+
+*Stop preparing blindly. Start preparing strategically.*
+
+</div>
 
 ---
 
-## 🧭 The problem we're solving
+## 🎯 The Problem
 
-Placement preparation can feel scattered: job requirements sit in long descriptions, candidate information lives in resumes, and students often struggle to decide which skills deserve their attention first.
+Every placement season, students face the same frustrating questions:
 
-Blitzkrieg brings these pieces together. Instead of treating a resume, a job description, and a company profile as separate documents, it helps users inspect them as connected sources of career intelligence.
+- What skills do companies actually expect from me?
+- Does my resume demonstrate the skills required for a particular role?
+- Where am I falling short of my target company's expectations?
+- What should I work on first to improve my chances?
 
-## ✨ Explore the platform
+Students have resumes, job descriptions, learning resources, and countless preparation tools. But these resources often exist in isolation.
 
-| Module | What it helps you do |
-| --- | --- |
-| 🏢 **Company Intelligence** | Explore company profiles, skill expectations, and learning signals. |
-| 📊 **Company Comparison** | Compare up to three companies and review how their skill expectations differ. |
-| 🎯 **Skill Intelligence** | Rate your skills and identify gaps against a selected company's targets. |
-| 📄 **JD Analytics** | Upload a PDF or DOCX job description and extract categorized skills with supporting evidence and confidence labels. |
-| 🧾 **Resume Parsing** | Turn a resume into structured candidate information and skill evidence. |
-| 🪪 **Profile Builder** | Review and edit candidate details carried forward from resume parsing. |
-| 🧩 **Skill Matching** | Compare resume skills with job requirements, separating matched, possible, and missing skills. |
-| 🚦 **Talent Check** | Compare a candidate profile with a company benchmark and inspect an overall readiness score and skill-level gaps. |
-| 🤖 **Career Coach & practice tools** | In the Talent Check workflow, explore report-based coaching, interview practice, and Skill Proof Sprint activities where configured. |
+**Blitzkrieg brings them together into one connected preparation workflow.**
 
-## 🔄 One connected workflow
+Built for students, recruiters, and placement teams at JSS University, Noida, Blitzkrieg transforms job descriptions and resumes into structured insights that help students make more informed preparation decisions.
 
-```text
-Company / role research
-        ↓
-Job Description (JD) Analytics ──→ Structured job requirements
-        ↓
-Resume Parsing ──────────────────→ Structured candidate profile
-        ↓
-Profile Builder ─────────────────→ Review and correct details
-        ↓
-   ┌────┴────────────┐
-   ↓                 ↓
-Talent Check     Skill Matching
-   ↓                 ↓
-Company-benchmark   Resume ↔ job
-readiness gaps      requirement comparison
-   └────────┬────────┘
-            ↓
-     A clearer preparation plan
+Instead of simply asking, *"Am I ready?"*, Blitzkrieg helps students investigate the more useful question:
+
+**"What evidence do I have, where are my gaps, and what should I do next?"**
+
+---
+
+## ✨ What Makes Blitzkrieg Different?
+
+| Traditional Preparation | With Blitzkrieg |
+|---|---|
+| Guessing what employers expect | Extracting structured requirements from job descriptions |
+| Manually reviewing lengthy resumes | Converting resumes into structured candidate profiles |
+| Comparing skills mentally | Inspecting skill-level gaps against company benchmarks |
+| Treating every skill match as certain | Separating confirmed matches from possible matches |
+| Preparing without a clear direction | Using evidence and identified gaps to guide preparation |
+
+Blitzkrieg is designed around **transparency, structured information, and actionable preparation insights**—not just another score on a dashboard.
+
+---
+
+## 🚀 Explore the Platform
+
+Blitzkrieg connects five core modules into a single career-intelligence workflow.
+
+### 01. 🔍 JD Analytics
+
+**Understand the job before preparing for it.**
+
+Upload a PDF or DOCX job description and extract its technical skills, tools, and other recognized requirements into a structured list.
+
+**What it offers:**
+- Automated job-description analysis.
+- Categorized skill extraction.
+- Supporting text evidence for extracted requirements.
+- Confidence information associated with extraction results.
+- A structured output that can inform later skill comparisons.
+
+**Why it matters:** A lengthy job description becomes easier to inspect, helping students identify the requirements they should investigate and prepare for.
+
+Route: `/jd-analytics`
+
+### 02. 📄 Resume Parsing
+
+**Turn an unstructured resume into structured candidate information.**
+
+Upload a resume and extract relevant information into a reusable candidate profile.
+
+**What it offers:**
+- PDF and DOCX resume processing.
+- Structured candidate information.
+- Skill extraction with supporting evidence.
+- AI-assisted extraction with a labeled local heuristic fallback.
+- A structured handoff to the Profile Builder and other analysis workflows.
+
+The parser checks whether extracted skill evidence is grounded in the document text. If AI extraction fails or cannot produce a valid result, the local fallback attempts to identify explicitly mentioned skills and tools.
+
+**Why it matters:** A student's experience becomes easier to inspect and reuse across the platform.
+
+Route: `/resume-profile`
+
+### 03. 🧩 Profile Builder
+
+**Your resume is the starting point, not the final word.**
+
+The Profile Builder brings extracted candidate information into a structured workflow where it can be reviewed and refined.
+
+**What it offers:**
+- A candidate profile populated from resume information.
+- A structured view of extracted details.
+- An opportunity to review and correct information.
+- A shared candidate-data workflow for downstream analysis.
+
+**Why it matters:** Automated extraction is not infallible. Reviewing candidate information helps identify mistakes before they influence subsequent analysis.
+
+Route: `/resume-profile`
+
+### 04. 🎯 Talent Check
+
+**Measure preparation against a specific company benchmark.**
+
+Talent Check compares a parsed resume with a selected company's skill benchmark and generates a structured readiness report.
+
+**What it offers:**
+- A company directory containing 118 company options.
+- Company-specific skill benchmarks where available.
+- A readiness score and configured readiness classification.
+- Skill-level gap analysis.
+- RADIX-12 benchmark reporting and radar-chart data.
+- An AI Career Coach.
+- Interview Practice with generated questions and answer evaluation.
+- Skill Proof Sprint challenges and solution evaluation.
+- A downloadable Markdown report.
+
+#### How the benchmark works
+
+The current benchmark dataset contains:
+- **113 companies** with company-specific skill profiles.
+- **5 companies** using a clearly identified RADIX-wide fallback benchmark.
+- A **12-skill RADIX profile** for the Talent Check workflow.
+
+The source company-skill data uses a 1–10 scale, which Talent Check converts to a 1–5 scale for its report.
+
+The five fallback profiles use the RADIX-wide median derived from the 113 complete company profiles. They are not represented as employer-specific skill data.
+
+**Important:** A readiness score is a preparation indicator based on the configured benchmark. It is not a hiring prediction, a guarantee of selection, or a substitute for an employer's actual evaluation criteria.
+
+Route: `/talent-check`
+
+### 05. 🔗 Skill Matching
+
+**Find out how your resume aligns with a specific job.**
+
+Skill Matching compares the skills and evidence extracted from a resume against the requirements extracted from a job description.
+
+**What it offers:**
+- A resume-to-job comparison.
+- Confirmed skill matches.
+- Possible matches that require further inspection.
+- Missing or unrecognized requirements.
+- Supporting evidence for the comparison.
+- A match score summarizing the results.
+
+#### Three kinds of results
+
+| Result | Meaning |
+|---|---|
+| ✅ Matched | An exact skill-name or recognized-alias match was identified. |
+| 🟡 Possible match | Similar wording was identified, but the match is not sufficiently certain to be treated as confirmed. |
+| ❌ Missing | A job requirement was not found among the candidate's extracted skills. |
+
+**Why it matters:** A keyword appearing in a resume is not the same as verified proficiency. Keeping uncertain matches separate makes the analysis more transparent.
+
+Route: `/skill-match`
+
+---
+
+## 🔄 The Blitzkrieg Workflow
+
+The modules are designed to complement one another.
+
+```mermaid
+flowchart TD
+    A["📋 Job Description"] --> B["🔍 JD Analytics"]
+    C["📄 Candidate Resume"] --> D["🧠 Resume Parsing"]
+
+    D --> E["🧩 Profile Builder"]
+    E --> F["👤 Structured Candidate Profile"]
+
+    B --> G["🔗 Skill Matching"]
+    F --> G
+
+    F --> H["🎯 Talent Check"]
+    I["🏢 Company Benchmark"] --> H
+
+    G --> J["📊 Matched, Possible & Missing Skills"]
+    H --> K["📈 Readiness Report & Skill Gaps"]
+
+    K --> L["🤖 Career Coach"]
+    K --> M["🎤 Interview Practice"]
+    K --> N["⚡ Skill Proof Sprint"]
+
+    J --> O["🎯 More Focused Preparation"]
+    L --> O
+    M --> O
+    N --> O
 ```
 
-The modules are designed to complement one another: JD Analytics focuses on what a role asks for; Skill Matching compares that requirement set with a candidate's resume evidence; Talent Check compares the candidate with a company skill benchmark.
+### From documents to decisions
 
-## 🧠 How the AI and extraction flows work
+1. **Understand the opportunity:** Analyze a job description.
+2. **Understand the candidate:** Parse a resume into structured information.
+3. **Refine the profile:** Review and correct extracted details.
+4. **Assess readiness:** Compare the candidate with a selected company benchmark.
+5. **Inspect alignment:** Identify matched, possible, and missing skills.
+6. **Plan the next steps:** Use the reports and available preparation tools to guide further learning.
 
-- **Structured outputs:** JD Analytics returns categorized skills with evidence and confidence labels.
-- **Evidence-aware matching:** Exact skill names and recognized aliases count as confirmed matches; fuzzy similarities are reported separately as possible matches.
-- **Fallback behavior:** If a configured AI extraction request is unavailable or its output fails validation, the relevant extraction flow can use a labeled local heuristic fallback. Heuristics scan readable document text for explicit skill/tool names and can miss indirect or context-dependent skills.
-- **Document support:** JD Analytics and resume parsing accept PDF and DOCX files up to 12 MB. Image-based PDF pages may use a vision extraction path when configured; image-only content is not guaranteed to be understood in every fallback mode.
-- **Candidate control:** Extracted details should be reviewed. Finding a skill in a document is not the same as independently verifying proficiency.
+The result is a connected workflow rather than a collection of unrelated utilities.
 
-### Talent Check benchmarks: read the score in context
+---
 
-Talent Check uses a **12-skill RADIX benchmark**. The repository's benchmark snapshot covers 118 company options: 113 have company-specific skill profiles, while five use a RADIX-wide median fallback based on the complete profiles. The interface/report identifies the fallback rather than presenting it as company-specific data. Source skill levels use a 1–10 scale and are converted to a 1–5 scale for the report.
+## 🏢 Company Intelligence
 
-A readiness score is a **preparation signal against the selected benchmark**, not a hiring prediction, employer endorsement, or guarantee of selection. Company benchmarks are not the same as live job requirements.
+Blitzkrieg also provides company-oriented discovery and skill intelligence.
 
-## 🛠️ Tech stack
+| Module | Route | Purpose |
+|---|---|---|
+| Company Search | `/` | Search and select companies. |
+| Company Intelligence | `/company/intelligence` | Explore company information and profiles. |
+| Skill Intelligence | `/company/skills` | Review skill expectations and learning topics. |
+| Company Comparison | `/company/compare` | Compare up to three companies. |
 
-| Layer | Technologies |
-| --- | --- |
-| Frontend | React, TypeScript, Vite |
-| UI & interaction | Tailwind CSS, Radix UI, Framer Motion, Lucide, Recharts |
-| Routing & data state | React Router, TanStack Query |
-| Company data | Supabase |
-| API | Python, FastAPI, Uvicorn |
-| Document processing | pypdf, pdfplumber, python-docx, pypdfium2, Pillow |
-| AI integrations | Configurable Gemini, OpenRouter, and OpenAI provider flows, depending on the feature and local configuration |
+### Company comparison
 
-## 🏗️ Architecture at a glance
+Compare company profiles, skill expectations, and learning signals to understand how preparation priorities may differ across target employers.
 
-- **Frontend:** `src/` contains the React application, pages, shared UI, and candidate/company state.
-- **Backend:** `backend/app/main.py` exposes the shared FastAPI service and wires in JD analysis, resume parsing, Talent Check, and skill matching.
-- **Company benchmarks:** bundled benchmark data supports the Talent Check workflow; company intelligence can use Supabase when configured.
-- **Local launcher:** `temprunner.py` starts the frontend and API for local development.
+### Skill Intelligence
 
-### Useful frontend routes
+Review skill expectations, rate your skills, and inspect potential gaps against selected company targets.
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Home / company discovery |
-| `/companies` | Company directory |
-| `/company/intelligence` | Company intelligence |
-| `/company/skills` | Skill expectations and roadmaps |
-| `/company/compare` | Compare companies |
-| `/jd-analytics` | Analyze a job description |
-| `/resume-profile` | Resume parsing and integrated Talent Match workflow |
-| `/candidate-profile` | Review candidate profile |
-| `/skill-match` | Compare a resume with a job description |
-| `/talent-check` | Talent Check workflow |
-| `/check-where-you-stand` | Candidate readiness experience |
-| `/candidate-assessments` | Candidate assessment tools |
-| `/job-readiness` | Job readiness |
-| `/history` | Recent activity |
+Student self-ratings are currently stored in browser local storage. They are not sent to Supabase.
 
-## 🚀 Run locally
+---
+
+## 🛠️ Tech Stack
+
+Blitzkrieg combines a modern web frontend with a Python API and structured company data.
+
+| Layer | Technology |
+|---|---|
+| Frontend | React |
+| Language | TypeScript |
+| Build tool | Vite |
+| Styling | Tailwind CSS |
+| UI primitives | Radix UI |
+| Animations | Framer Motion |
+| Charts | Recharts |
+| Client-side routing | React Router |
+| Data fetching | TanStack Query |
+| Database integration | Supabase |
+| Backend API | Python, FastAPI |
+| Document processing | PDF and DOCX extraction |
+| AI integrations | Gemini, OpenRouter, and OpenAI provider integrations |
+
+### Why this stack?
+
+- **React + TypeScript:** Build interactive interfaces with structured application data.
+- **Vite:** Provide a fast frontend development and build workflow.
+- **FastAPI:** Expose document-processing and analysis endpoints to the frontend.
+- **Supabase:** Supply company information and skill-benchmark data.
+- **Recharts:** Visualize skill comparisons and benchmark results.
+- **AI-provider integrations:** Support document extraction and interactive preparation features when configured.
+
+---
+
+## 🏗️ Architecture Overview
+
+At a high level, Blitzkrieg consists of three cooperating parts.
+
+```text
+┌───────────────────────────────────────────────┐
+│              React + TypeScript               │
+│                                               │
+│  Company Intelligence · JD Analytics          │
+│  Resume Parsing · Profile Builder             │
+│  Talent Check · Skill Matching                │
+└──────────────────────┬────────────────────────┘
+                       │
+            ┌──────────┴──────────┐
+            │                     │
+            ▼                     ▼
+┌─────────────────────┐  ┌─────────────────────┐
+│   FastAPI Backend   │  │   Supabase Data      │
+│                     │  │                     │
+│ JD Analysis         │  │ Company Profiles     │
+│ Resume Parsing      │  │ Skill Levels         │
+│ Skill Matching      │  │ Skill Topics         │
+│ Talent Check        │  │ Reference Data       │
+│ AI Preparation      │  │                     │
+└──────────┬──────────┘  └─────────────────────┘
+           │
+           ▼
+┌───────────────────────────────────────────────┐
+│             Configured AI Providers           │
+│                                               │
+│ Extraction · Career Coach · Interview Practice│
+│ Skill Proof Sprint                            │
+└───────────────────────────────────────────────┘
+```
+
+This is a conceptual view of the architecture, not a complete deployment diagram. Provider availability and fallback behavior depend on the feature and its configuration.
+
+### Backend API
+
+The integrated FastAPI service exposes the following principal endpoints.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/health` | Check service status and configured providers. |
+| `POST /api/analyze` | Analyze a PDF or DOCX job description. |
+| `POST /api/parse-resume` | Extract structured candidate information from a resume. |
+| `POST /api/skill-match` | Compare resume skills with job requirements. |
+| `GET /api/talent-check/companies` | Retrieve Talent Check company options and fallback information. |
+| `POST /api/talent-check` | Generate a company-benchmark readiness report. |
+| `POST /api/talent-check/coach` | Submit a question to the AI Career Coach. |
+| `POST /api/talent-check/interview/questions` | Generate interview-practice questions. |
+| `POST /api/talent-check/interview/evaluate` | Evaluate an interview-practice answer. |
+| `POST /api/talent-check/sprint/challenge` | Generate a Skill Proof Sprint challenge. |
+| `POST /api/talent-check/sprint/evaluate` | Evaluate a submitted sprint solution. |
+| `POST /api/talent-check/report` | Return a downloadable Markdown report. |
+
+Additional compatibility endpoints support the integrated Talent Match workflow.
+
+Interactive API documentation is available at `/docs` when the local backend is running.
+
+---
+
+## ⚙️ Getting Started
+
+Want to run Blitzkrieg locally? Follow these steps.
 
 ### Prerequisites
 
-- Node.js **20.19+ or 22.12+**
-- Python **3.12+**
-- npm
-- Optional: Supabase project credentials and AI-provider API keys for live integrations
+Install the following:
 
-### 1. Install frontend dependencies
+- Node.js **20.19+ or 22.12+**.
+- Python **3.12+**.
+- npm.
+- A Supabase project if you want live company data.
+- An AI-provider API key if you want AI-powered extraction and preparation features.
 
-From the repository root:
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Hardik-Sharma-1005/blitzkrieg.git
+cd blitzkrieg
+```
+
+### 2. Install frontend dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure the frontend
+### 3. Configure the backend
 
-Copy `.env.example` to `.env.local` in the project root:
+Navigate to the backend directory and create a virtual environment.
 
-```env
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-VITE_JD_ANALYTICS_API_URL=http://127.0.0.1:8000
-```
+**Windows:**
 
-Add your Supabase URL and publishable key if you want to use live company data. Without Supabase settings, the app uses its bundled demo profiles. Never put a Supabase service-role key in frontend environment variables.
-
-### 3. Install backend dependencies
-
-From the repository root:
-
-**Windows PowerShell**
 ```powershell
 cd backend
 py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
+.venv\Scripts\activate
+pip install -r requirements.txt
 cd ..
 ```
 
-**macOS / Linux**
+**macOS / Linux:**
+
 ```bash
 cd backend
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
-cp .env.example .env
+pip install -r requirements.txt
 cd ..
 ```
 
-### 4. Configure AI providers (optional)
+### 4. Configure environment variables
 
-Edit `backend/.env` and add only the provider keys you have. The example file documents these settings:
+Copy the root environment template:
 
-```env
-LLM_PROVIDER=auto
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=openrouter/free
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_API_KEY=
-OPENAI_MODEL_NAME=gpt-4o-mini
-CORS_ORIGINS=
+```text
+.env.example → .env.local
 ```
 
-JD Analytics requires a configured OpenRouter provider for live AI extraction. Resume parsing can use local fallback extraction without a provider key. Some Talent Check AI features may also use Gemini configuration from `Talent Check/.env`; check the relevant feature's setup before relying on those features. Keep all real keys private and never commit local environment files.
+Set the Supabase URL and publishable key if you want live company data.
 
-### 5. Start the app
+Next, copy the backend environment template:
 
-From the repository root:
+```text
+backend/.env.example → backend/.env
+```
+
+Configure the AI-provider variables required by the features you intend to use. Consult the environment templates and the provider configuration in the source code for the exact supported names and values.
+
+For Talent Check's provider integrations, the project documents these variables:
+
+```dotenv
+GEMINI_API_KEY=your_gemini_api_key
+LLM_PROVIDER=your_configured_provider
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENAI_API_KEY=your_openai_api_key
+```
+
+Configure only the variables supported by the relevant service and provider selection. The Gemini configuration for Talent Check is documented separately under `Talent Check/.env`.
+
+**Security:** Keep actual environment files out of version control. Never put service-role keys, private API keys, or other secrets in frontend variables or commit them to GitHub.
+
+### 5. Start the application
+
+From the project root, run the integrated launcher:
 
 ```bash
-python temprunner.py
+py temprunner.py
 ```
 
-The launcher starts the frontend and API, checks backend readiness, and opens the local frontend. The default frontend port is **5174** and the API port is **8000**; the launcher may choose an available frontend port if needed.
+The launcher starts the frontend and shared API at:
 
-You can also start the frontend separately:
+| Service | Local address |
+|---|---|
+| Frontend | `http://127.0.0.1:5173` |
+| FastAPI backend | `http://127.0.0.1:8000` |
+| Interactive API docs | `http://127.0.0.1:8000/docs` |
+
+To run only the frontend:
 
 ```bash
 npm run dev
 ```
 
-The FastAPI interactive docs are available at:
+The frontend-only command does not replace the backend required by document analysis and other API-backed features.
 
-- API docs: `http://127.0.0.1:8000/docs`
-- Health check: `http://127.0.0.1:8000/api/health`
+---
 
-If the frontend cannot reach the API, confirm the backend is running and that `VITE_JD_ANALYTICS_API_URL` points to its base URL.
+## 🧪 Validation and Development
 
-## 🔌 API overview
-
-The shared FastAPI service includes the following key endpoints:
-
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/health` | API health and provider configuration status |
-| `POST /api/analyze` | Analyze a PDF/DOCX job description |
-| `POST /api/parse-resume` | Parse a PDF/DOCX resume into structured candidate data |
-| `POST /api/skill-match` | Compare resume skill evidence with JD requirements |
-| `GET /api/talent-check/companies` | List company options and benchmark metadata |
-| `POST /api/talent-check` | Generate a company-benchmark readiness report |
-| `POST /api/talent-check/coach` | Ask a question about a Talent Check report |
-| `POST /api/talent-check/interview/questions` and `/evaluate` | Generate and evaluate interview practice |
-| `POST /api/talent-check/sprint/challenge` and `/evaluate` | Generate and evaluate a Skill Proof Sprint |
-| `POST /api/talent-check/report` | Return a downloadable Markdown report |
-
-Additional compatibility routes support the integrated Talent Match workflow. For the authoritative request/response schemas, run the API and inspect `/docs`.
-
-## 🧪 Development and verification
-
-Build the frontend:
+### Build the frontend
 
 ```bash
 npm run build
 ```
 
-Verify the bundled resume samples using the offline extraction check:
+This runs the TypeScript build checks and generates the Vite production bundle.
+
+### Preview the production build
+
+```bash
+npm run preview
+```
+
+### Verify bundled resume samples
 
 ```bash
 python scripts/verify_resume_samples.py
 ```
 
-The sample verification script does not write files by default. Use its `--write-output` option only if you intentionally want to refresh local JSON outputs under `output/resumes/`.
+This script verifies the bundled PDF and Word resume samples using offline extraction. It does not write files by default.
 
-## 🔐 Privacy, security, and known limitations
-
-- Uploaded resumes may contain personal information. Use synthetic/sample documents for demos and obtain consent before processing real resumes.
-- AI-provider requests send extracted document text—and, for supported image-based JD pages, rendered page images—to the configured provider.
-- Resume uploads are limited to 12 MB, processed through temporary files, and are not stored in Supabase by the resume endpoint.
-- JD analysis JSON may be written to the ignored local `output/` directory.
-- Student self-ratings are stored in browser local storage, not sent to Supabase.
-- The integrated API currently has **no login/API authentication or rate limiting**. Keep it local or behind appropriate access controls; do not expose it as an unrestricted public service.
-- Heuristic fallbacks can miss implicit requirements, and benchmark scores should not be interpreted as verified employer criteria or hiring outcomes.
-- Review database contents and row-level security policies before enabling anonymous Supabase reads. Never expose service-role keys in the browser.
-
-## 👥 Team
-
-| Role | Team member | Focus in the demo |
-| --- | --- | --- |
-| Scrum Master / Role 3 | **Hardik** | Project flow and Profile Builder |
-| Role 1 | **Ishu** | JD Analytics |
-| Role 2 | **Daksh** | Resume Parsing |
-| Role 4 | **Vansh** | Talent Check |
-| Role 5 | **Yash** | Skill Matching |
-
-## 🗺️ What's next
-
-- Evaluate extraction precision and recall on a manually labelled set of job descriptions and resumes.
-- Improve extraction of indirect or context-dependent skills and make evidence review easier.
-- Expand benchmark transparency and freshness checks.
-- Add authentication, rate limiting, and deployment hardening before public API exposure.
-- Keep improving the connected journey from job requirements to a practical preparation plan.
+Use the optional `--write-output` argument only when you intend to refresh the local JSON output files under `output/resumes/`.
 
 ---
 
-<p align="center">
-  <strong>Blitzkrieg — less guesswork, more intentional preparation. ⚡</strong>
-</p>
+## 🤖 AI Behavior and Fallbacks
+
+Blitzkrieg uses different processing paths depending on the feature.
+
+### JD Analytics
+
+The service attempts configured AI extraction with bounded requests. If extraction fails, the local fallback scans readable document text for explicit skill and tool names and returns supporting evidence.
+
+The fallback can miss skills described indirectly. Image-only pages may also be unreadable to the local text-extraction path.
+
+### Resume Parsing
+
+The resume parser attempts AI-assisted extraction and validates the resulting evidence. When a configured provider is unavailable or the response fails validation, a labeled local heuristic fallback attempts to extract explicitly mentioned information.
+
+The resume parser enforces a 12 MB upload limit, rejects unsupported files and likely job descriptions, and removes its temporary processing file after use.
+
+### Talent Check
+
+Talent Check's AI features can use Gemini and configured OpenRouter/OpenAI provider integrations, with bounded requests and fallback behavior.
+
+These services support the Career Coach, interview practice, and Skill Proof Sprint workflows. Their availability depends on the configured providers and their API access.
+
+### A note on AI confidence
+
+A model's confidence label is not the same as a statistically measured precision or recall score.
+
+Extraction quality should be evaluated against manually labeled reference documents before making numerical accuracy claims.
+
+---
+
+## 🔐 Data, Privacy, and Security
+
+Blitzkrieg is a prototype and should be treated accordingly.
+
+Important implementation details:
+
+- Uploaded resumes are processed by the API; the documented resume endpoint does not store them in Supabase.
+- Temporary resume-processing files are removed after processing.
+- AI-provider requests send extracted document text to the configured provider. Some image-based JD processing may also send rendered page images.
+- Student self-ratings are stored in browser local storage.
+- Company data access depends on Supabase configuration and the relevant database policies.
+- Bundled demo records should not be confused with verified employer information.
+- The integrated API currently lacks authentication and rate limiting.
+
+### Before public deployment
+
+1. Implement authentication and authorization.
+2. Add API rate limiting and appropriate request-size controls.
+3. Review Supabase Row Level Security policies and public-read permissions.
+4. Audit company JSON fields for sensitive or unapproved information.
+5. Keep private keys on the server.
+6. Review logging, retention, error handling, and third-party AI data-sharing implications.
+7. Obtain consent before processing real candidates' resumes.
+
+**The current integrated API should remain local or otherwise access-controlled until the necessary safeguards are implemented.**
+
+---
+
+## 📊 Data Integrity and Limitations
+
+Blitzkrieg aims to make preparation more transparent, but its outputs have boundaries.
+
+- **Company benchmarks are not live hiring criteria.** They should not be interpreted as verified requirements for a current job opening.
+- **Fallback benchmarks are not employer-specific.** The application identifies the five companies using the RADIX-wide median.
+- **Skill matches are not proof of proficiency.** Resume evidence can establish that a skill was mentioned, not that the candidate can independently demonstrate it.
+- **Readiness scores are not hiring predictions.** They reflect the configured comparison methodology and benchmark data.
+- **Extraction can be incomplete.** Indirectly expressed skills, unusual document layouts, and image-only content can affect results.
+- **Demo data may be fictional.** Northstar Digital Lab and Meridian Cloud Services are fictional scenarios labeled in the interface. The bundled Accenture sample has not been independently verified.
+
+These distinctions are important because useful career intelligence should make its assumptions visible rather than hide them behind a score.
+
+---
+
+## 🗺️ Roadmap
+
+The following are potential next steps, not claims that these capabilities are already implemented.
+
+- [ ] Evaluate JD extraction precision and recall using manually labeled documents.
+- [ ] Improve extraction across unusual layouts and indirect skill descriptions.
+- [ ] Expand evidence-grounded candidate-profile validation.
+- [ ] Strengthen authentication, authorization, and API abuse protections.
+- [ ] Improve benchmark provenance and refresh procedures.
+- [ ] Add more systematic automated tests for end-to-end workflows.
+- [ ] Improve the accessibility and usability of reports.
+- [ ] Make it easier for students to translate identified gaps into concrete learning plans.
+
+---
+
+## 👥 Team
+
+Blitzkrieg was developed collaboratively, with responsibilities spanning the product workflow, document intelligence, candidate profiling, readiness assessment, and skill matching.
+
+| Team Member | Responsibility |
+|---|---|
+| **Hardik Sharma** | Scrum Master and Profile Builder |
+| **Ishu** | JD Analytics |
+| **Daksh** | Resume Parsing |
+| **Vansh** | Talent Check |
+| **Yash** | Skill Matching |
+
+The team structure reflects the five-module demonstration workflow.
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and bug reports are welcome.
+
+1. Explore the existing application and identify a concrete improvement.
+2. Open an issue describing the problem or proposed enhancement.
+3. Discuss the scope and expected behavior.
+4. Implement and test the change.
+5. Submit a pull request with a clear explanation of the implementation.
+
+When contributing, avoid committing credentials, private candidate documents, generated personal information, or other sensitive data.
+
+For bugs and feature requests, use the [GitHub Issues page](https://github.com/Hardik-Sharma-1005/blitzkrieg/issues).
+
+---
+
+## 📄 License
+
+Check the repository for its current license information before redistributing or reusing the project.
+
+---
+
+<div align="center">
+
+### ⚡ Better Preparation Starts With Better Information.
+
+**Blitzkrieg — Understand the requirements. Identify the gaps. Prepare with purpose.**
+
+[Explore the Live Demo](https://jss-placement-intelligence-portal.vercel.app)
+
+</div>
