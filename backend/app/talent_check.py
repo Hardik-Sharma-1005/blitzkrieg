@@ -1,4 +1,4 @@
-# talent_check.py
+"""Score candidate resume evidence against company RADIX skill benchmarks."""
 
 try:
     from .mock_data import RADIX_CATEGORIES

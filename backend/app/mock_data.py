@@ -1,4 +1,5 @@
-# Shared RADIX categories and a checked-in snapshot of the connected 118-company directory.
+"""Shared RADIX categories and benchmark data used by the backend workflows."""
+
 import json
 from pathlib import Path
 

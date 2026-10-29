@@ -12,14 +12,14 @@ import json
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import httpx
 
 try:
-    from app.schemas import Skill, SkillExtractionResponse, CategoryCode
+    from app.schemas import Skill, SkillExtractionResponse
 except ImportError:
-    from backend.app.schemas import Skill, SkillExtractionResponse, CategoryCode
+    from backend.app.schemas import Skill, SkillExtractionResponse
 
 logger = logging.getLogger(__name__)
 

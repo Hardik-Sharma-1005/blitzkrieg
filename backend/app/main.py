@@ -1,3 +1,5 @@
+"""FastAPI application for the RADIX Talent Match services and workflows."""
+
 from __future__ import annotations
 
 import asyncio
@@ -6,17 +8,17 @@ import json
 import logging
 import os
 import re
+import zipfile
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Literal
-import zipfile
 
 import httpx
 from dotenv import load_dotenv
 from docx import Document
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field
 from PIL import Image, ImageOps
 import pypdfium2 as pdfium
@@ -482,7 +484,11 @@ def score_talent_check(req: TalentCheckRequest) -> dict[str, Any]:
     record = company_benchmarks_by_id.get(req.company_id) if req.company_id is not None else None
     if record is None and req.company_name:
         record = next(
-            (entry for entry in company_benchmark_metadata["companies"] if entry["name"].casefold() == req.company_name.strip().casefold()),
+            (
+                entry
+                for entry in company_benchmark_metadata["companies"]
+                if entry["name"].casefold() == req.company_name.strip().casefold()
+            ),
             None,
         )
     if record is None:
@@ -586,7 +592,12 @@ async def vansh_interview_generate(req: TalentWorkflowRequest) -> dict[str, list
 
 @app.post("/api/interview-practice/evaluate")
 async def vansh_interview_evaluate(req: VanshInterviewEvaluationRequest) -> dict[str, Any]:
-    return await run_in_threadpool(evaluate_profile_interview_answer, req.question, req.answer, req.skill_name)
+    return await run_in_threadpool(
+        evaluate_profile_interview_answer,
+        req.question,
+        req.answer,
+        req.skill_name,
+    )
 
 
 @app.post("/api/skill-sprint/generate")
@@ -641,8 +652,16 @@ async def vansh_report_markdown(req: TalentWorkflowRequest) -> dict[str, str]:
         report = ensure_report(req.report)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
-    candidate = re.sub(r"[^A-Za-z0-9._-]+", "_", str(report.get("candidate_name") or "candidate")).strip("_.") or "candidate"
-    company = re.sub(r"[^A-Za-z0-9._-]+", "_", str(report.get("target_company") or report.get("company") or "company")).strip("_.") or "company"
+    candidate = re.sub(
+        r"[^A-Za-z0-9._-]+",
+        "_",
+        str(report.get("candidate_name") or "candidate"),
+    ).strip("_.") or "candidate"
+    company = re.sub(
+        r"[^A-Za-z0-9._-]+",
+        "_",
+        str(report.get("target_company") or report.get("company") or "company"),
+    ).strip("_.") or "company"
     return {
         "markdown": generate_markdown_report(report),
         "filename": f"RADIX_Report_{candidate}_{company}.md",

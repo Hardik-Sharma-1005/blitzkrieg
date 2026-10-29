@@ -17,7 +17,7 @@ The repository contains the blitzkrieg! frontend and one shared FastAPI backend.
 ## Local verification
 
 - python scripts/verify_resume_samples.py parses all bundled PDF and DOCX resume samples offline and checks that a sample JD is rejected by the resume parser.
-- python -m app.cli <jd.pdf|jd.docx> runs the JD extraction CLI from backend/.
+- python -m app.jd_cli <jd.pdf|jd.docx> runs the JD extraction CLI from backend/. The legacy `app.cli` command remains available.
 - python -m app.resume_cli <resume.pdf|resume.docx> runs the resume parser from backend/.
 - py temprunner.py starts the frontend and shared API for the local demo.
 - `python -m unittest discover -s backend/tests -v` checks synthetic DOCX resume parsing into a 12-skill report, the 118-company list, benchmark source labels, report generation, provider failover, and safe behavior when AI evaluation is unavailable.

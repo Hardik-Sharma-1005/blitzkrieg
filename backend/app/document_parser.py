@@ -150,9 +150,19 @@ class ResumeDocumentParser:
             return [line for raw in text.splitlines() if (line := self.clean_text_line(raw))]
 
         rows: List[dict[str, Any]] = []
-        for word in sorted(words, key=lambda item: (float(item.get("top", 0)), float(item.get("x0", 0)))):
+        for word in sorted(
+            words,
+            key=lambda item: (float(item.get("top", 0)), float(item.get("x0", 0))),
+        ):
             top = float(word.get("top", 0))
-            row = next((candidate for candidate in reversed(rows[-3:]) if abs(candidate["top"] - top) <= self.y_tolerance), None)
+            row = next(
+                (
+                    candidate
+                    for candidate in reversed(rows[-3:])
+                    if abs(candidate["top"] - top) <= self.y_tolerance
+                ),
+                None,
+            )
             if row is None:
                 row = {"top": top, "words": []}
                 rows.append(row)
@@ -174,10 +184,14 @@ class ResumeDocumentParser:
         best_coverage = 0.0
         for cut in candidates:
             coverage = sum(
-                1 for row in rows
+                1
+                for row in rows
                 if any(float(word.get("x1", 0)) <= cut for word in row["words"])
                 and any(float(word.get("x0", 0)) >= cut for word in row["words"])
-                and not any(float(word.get("x0", 0)) < cut < float(word.get("x1", 0)) for word in row["words"])
+                and not any(
+                    float(word.get("x0", 0)) < cut < float(word.get("x1", 0))
+                    for word in row["words"]
+                )
             ) / max(1, len(rows))
             if coverage > best_coverage:
                 gutter, best_coverage = cut, coverage
@@ -200,7 +214,10 @@ class ResumeDocumentParser:
 
             for row in rows:
                 row_words = row["words"]
-                crosses_gutter = any(float(word.get("x0", 0)) < gutter < float(word.get("x1", 0)) for word in row_words)
+                crosses_gutter = any(
+                    float(word.get("x0", 0)) < gutter < float(word.get("x1", 0))
+                    for word in row_words
+                )
                 has_left = any(float(word.get("x1", 0)) <= gutter for word in row_words)
                 has_right = any(float(word.get("x0", 0)) >= gutter for word in row_words)
                 gap_at_gutter = any(
@@ -213,8 +230,12 @@ class ResumeDocumentParser:
                     flush_columns()
                     ordered_rows.append(row_text(row_words))
                 elif has_left and has_right:
-                    left_band.append(row_text([word for word in row_words if float(word.get("x1", 0)) <= gutter]))
-                    right_band.append(row_text([word for word in row_words if float(word.get("x0", 0)) >= gutter]))
+                    left_band.append(
+                        row_text([word for word in row_words if float(word.get("x1", 0)) <= gutter])
+                    )
+                    right_band.append(
+                        row_text([word for word in row_words if float(word.get("x0", 0)) >= gutter])
+                    )
                 elif has_left:
                     left_band.append(row_text(row_words))
                 elif has_right:
@@ -225,7 +246,11 @@ class ResumeDocumentParser:
 
         return [line for raw in ordered_rows if (line := self.clean_text_line(raw))]
 
-    def _parse_pdf(self, file_path: Any, page_text_overrides: Optional[Dict[int, str]] = None) -> List[str]:
+    def _parse_pdf(
+        self,
+        file_path: Any,
+        page_text_overrides: Optional[Dict[int, str]] = None,
+    ) -> List[str]:
         try:
             import pdfplumber
 
@@ -325,15 +350,31 @@ class ResumeDocumentParser:
             if any(alias in norm_lines for alias in aliases):
                 resume_hits += 1
 
-        jd_hits = sum(1 for indicator in self.JD_INDICATORS if any(indicator in line for line in norm_lines))
+        jd_hits = sum(
+            1
+            for indicator in self.JD_INDICATORS
+            if any(indicator in line for line in norm_lines)
+        )
         if jd_hits >= 3 and resume_hits < 2:
             return False
         if resume_hits >= 1:
             return True
 
         text = "\n".join(lines)
-        has_contact = bool(re.search(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|(?:\+?\d[\d\s().-]{6,}\d)|linkedin\.com/|github\.com/", text, re.I))
-        has_resume_signal = bool(re.search(r"\b(?:20\d{2}|19\d{2})\b|\b(?:bachelor|master|ph\.d|internship|experience|portfolio|github|linkedin)\b", text, re.I))
+        has_contact = bool(
+            re.search(
+                r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|(?:\+?\d[\d\s().-]{6,}\d)|linkedin\.com/|github\.com/",
+                text,
+                re.I,
+            )
+        )
+        has_resume_signal = bool(
+            re.search(
+                r"\b(?:20\d{2}|19\d{2})\b|\b(?:bachelor|master|ph\.d|internship|experience|portfolio|github|linkedin)\b",
+                text,
+                re.I,
+            )
+        )
         return len(text.strip()) >= 80 and (has_contact or has_resume_signal) and jd_hits < 3
 
     def segment_sections(self, lines: List[str]) -> Dict[str, Any]:
@@ -401,7 +442,12 @@ class ResumeDocumentParser:
 
         return self._build_profile(lines, os.path.basename(file_path), ext)
 
-    def parse_bytes(self, data: bytes, source_filename: str, page_text_overrides: Optional[Dict[int, str]] = None) -> Dict[str, Any]:
+    def parse_bytes(
+        self,
+        data: bytes,
+        source_filename: str,
+        page_text_overrides: Optional[Dict[int, str]] = None,
+    ) -> Dict[str, Any]:
         ext = os.path.splitext(source_filename)[1].lower()
         stream = BytesIO(data)
         if ext == ".pdf":

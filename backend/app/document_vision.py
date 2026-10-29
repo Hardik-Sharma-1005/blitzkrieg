@@ -8,7 +8,7 @@ from io import BytesIO
 from typing import Any
 
 import httpx
-from PIL import Image, ImageOps
+from PIL import ImageOps
 
 try:
     from .llm_extractor import get_ai_provider_configs
@@ -36,21 +36,38 @@ def transcribe_document_images(images: list[dict[str, str]]) -> str:
             "max_tokens": 5000,
             "response_format": {"type": "json_object"},
             "messages": [
-                {"role": "system", "content": (
-                    "Transcribe readable text visible in this supplied document image. "
-                    "Do not summarize, infer, or add text. Preserve spelling and punctuation. "
-                    'Return JSON only: {"text":"verbatim transcription"}.'
-                )},
-                {"role": "user", "content": [
-                    {"type": "text", "text": f"Transcribe source {image['label']}."},
-                    {"type": "image_url", "image_url": {"url": image["data_url"], "detail": "high"}},
-                ]},
+                {
+                    "role": "system",
+                    "content": (
+                        "Transcribe readable text visible in this supplied document image. "
+                        "Do not summarize, infer, or add text. Preserve spelling and punctuation. "
+                        'Return JSON only: {"text":"verbatim transcription"}.'
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"Transcribe source {image['label']}."},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image["data_url"],
+                                "detail": "high",
+                            },
+                        },
+                    ],
+                },
             ],
         }
         for provider in providers:
             headers = {"Authorization": f"Bearer {provider['api_key']}"}
             if provider["provider"] == "openrouter":
-                headers.update({"HTTP-Referer": "http://localhost:5173", "X-Title": "RADIX Talent Match"})
+                headers.update(
+                    {
+                        "HTTP-Referer": "http://localhost:5173",
+                        "X-Title": "RADIX Talent Match",
+                    }
+                )
             try:
                 with httpx.Client(timeout=httpx.Timeout(35, connect=8)) as client:
                     response = client.post(
@@ -110,7 +127,10 @@ def extract_scanned_pdf_pages(data: bytes, page_indexes: list[int]) -> dict[int,
                         "role": "user",
                         "content": [
                             {"type": "text", "text": f"Transcribe page {page_index + 1}."},
-                            {"type": "image_url", "image_url": {"url": image_url, "detail": "high"}},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": image_url, "detail": "high"},
+                            },
                         ],
                     },
                 ],
@@ -118,7 +138,12 @@ def extract_scanned_pdf_pages(data: bytes, page_indexes: list[int]) -> dict[int,
             for provider in providers:
                 headers = {"Authorization": f"Bearer {provider['api_key']}"}
                 if provider["provider"] == "openrouter":
-                    headers.update({"HTTP-Referer": "http://localhost:5173", "X-Title": "RADIX Talent Match"})
+                    headers.update(
+                        {
+                            "HTTP-Referer": "http://localhost:5173",
+                            "X-Title": "RADIX Talent Match",
+                        }
+                    )
                 try:
                     with httpx.Client(timeout=httpx.Timeout(35, connect=8)) as client:
                         response = client.post(

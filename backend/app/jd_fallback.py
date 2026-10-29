@@ -131,25 +131,45 @@ def extract_jd_fallback(text: str, company_hint: str = "", role_hint: str = "") 
         })
 
     seen_names = {item["skill_name"].casefold() for item in skills}
-    generic = {"the", "this", "that", "our", "your", "their", "software", "development", "engineering", "experience", "knowledge", "skills", "proficiency", "familiarity", "using", "working", "required", "preferred"}
+    generic = {
+        "the", "this", "that", "our", "your", "their", "software", "development",
+        "engineering", "experience", "knowledge", "skills", "proficiency", "familiarity",
+        "using", "working", "required", "preferred",
+    }
     cue = re.compile(
         r"\b(?:experience|proficiency|proficient|familiarity|knowledge|skills?)\s+(?:with|in|of|using)\s+([^.;\n]+)",
         re.IGNORECASE,
     )
     for clause_match in cue.finditer(text):
         clause = clause_match.group(1)
-        clause = re.split(r"\b(?:such as|including|for example)\b", clause, maxsplit=1, flags=re.IGNORECASE)[0]
+        clause = re.split(
+            r"\b(?:such as|including|for example)\b",
+            clause,
+            maxsplit=1,
+            flags=re.IGNORECASE,
+        )[0]
         for phrase in re.split(r"[,;]|\s+\b(?:and|or)\b\s+", clause, flags=re.IGNORECASE):
             candidate = phrase.strip(" \t\r\n-–—:()[]")
-            candidate = re.sub(r"\s+\b(?:is|are|will be)\s+(?:required|preferred|mandatory|a plus|an advantage)\b.*$", "", candidate, flags=re.IGNORECASE).strip()
+            candidate = re.sub(
+                r"\s+\b(?:is|are|will be)\s+(?:required|preferred|mandatory|a plus|an advantage)\b.*$",
+                "",
+                candidate,
+                flags=re.IGNORECASE,
+            ).strip()
             candidate = re.sub(r"^(?:a|an|the)\s+", "", candidate, flags=re.IGNORECASE)
             if not candidate or len(candidate) > 80 or candidate.casefold() in generic or len(candidate.split()) > 4:
                 continue
             words = [word.strip(".,:()[]") for word in candidate.split()]
-            if not any(word and (word[0].isupper() or re.search(r"[0-9.+#/_]", word)) for word in words):
+            if not any(
+                word and (word[0].isupper() or re.search(r"[0-9.+#/_]", word))
+                for word in words
+            ):
                 continue
             key = candidate.casefold()
-            if key in seen_names or any(re.search(pattern, candidate, re.IGNORECASE) for pattern, _, _ in JD_SKILL_PATTERNS):
+            if key in seen_names or any(
+                re.search(pattern, candidate, re.IGNORECASE)
+                for pattern, _, _ in JD_SKILL_PATTERNS
+            ):
                 continue
             start, end = clause_match.span(1)
             while start < end and text[start].isspace():
