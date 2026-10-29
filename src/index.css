@@ -1147,12 +1147,12 @@ footer a:hover,
 .app-shell .check-stand-link:hover { border-color: rgba(217, 156, 197, .24) !important; background: var(--surface-soft) !important; color: var(--brand-accent) !important; box-shadow: none; }
 .app-shell:not(.theme-light) > aside nav a.check-stand-link[aria-current="page"],
 .app-shell.theme-light > aside nav a.check-stand-link[aria-current="page"] { border-color: rgba(217, 156, 197, .2); background: var(--surface-soft) !important; color: var(--brand-accent) !important; box-shadow: inset 3px 0 var(--brand-accent); }
-.app-shell .check-stand-bolt { position: relative; display: inline-flex; flex: none; color: var(--brand-accent); }
-.app-shell .check-stand-bolt svg { filter: drop-shadow(0 0 4px rgba(217, 156, 197, .45)); animation: check-stand-bolt 2.1s ease-in-out infinite; transform-origin: 50% 55%; }
-.app-shell .check-stand-bolt::after { position: absolute; top: -4px; right: -4px; color: var(--brand-accent); content: "✦"; font-size: 8px; line-height: 1; animation: check-stand-twinkle 1.6s ease-in-out infinite; }
+.app-shell .check-stand-bolt, .portal-home .check-stand-bolt { position: relative; display: inline-flex; flex: none; color: var(--brand-accent); }
+.app-shell .check-stand-bolt svg, .portal-home .check-stand-bolt svg { filter: drop-shadow(0 0 4px rgba(217, 156, 197, .45)); animation: check-stand-bolt 2.1s ease-in-out infinite; transform-origin: 50% 55%; }
+.app-shell .check-stand-bolt::after, .portal-home .check-stand-bolt::after { position: absolute; top: -4px; right: -4px; color: var(--brand-accent, currentColor); content: "\2726"; font-size: 8px; line-height: 1; animation: check-stand-twinkle 1.6s ease-in-out infinite; }
 @keyframes check-stand-bolt { 0%, 100% { transform: translateY(0) rotate(0) scale(1); } 28% { transform: translateY(-1.5px) rotate(-9deg) scale(1.08); } 55% { transform: translateY(.5px) rotate(7deg) scale(1.02); } 78% { transform: translateY(-.5px) rotate(-4deg) scale(1.05); } }
 @keyframes check-stand-twinkle { 0%, 100% { opacity: .38; transform: scale(.7) rotate(0); } 50% { opacity: 1; transform: scale(1.2) rotate(30deg); } }
-@media (prefers-reduced-motion: reduce) { .app-shell .check-stand-bolt svg, .app-shell .check-stand-bolt::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .app-shell .check-stand-bolt svg, .app-shell .check-stand-bolt::after, .portal-home .check-stand-bolt svg, .portal-home .check-stand-bolt::after { animation: none; } }
 
 /* Benchmark rows use explicit semantic colors so the threshold is clear in both themes. */
 .app-shell .space-theme .benchmark-safe { background-color: #edf7ed !important; }
