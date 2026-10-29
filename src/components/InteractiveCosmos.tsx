@@ -194,7 +194,7 @@ export function InteractiveCosmos({ variant, className = "", tone = "dark", part
           particle.boltMember = true;
           // Sample the bolt's recognizable lightning silhouette, leaving its center open.
           const outline = [
-            [-.112, -.5], [.112, -.5], [.035, -.08], [.222, -.08], [-.144, .5], [-.059, .15], [-.222, .15],
+            [-.112, -.5], [.112, -.5], [.035, -.08], [.222, -.095], [-.144, .5], [-.059, .10], [-.222, .15],
           ];
           const lengths = outline.map((point, index) => Math.hypot(point[0] - outline[(index + 1) % outline.length][0], point[1] - outline[(index + 1) % outline.length][1]));
           let edge = random() * lengths.reduce((sum, value) => sum + value, 0);
