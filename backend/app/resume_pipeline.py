@@ -6,16 +6,19 @@ to produce the standardized Candidate Profile JSON for Role 3 Profile Builder.
 
 import json
 import os
+from io import BytesIO
 from typing import Any, Dict, Optional
 
 try:
     from app.document_parser import ResumeDocumentParser
     from app.llm_extractor import ResumeSkillExtractor
     from app.schemas import CandidateProfile
+    from app.document_vision import extract_scanned_pdf_pages
 except ImportError:
     from backend.app.document_parser import ResumeDocumentParser
     from backend.app.llm_extractor import ResumeSkillExtractor
     from backend.app.schemas import CandidateProfile
+    from backend.app.document_vision import extract_scanned_pdf_pages
 
 
 class ResumePipeline:
@@ -101,15 +104,31 @@ class ResumePipeline:
     ) -> Dict[str, Any]:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Resume file not found: {file_path}")
-
-        parsed = self.parser.parse(file_path)
-        extraction_result = self.extractor.extract_skills(self.skill_text(parsed))
+        with open(file_path, "rb") as file:
+            source_bytes = file.read()
+        source_filename = source_filename or os.path.basename(file_path)
+        parsed = self.parse_bytes(source_bytes, source_filename)
+        extraction_result = self.extractor.extract_skills(parsed.get("raw_text", ""))
         return self.build_profile(
             parsed,
             extraction_result,
             source_filename=source_filename,
             output_json_path=output_json_path,
         )
+
+    def parse_bytes(self, source_bytes: bytes, source_filename: str) -> Dict[str, Any]:
+        """Parse an uploaded document from memory and OCR low-text PDF pages when possible."""
+        extension = os.path.splitext(source_filename)[1].lower()
+        page_overrides: Dict[int, str] = {}
+        if extension == ".pdf":
+            page_texts = self.parser.extract_pdf_page_texts(BytesIO(source_bytes))
+            low_text_pages = [index for index, text in enumerate(page_texts) if len(text.strip()) < 120]
+            if low_text_pages:
+                page_overrides = extract_scanned_pdf_pages(source_bytes, low_text_pages)
+        parsed = self.parser.parse_bytes(source_bytes, source_filename, page_overrides)
+        if extension == ".pdf" and not parsed.get("raw_text", "").strip():
+            raise ValueError("No readable text was found in this PDF. Try a higher-quality scan or a text-based copy.")
+        return parsed
 
 
 def parse_and_extract_resume(

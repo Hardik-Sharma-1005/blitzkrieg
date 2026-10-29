@@ -55,7 +55,7 @@ def normalize_candidate_skills(candidate_profile: dict) -> dict:
 
         if "level" in s and s["level"] is not None:
             try:
-                lvl = float(s["level"])
+                lvl = max(0.0, min(5.0, float(s["level"])))
             except (ValueError, TypeError):
                 lvl = 0.0
         else:
@@ -95,6 +95,7 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
             "message": f"Company '{company_name}' not found. Available: {available}",
             "candidate_name": candidate_name,
             "readiness_score": 0.0,
+            "readiness_verdict": "UNREADY",
             "is_ready": False
         }
 
@@ -136,7 +137,7 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
         total_weighted_achieved += achieved_ratio * weight
         total_possible_weight += weight
 
-        is_deal_breaker = gap >= 1.5
+        is_deal_breaker = gap >= 1.5 and weight >= 1.2
         if is_deal_breaker:
             deal_breakers.append({
                 "category": cat,
@@ -156,7 +157,12 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
         })
 
     readiness_score = round((total_weighted_achieved / total_possible_weight) * 100, 1) if total_possible_weight > 0 else 0.0
-    is_ready = (readiness_score >= 75.0) and (len(deal_breakers) == 0)
+    readiness_verdict = (
+        "UNREADY" if readiness_score < 50.0
+        else "READY" if readiness_score >= 75.0 and not deal_breakers
+        else "NEEDS PREPARATION"
+    )
+    is_ready = readiness_verdict == "READY"
 
     best_roi_skill = None
     max_score_boost = 0.0
@@ -198,6 +204,7 @@ def run_talent_check(candidate_profile, company_name, company_benchmarks):
         "target_company": matched_company_key,
         "candidate_name": candidate_name,
         "readiness_score": readiness_score,
+        "readiness_verdict": readiness_verdict,
         "is_ready": is_ready,
         "readiness_threshold": 75.0,
         "total_estimated_learning_hours": round(total_learning_hours, 1),

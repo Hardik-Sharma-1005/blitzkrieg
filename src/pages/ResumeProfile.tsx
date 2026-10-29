@@ -65,6 +65,10 @@ const categories: Record<string, string> = {
 
 const confidenceScores: Record<Skill["confidence"], number> = { high: 3.8, medium: 2.8, low: 1.8 };
 const dealBreakerThreshold = 1.5;
+const benchmarkWeights: Record<string, number> = {
+  COD: 1.4, DSA: 1.4, SYSD: 1.3, SWE: 1.2, OOD: 1.1, CLOUD: 1.1,
+  AI: 1.0, APTI: 1.0, SQL: 1.0, OS: 0.9, NETW: 0.9, COMM: 0.8,
+};
 
 function userResumeScore(skills: Skill[], category: string): { score: number; confidence: Skill["confidence"]; evidenceCount: number } | null {
   const evidence = skills.filter((skill) => skill.category_code === category);
@@ -74,9 +78,9 @@ function userResumeScore(skills: Skill[], category: string): { score: number; co
   return { score: Math.round(score * 10) / 10, confidence, evidenceCount: evidence.length };
 }
 
-function assessBenchmark(requiredLevel: number, score: number | null) {
+function assessBenchmark(requiredLevel: number, score: number | null, category: string) {
   const gap = Math.round((requiredLevel - (score ?? 0)) * 10) / 10;
-  return { gap, isDealBreaker: gap >= dealBreakerThreshold };
+  return { gap, isDealBreaker: gap >= dealBreakerThreshold && (benchmarkWeights[category] ?? 1.0) >= 1.2 };
 }
 
 function escapeHtml(value: unknown): string {
@@ -220,7 +224,7 @@ export function ResumeProfile() {
   const benchmarkRows = (talentReport?.per_skillset_gap_breakdown || talentReport?.skillset_gap || []).map((row: any) => {
     const resumeScore = userResumeScore(profile?.skills ?? [], row.category);
     const requiredLevel = Number.isFinite(Number(row.required_level)) ? Number(row.required_level) : 0;
-    return { ...row, resumeScore, requiredLevel, ...assessBenchmark(requiredLevel, resumeScore?.score ?? null) };
+    return { ...row, resumeScore, requiredLevel, ...assessBenchmark(requiredLevel, resumeScore?.score ?? null, row.category) };
   });
   const orderBenchmarkRows = (topic = "") => [...benchmarkRows].sort((left: any, right: any) => {
     if (topic && left.category === topic) return -1;
@@ -239,6 +243,7 @@ export function ResumeProfile() {
   const readinessScore = Math.max(0, Math.min(100, Number(talentReport?.readiness_score) || 0));
   const readinessThreshold = Number(talentReport?.readiness_threshold) || 75;
   const meetsReadinessThreshold = readinessScore >= readinessThreshold && dealBreakerCount === 0;
+  const readinessVerdict = talentReport?.readiness_verdict ?? (readinessScore < 50 ? "UNREADY" : meetsReadinessThreshold ? "READY" : "NEEDS PREPARATION");
   const comparisonRadarData = benchmarkRows.map((row: any) => ({
     category: row.category,
     UserTarget: row.resumeScore?.score ?? 0,
@@ -337,7 +342,7 @@ export function ResumeProfile() {
           <div class="card">
             <div class="label">Readiness score</div>
             <div class="val">${readinessScore.toFixed(1)}%</div>
-            <div style="font-size: 10px; color: ${meetsReadinessThreshold ? '#216b42' : '#a12727'};">${meetsReadinessThreshold ? 'Minimum threshold met' : 'Minimum threshold not met'}</div>
+            <div style="font-size: 10px; color: ${meetsReadinessThreshold ? '#216b42' : '#a12727'};">${escapeHtml(readinessVerdict)} · ${meetsReadinessThreshold ? 'minimum threshold met' : 'minimum threshold not met'}</div>
           </div>
           <div class="card">
             <div class="label">Interpretation</div>
@@ -785,7 +790,7 @@ export function ResumeProfile() {
                   <div className="flex items-start gap-3 rounded-xl border border-[#dbe9dd] bg-[#f3f8f1] px-4 py-3 text-sm leading-6 text-slate-600">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#246b5d]" />
                     <p>
-                      Your profile stays in this browser tab session and is cleared when the tab closes. Resume text is not saved to a student account.
+                      Privacy Compliance (GDPR / DPDPA): Uploaded documents are processed in ephemeral server memory and never stored in cloud databases. All profile edits remain local to your browser session.
                     </p>
                   </div>
 
@@ -991,7 +996,7 @@ export function ResumeProfile() {
                           <div className="h-full rounded-full bg-[#9A5A82] transition-[width]" style={{ width: `${readinessScore}%` }} />
                         </div>
                         <p className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${meetsReadinessThreshold ? "benchmark-safe-pill" : "benchmark-deal-breaker-pill"}`}>
-                          {meetsReadinessThreshold ? "Minimum threshold met" : "Minimum threshold not met"}
+                          {readinessVerdict} · {meetsReadinessThreshold ? "minimum threshold met" : "minimum threshold not met"}
                         </p>
                         <p className="mt-1 text-[10px] text-slate-500">Requires at least {readinessThreshold}% and 0 deal breakers. Resume evidence does not independently verify proficiency.</p>
                       </div>

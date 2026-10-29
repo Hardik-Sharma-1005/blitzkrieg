@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import tempfile
 from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
@@ -45,15 +44,10 @@ async def upload_and_parse_resume(file: UploadFile = File(...)) -> CandidateProf
         raise HTTPException(status_code=400, detail="The uploaded file does not appear to be a valid DOCX.")
 
     try:
-        with tempfile.TemporaryDirectory(prefix="radix-resume-") as temp_dir:
-            temp_path = Path(temp_dir) / f"upload{suffix}"
-            temp_path.write_bytes(data)
-            # Document parsing is local; keep it off the event loop. The AI request
-            # itself uses the native async client so its deadline can be enforced.
-            parsed = await run_in_threadpool(_pipeline.parser.parse, str(temp_path))
-
-        skill_text = _pipeline.skill_text(parsed)
-        extraction_result = await _pipeline.extractor.extract_skills_async(skill_text)
+        # Keep extraction in memory and off the event loop. The AI request itself
+        # uses the native async client so its deadline can be enforced.
+        parsed = await run_in_threadpool(_pipeline.parse_bytes, data, raw_filename)
+        extraction_result = await _pipeline.extractor.extract_skills_async(parsed.get("raw_text", ""))
         profile = _pipeline.build_profile(
             parsed,
             extraction_result,

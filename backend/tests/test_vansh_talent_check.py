@@ -65,12 +65,16 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
         self.assertEqual(by_category["SQL"], 2.8)
         self.assertEqual(by_category["NETW"], 1.8)
 
-    def test_gap_at_least_one_point_five_is_a_deal_breaker_regardless_of_weight(self):
+    def test_deal_breaker_requires_gap_and_minimum_skill_weight(self):
         benchmark = {category: 2.0 for category in RADIX_CATEGORIES}
         report = main.run_talent_check({}, "Synthetic benchmark", {"Synthetic benchmark": benchmark})
-        self.assertEqual(report["deal_breakers_count"], len(RADIX_CATEGORIES))
-        self.assertTrue(all(row["is_deal_breaker"] and row["gap"] == 2.0 for row in report["per_skillset_gap_breakdown"]))
+        expected = {"COD", "DSA", "SYSD", "SWE"}
+        self.assertEqual(report["deal_breakers_count"], len(expected))
+        self.assertEqual({row["category"] for row in report["deal_breakers_list"]}, expected)
+        self.assertTrue(all(row["gap"] == 2.0 for row in report["deal_breakers_list"]))
+        self.assertFalse(next(row for row in report["per_skillset_gap_breakdown"] if row["category"] == "COMM")["is_deal_breaker"])
         self.assertFalse(report["is_ready"])
+        self.assertEqual(report["readiness_verdict"], "UNREADY")
 
     def test_readiness_threshold_requires_at_least_75_percent_and_no_deal_breakers(self):
         benchmark = {category: 3.8 for category in RADIX_CATEGORIES}
@@ -83,6 +87,64 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
         self.assertGreaterEqual(report["readiness_score"], 75.0)
         self.assertEqual(report["deal_breakers_count"], 0)
         self.assertTrue(report["is_ready"])
+        self.assertEqual(report["readiness_verdict"], "READY")
+
+    def test_midrange_readiness_is_needs_preparation(self):
+        candidate = {"skills": [
+            {"skill_name": f"Evidence {category}", "category_code": category, "confidence": "medium"}
+            for category in RADIX_CATEGORIES
+        ]}
+        benchmark = {category: 3.8 for category in RADIX_CATEGORIES}
+        report = main.run_talent_check(candidate, "Synthetic benchmark", {"Synthetic benchmark": benchmark})
+        self.assertEqual(report["readiness_score"], 73.7)
+        self.assertEqual(report["readiness_verdict"], "NEEDS PREPARATION")
+        self.assertFalse(report["is_ready"])
+
+    def test_resume_unknown_skill_list_items_are_kept_as_other_with_exact_evidence(self):
+        from backend.app.llm_extractor import ResumeSkillExtractor
+
+        source = "Candidate\nTechnical Skills\nMojo, Gleam, ERPNext\nEducation\nBSc Computer Science"
+        skills = ResumeSkillExtractor().extract_skills_heuristic(source)
+        unknown = {skill["skill_name"]: skill for skill in skills if skill["category_code"] == "OTHER"}
+        for name in ("Mojo", "Gleam", "ERPNext"):
+            self.assertIn(name, unknown)
+            self.assertIn(unknown[name]["evidence"], source)
+
+    def test_jd_fallback_unknown_named_skill_is_other_and_evidence_is_exact(self):
+        from backend.app.jd_fallback import extract_jd_fallback
+
+        source = "Role: Platform Engineer\nExperience with Pulumi and Nix is required."
+        skills = extract_jd_fallback(source)["skills"]
+        by_name = {skill["skill_name"]: skill for skill in skills}
+        self.assertEqual(by_name["Pulumi"]["category_code"], "OTHER")
+        self.assertIn(by_name["Pulumi"]["evidence"], source)
+
+    def test_resume_guardrail_accepts_unusual_resume_sections_and_rejects_jd_text(self):
+        from backend.app.document_parser import ResumeDocumentParser
+
+        parser = ResumeDocumentParser()
+        resume = [
+            "Jordan Example", "jordan@example.invalid", "Portfolio", "Built a scheduling platform in 2024",
+            "Open source work", "Maintained a small utility library for local developers",
+        ]
+        job_description = [
+            "Role overview", "About the role", "Key responsibilities", "What you'll do",
+            "What we're looking for", "Nice to have", "Perks & benefits",
+        ]
+        self.assertTrue(parser.is_valid_resume(resume))
+        self.assertFalse(parser.is_valid_resume(job_description))
+
+    def test_resume_live_evidence_must_be_an_exact_case_sensitive_source_substring(self):
+        from backend.app.llm_extractor import ResumeSkillExtractor
+        from backend.app.schemas import Skill
+
+        source = "Built a service with Pulumi and PostgreSQL."
+        skills = [
+            Skill(skill_name="Pulumi", category_code="OTHER", evidence="with Pulumi", confidence="high"),
+            Skill(skill_name="PostgreSQL", category_code="SQL", evidence="with postgresql", confidence="high"),
+        ]
+        kept = ResumeSkillExtractor._keep_verbatim_evidence(skills, source)
+        self.assertEqual([skill.skill_name for skill in kept], ["Pulumi"])
 
     def test_markdown_report_includes_confidence_scores_and_deal_breaker_column(self):
         report = {
@@ -98,7 +160,7 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
                 {"category": "SQL", "candidate_level": 2.8, "required_level": 4.5},
                 {"category": "NETW", "candidate_level": 0, "required_level": 3.0},
             ],
-            "readiness_score": 82.5,
+            "readiness_score": 74.2,
             "readiness_threshold": 75.0,
         }
         markdown = main.generate_markdown_report(report)
@@ -107,8 +169,9 @@ class VanshTalentCheckWorkflowTests(unittest.TestCase):
         self.assertIn("4.0 / 5.0 (high confidence)", markdown)
         self.assertIn("2.8 / 5.0 (medium confidence)", markdown)
         self.assertIn("No evidence found", markdown)
-        self.assertIn("**Deal breakers (gap ≥ 1.5):** 2", markdown)
-        self.assertIn("**Readiness score:** 82.5% — minimum threshold not met", markdown)
+        self.assertIn("**Deal breakers (gap ≥ 1.5):** 0", markdown)
+        self.assertIn("**Readiness score:** 74.2%", markdown)
+        self.assertIn("**Readiness verdict:** NEEDS PREPARATION", markdown)
 
     def test_every_directory_company_has_a_complete_company_or_radix_benchmark(self):
         self.assertEqual(len(company_benchmark_metadata["companies"]), 118)

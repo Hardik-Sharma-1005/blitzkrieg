@@ -5,6 +5,11 @@ from datetime import datetime
 CONFIDENCE_SCORES = {"high": 3.8, "medium": 2.8, "low": 1.8}
 CATEGORY_ALIASES = {"CDG": "COD"}
 DEAL_BREAKER_THRESHOLD = 1.5
+CATEGORY_WEIGHTS = {
+    "COD": 1.4, "CDG": 1.4, "DSA": 1.4, "SYSD": 1.3, "SWE": 1.2,
+    "OOD": 1.1, "CLOUD": 1.1, "AI": 1.0, "APTI": 1.0, "SQL": 1.0,
+    "OS": 0.9, "NETW": 0.9, "COMM": 0.8, "EQ": 0.8,
+}
 
 
 def _category_code(value):
@@ -27,13 +32,17 @@ def _user_resume_score(category, resume_skills):
     return round(score, 1), confidence, len(matching)
 
 
-def _deal_breaker_status(required, score):
+def _deal_breaker_status(required, score, weight=1.0):
     try:
         target = float(required)
     except (TypeError, ValueError):
         target = 0.0
     gap = round(target - (score if score is not None else 0.0), 1)
-    is_deal_breaker = gap >= DEAL_BREAKER_THRESHOLD
+    try:
+        important_skill = float(weight or 0) >= 1.2
+    except (TypeError, ValueError):
+        important_skill = False
+    is_deal_breaker = gap >= DEAL_BREAKER_THRESHOLD and important_skill
     if gap > 0:
         detail = f"gap {gap:.1f}"
     elif gap < 0:
@@ -60,7 +69,9 @@ def generate_markdown_report(report: dict) -> str:
             continue
         category = item.get("category", "Other")
         score, confidence, _ = _user_resume_score(category, resume_skills)
-        flagged, status = _deal_breaker_status(item.get("required_level", 0), score)
+        category_code = _category_code(item.get("category_code") or category)
+        weight = item.get("weight", CATEGORY_WEIGHTS.get(category_code, 1.0))
+        flagged, status = _deal_breaker_status(item.get("required_level", 0), score, weight)
         assessments.append((item, category, score, confidence, status, flagged))
     deal_breakers_count = sum(1 for _, _, _, _, _, flagged in assessments if flagged)
     try:
@@ -72,6 +83,11 @@ def generate_markdown_report(report: dict) -> str:
     except (TypeError, ValueError):
         readiness_threshold = 75.0
     meets_readiness_threshold = readiness_score >= readiness_threshold and deal_breakers_count == 0
+    readiness_verdict = report.get("readiness_verdict") or (
+        "UNREADY" if readiness_score < 50
+        else "READY" if meets_readiness_threshold
+        else "NEEDS PREPARATION"
+    )
 
     lines = [
         "# User Resume Score and Company Benchmark Overview",
@@ -83,7 +99,8 @@ def generate_markdown_report(report: dict) -> str:
     lines.extend([
         f"**Generated on:** {datetime.now().strftime('%d %B %Y, %I:%M %p')}",
         f"**Deal breakers (gap ≥ {DEAL_BREAKER_THRESHOLD:.1f}):** {deal_breakers_count}",
-        f"**Readiness score:** {readiness_score:.1f}% — {'minimum threshold met' if meets_readiness_threshold else 'minimum threshold not met'} (requires at least {readiness_threshold:.0f}% and 0 deal breakers)",
+        f"**Readiness score:** {readiness_score:.1f}%",
+        f"**Readiness verdict:** {readiness_verdict} — {'minimum threshold met' if meets_readiness_threshold else 'minimum threshold not met'} (requires at least {readiness_threshold:.0f}% and 0 deal breakers)",
         "",
         "> This is an informational comparison. Resume mentions do not establish skill proficiency, determine job readiness, or predict a hiring outcome. Company benchmarks do not identify mandatory job requirements.",
         "",

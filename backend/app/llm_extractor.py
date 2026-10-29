@@ -269,7 +269,7 @@ class ResumeSkillExtractor:
                     start -= 1
                 while end < len(text) and not text[end].isspace():
                     end += 1
-                evidence = re.sub(r"\s+", " ", text[start:end]).strip()
+                evidence = text[start:end].strip()
                 extracted.append(
                     {
                         "skill_name": skill_name,
@@ -279,16 +279,80 @@ class ResumeSkillExtractor:
                     }
                 )
 
-        return extracted
+        extracted.extend(self._extract_unlisted_skill_items(text, {item["skill_name"].casefold() for item in extracted}))
+        return extracted[:300]
+
+    @staticmethod
+    def _extract_unlisted_skill_items(text: str, seen: set[str]) -> List[Dict[str, Any]]:
+        """Capture explicit unfamiliar entries from a labeled skills list as OTHER."""
+        section_header = re.compile(
+            r"^\s*(?:(?:technical|core|key)\s+)?(?:skills|technologies|tech stack|tools)(?:\s*(?:&|and)\s*(?:tools|technologies))?\s*:?[ \t]*(.*)$",
+            re.IGNORECASE,
+        )
+        section_stops = re.compile(
+            r"^\s*(?:education|experience|work experience|employment|projects?|certifications?|achievements?|awards?|publications?|languages|interests|references|summary|profile|objective|preferred roles)\s*:?[ \t]*$",
+            re.IGNORECASE,
+        )
+        known_names = {skill_name.casefold() for _, skill_name, _, _ in OFFLINE_SKILL_PATTERNS}
+        generic = {"skills", "technical skills", "technologies", "tools", "platforms", "frameworks", "libraries", "databases", "languages", "other", "others", "and"}
+        in_skills = False
+        explicit_items: List[tuple[str, str]] = []
+        for line in text.splitlines():
+            heading = section_header.match(line)
+            if heading:
+                in_skills = True
+                content = heading.group(1)
+            elif section_stops.match(line):
+                in_skills = False
+                continue
+            elif in_skills:
+                content = line
+            else:
+                continue
+            content = re.sub(
+                r"^\s*(?:programming languages|languages|frameworks|libraries|databases|cloud platforms|platforms|tools|technologies|operating systems|methodologies|concepts|other skills)\s*:\s*",
+                "",
+                content,
+                flags=re.IGNORECASE,
+            )
+            for item in re.split(r"[,;|•●▪]+", content):
+                candidate = item.strip(" \t\r\n-–—:*")
+                if candidate:
+                    explicit_items.append((candidate, line))
+
+        additional: List[Dict[str, Any]] = []
+        for candidate, source_line in explicit_items:
+            key = candidate.casefold()
+            if (
+                len(candidate) > 120
+                or len(candidate) < 2
+                or key in generic
+                or key in seen
+                or key in known_names
+                or not re.search(r"[A-Za-z][A-Za-z0-9+#.\-]*", candidate)
+            ):
+                continue
+            if any(re.search(pattern, candidate, re.IGNORECASE) for pattern, _, _, _ in OFFLINE_SKILL_PATTERNS):
+                continue
+            # Preserve an exact source span even when the list item itself is normalized by its delimiter.
+            source_match = re.search(re.escape(candidate), source_line)
+            evidence = source_match.group(0) if source_match else candidate
+            additional.append({
+                "skill_name": candidate,
+                "category_code": "OTHER",
+                "evidence": evidence,
+                "confidence": "high",
+            })
+            seen.add(key)
+        return additional
 
     @staticmethod
     def _keep_verbatim_evidence(skills: List[Skill], source_text: str) -> List[Skill]:
         """Reject live-model skills whose evidence is not present in the resume text."""
-        normalized_source = re.sub(r"\s+", " ", source_text).casefold().strip()
         grounded: List[Skill] = []
         for skill in skills:
-            evidence = re.sub(r"\s+", " ", skill.evidence).casefold().strip()
-            if evidence and evidence in normalized_source:
+            evidence = skill.evidence.strip()
+            if evidence and evidence in source_text:
                 grounded.append(skill)
         return grounded
 
