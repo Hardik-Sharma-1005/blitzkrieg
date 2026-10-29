@@ -12,7 +12,7 @@ from backend.app.resume_pipeline import ResumePipeline
 from backend.app.schemas import CandidateProfile
 from docx import Document
 
-ROLE4_DIR = Path(__file__).resolve().parents[2] / "role4_standalone"
+ROLE4_DIR = Path(__file__).resolve().parents[2] / "Talent Check"
 sys.path.insert(0, str(ROLE4_DIR))
 import config as role4_config
 

@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowRight, Building2, FileText, GitCompareArrows, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowRight, Building2, FileText, GitCompareArrows, Sparkles, Zap } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { InteractiveCosmos } from "@/components/InteractiveCosmos";
 import { Button } from "@/components/ui/button";
@@ -61,8 +61,8 @@ export function Index() {
             >
               Explore company intelligence <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button variant="outline" onClick={() => navigate("/talent-check")} className="brand-secondary-button min-h-12 rounded-full px-5">
-              Try Talent Check <Sparkles className="h-4 w-4" />
+            <Button variant="outline" onClick={() => navigate("/check-where-you-stand")} className="brand-secondary-button min-h-12 rounded-full px-5">
+              <span className="check-stand-bolt" style={{ color: theme === "light" ? "#9A5A82" : "#D99CC5" }}><Zap className="h-4 w-4" /></span> Check where you stand
             </Button>
           </motion.div>
           <motion.div {...reveal(.4)} className="brand-proofline mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs sm:mt-12 sm:text-sm">

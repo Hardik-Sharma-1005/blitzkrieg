@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-ROLE4_DIR = Path(__file__).resolve().parents[2] / "role4_standalone"
+ROLE4_DIR = Path(__file__).resolve().parents[2] / "Talent Check"
 if str(ROLE4_DIR) not in sys.path:
     sys.path.insert(0, str(ROLE4_DIR))
 

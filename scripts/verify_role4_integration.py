@@ -12,7 +12,7 @@ from pathlib import Path
 # Add backend and role4 to path
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR / "backend"))
-sys.path.insert(0, str(ROOT_DIR / "role4_standalone"))
+sys.path.insert(0, str(ROOT_DIR / "Talent Check"))
 
 print("=" * 70)
 print("🔍 RADIX TALENT MATCH — ROLE 4 FINAL INTEGRATION VERIFICATION")
@@ -110,12 +110,12 @@ except Exception as e:
 # CHECK 5: Standalone Demo Tools
 # -------------------------------------------------------------------
 print("\n[CHECK 5]: Verifying Standalone Presentation Scripts...")
-standalone_dir = ROOT_DIR / "role4_standalone"
+standalone_dir = ROOT_DIR / "Talent Check"
 required_scripts = ["interactive_demo.py", "master_pipeline.py", "report_generator.py", "test_talent_check.py"]
 for s in required_scripts:
     p = standalone_dir / s
     assert p.exists(), f"Missing standalone script: {s}"
-print(f"  ✅ All {len(required_scripts)} standalone presentation tools are present in role4_standalone/.")
+print(f"  ✅ All {len(required_scripts)} standalone presentation tools are present in Talent Check/.")
 
 print("\n" + "=" * 70)
 print("🎉 ALL 5 INTEGRATION CHECKS PASSED.")
